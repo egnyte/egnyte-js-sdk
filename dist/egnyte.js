@@ -44,9 +44,10 @@ module.exports = {
 
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
-        options.egnyteDomainURL = egnyteDomainURL;
+        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
         return {
+            domain: options.egnyteDomainURL,
             filePicker: require("./filepicker")(options)
         }
 
@@ -76,7 +77,9 @@ module.exports = {
 
     function destroy(channel, iframe) {
         dom.removeListener(window, "message", channel.handler);
-        iframe.parentNode.removeChild(iframe);
+        if (iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+        }
     }
 
     function actionHandler(close, callback, cancelCallback) {
@@ -114,7 +117,7 @@ module.exports = {
 
             listen(channel, actionHandler(close, callback, cancelCallback));
             node.appendChild(iframe);
-            
+
             return {
                 close: close
             }
@@ -131,44 +134,51 @@ module.exports = {
 },{"./dom":1,"./helpers":4}],4:[function(require,module,exports){
 var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
 
-module.exports = {
-    //simple extend function
-    extend: function (target) {
-        var i, k;
-        for (i = 1; i < arguments.length; i++) {
-            if (arguments[i]) {
-                for (k in arguments[i]) {
-                    if (arguments[i].hasOwnProperty(k)) {
-                        target[k] = arguments[i][k];
-                    }
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+}
+
+//returns postMessage specific handler
+function createMessageHandler(sourceOrigin, marker, callback) {
+    return function (event) {
+        if (!sourceOrigin || normalizeURL(event.origin) === normalizeURL(sourceOrigin)) {
+            var message = event.data;
+            if (message.substr(0, 2) === marker) {
+                try {
+                    message = parse_json(message.substring(2));
+
+                } catch (e) {
+                    //broken? ignore
+                }
+                if (message) {
+                    callback(message);
                 }
             }
-
         }
-        return target;
-    },
+    };
+}
 
-    parse_json: parse_json,
-
-    //returns postMessage specific handler
-    createMessageHandler: function (sourceOrigin, marker, callback) {
-        return function (event) {
-            if (!sourceOrigin || event.origin === sourceOrigin) {
-                var message = event.data;
-                if (message.substr(0, 2) === marker) {
-                    try {
-                        message = parse_json(message.substring(2));
-                        if (message) {
-                            callback(message);
-                        }
-                    } catch (e) {
-                        //broken? ignore
-                    }
+//simple extend function
+function extend(target) {
+    var i, k;
+    for (i = 1; i < arguments.length; i++) {
+        if (arguments[i]) {
+            for (k in arguments[i]) {
+                if (arguments[i].hasOwnProperty(k)) {
+                    target[k] = arguments[i][k];
                 }
             }
-        };
-    }
+        }
 
+    }
+    return target;
+}
+
+module.exports = {
+    extend: extend,
+    normalizeURL: normalizeURL,
+    parse_json: parse_json,
+    createMessageHandler: createMessageHandler
 }
 },{"./json_parse_state":5}],5:[function(require,module,exports){
 /*

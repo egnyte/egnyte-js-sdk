@@ -10,6 +10,7 @@
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
         return {
+            domain: options.egnyteDomainURL,
             filePicker: require("./filepicker")(options)
         }
 

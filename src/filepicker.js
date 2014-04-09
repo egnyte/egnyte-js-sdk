@@ -16,7 +16,9 @@
 
     function destroy(channel, iframe) {
         dom.removeListener(window, "message", channel.handler);
-        iframe.parentNode.removeChild(iframe);
+        if (iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+        }
     }
 
     function actionHandler(close, callback, cancelCallback) {
@@ -54,7 +56,7 @@
 
             listen(channel, actionHandler(close, callback, cancelCallback));
             node.appendChild(iframe);
-            
+
             return {
                 close: close
             }
