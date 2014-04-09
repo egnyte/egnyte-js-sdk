@@ -16,6 +16,10 @@ module.exports = {
         }
         return target;
     },
+    
+    normalizeURL: function(url){
+        return (url+"/").replace(/\/\/$/,"/");
+    },
 
     parse_json: parse_json,
 

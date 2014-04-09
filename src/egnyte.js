@@ -7,7 +7,7 @@
 
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
-        options.egnyteDomainURL = egnyteDomainURL;
+        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
         return {
             filePicker: require("./filepicker")(options)
