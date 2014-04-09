@@ -38,18 +38,14 @@ module.exports = {
 (function () {
     "use strict";
 
+    var helpers = require('./helpers');
 
-    var options = {
-        filePicker: {
-            viewAddress: "folderExplorerDev.html",
-            channelMarker: "'E"
-        }
-    };
+    var options = {};
 
 
 
-    function init(egnyteDomainURL) {
-
+    function init(egnyteDomainURL, opts) {
+        options = helpers.extend(options, opts);
         options.egnyteDomainURL = egnyteDomainURL;
 
         return {
@@ -63,25 +59,104 @@ module.exports = {
     }
 
 })();
-},{"./filepicker":3}],3:[function(require,module,exports){
+},{"./filepicker":3,"./helpers":4}],3:[function(require,module,exports){
 (function () {
 
-    var parse_json;
-    if (JSON && JSON.parse) {
-        parse_json = JSON.parse;
-    } else {
-        parse_json = require("./json_parse_state");
-    }
-
-
     var dom = require('./dom');
+    var helpers = require('./helpers');
+
+    var defaults = {
+        filepickerViewAddress: "folderExplorer.html",
+        channelMarker: "'E"
+    };
 
 
     function listen(channel, callback) {
-        channel.handler = function (event) {
-            if (event.origin === channel.sourceOrigin) {
+        channel.handler = helpers.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
+        dom.addListener(window, "message", channel.handler);
+    }
+
+
+    function destroy(channel, iframe) {
+        dom.removeListener(window, "message", channel.handler);
+        iframe.parentNode.removeChild(iframe);
+    }
+
+    function actionHandler(close, callback, cancelCallback) {
+        return function (message) {
+            if (message.action) {
+                switch (message.action) {
+                case "selection":
+                    if (callback(message.data) !== false) {
+                        close();
+                    }
+                    break;
+                case "cancel":
+                    close();
+                    cancelCallback();
+                    break;
+                }
+            }
+        }
+    }
+
+    function init(options) {
+
+        options = helpers.extend(defaults, options);
+
+        var filePicker = function (node, callback, cancelCallback) {
+            var iframe;
+            var channel = {
+                marker: options.channelMarker,
+                sourceOrigin: options.egnyteDomainURL
+            }
+            var close = function () {
+                destroy(channel, iframe);
+            };
+            iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
+
+            listen(channel, actionHandler(close, callback, cancelCallback));
+            node.appendChild(iframe);
+            return {
+                close: close
+            }
+        }
+
+        return filePicker;
+
+    }
+
+    module.exports = init;
+
+
+})();
+},{"./dom":1,"./helpers":4}],4:[function(require,module,exports){
+var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
+
+module.exports = {
+    //simple extend function
+    extend: function (target) {
+        var i, k;
+        for (i = 1; i < arguments.length; i++) {
+            if (arguments[i]) {
+                for (k in arguments[i]) {
+                    if (arguments[i].hasOwnProperty(k)) {
+                        target[k] = arguments[i][k];
+                    }
+                }
+            }
+
+        }
+        return target;
+    },
+
+    parse_json: parse_json,
+
+    createMessageHandler: function (sourceOrigin, marker, callback) {
+        return function (event) {
+            if (!sourceOrigin || event.origin === sourceOrigin) {
                 var message = event.data;
-                if (message.substr(0, 2) === channel.marker) {
+                if (message.substr(0, 2) === marker) {
                     try {
                         message = parse_json(message.substring(2));
                         if (message) {
@@ -93,65 +168,10 @@ module.exports = {
                 }
             }
         };
-        dom.addListener(window, "message", channel.handler);
     }
 
-    function kill(channel) {
-        dom.removeListener(window, "message", channel.handler);
-    }
-
-    function init(options) {
-
-        var iframe;
-        var channel = {};
-
-        function destroy() {
-            kill(channel);
-            iframe.parentNode.removeChild(iframe);
-        }
-
-        function messageHandler(callback, cancelCallback) {
-            return function (message) {
-                if (message.action) {
-                    switch (message.action) {
-                    case "selection":
-                        if (callback(message.data) !== false) {
-                            destroy();
-                        }
-                        break;
-                    case "cancel":
-                        destroy();
-                        cancelCallback();
-                        break;
-                    }
-                }
-            }
-        }
-
-        var filePicker = function (node, callback, cancelCallback) {
-
-            iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filePicker.viewAddress);
-            channel = {
-                marker: options.filePicker.channelMarker,
-                sourceOrigin: options.egnyteDomainURL
-            }
-
-            listen(channel, messageHandler(callback, cancelCallback));
-            node.appendChild(iframe);
-            return {
-                close: destroy
-            }
-        }
-
-        return filePicker;
-
-    }
-    
-    module.exports = init;
-    
-
-})();
-},{"./dom":1,"./json_parse_state":4}],4:[function(require,module,exports){
+}
+},{"./json_parse_state":5}],5:[function(require,module,exports){
 /*
     json_parse_state.js
     2013-05-26

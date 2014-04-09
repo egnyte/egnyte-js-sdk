@@ -1,87 +1,70 @@
 (function () {
 
-    var parse_json;
-    if (JSON && JSON.parse) {
-        parse_json = JSON.parse;
-    } else {
-        parse_json = require("./json_parse_state");
-    }
-
-
     var dom = require('./dom');
+    var helpers = require('./helpers');
+
+    var defaults = {
+        filepickerViewAddress: "folderExplorer.html",
+        channelMarker: "'E"
+    };
 
 
     function listen(channel, callback) {
-        channel.handler = function (event) {
-            if (event.origin === channel.sourceOrigin) {
-                var message = event.data;
-                if (message.substr(0, 2) === channel.marker) {
-                    try {
-                        message = parse_json(message.substring(2));
-                        if (message) {
-                            callback(message);
-                        }
-                    } catch (e) {
-                        //broken? ignore
-                    }
-                }
-            }
-        };
+        channel.handler = helpers.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
         dom.addListener(window, "message", channel.handler);
     }
 
-    function kill(channel) {
+    function destroy(channel, iframe) {
         dom.removeListener(window, "message", channel.handler);
+        iframe.parentNode.removeChild(iframe);
+    }
+
+    function actionHandler(close, callback, cancelCallback) {
+        return function (message) {
+            if (message.action) {
+                switch (message.action) {
+                case "selection":
+                    if (callback(message.data) !== false) {
+                        close();
+                    }
+                    break;
+                case "cancel":
+                    close();
+                    cancelCallback();
+                    break;
+                }
+            }
+        }
     }
 
     function init(options) {
 
-        var iframe;
-        var channel = {};
-
-        function destroy() {
-            kill(channel);
-            iframe.parentNode.removeChild(iframe);
-        }
-
-        function messageHandler(callback, cancelCallback) {
-            return function (message) {
-                if (message.action) {
-                    switch (message.action) {
-                    case "selection":
-                        if (callback(message.data) !== false) {
-                            destroy();
-                        }
-                        break;
-                    case "cancel":
-                        destroy();
-                        cancelCallback();
-                        break;
-                    }
-                }
-            }
-        }
+        options = helpers.extend(defaults, options);
 
         var filePicker = function (node, callback, cancelCallback) {
-
-            iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filePicker.viewAddress);
-            channel = {
-                marker: options.filePicker.channelMarker,
+            var iframe;
+            var channel = {
+                marker: options.channelMarker,
                 sourceOrigin: options.egnyteDomainURL
             }
+            var close = function () {
+                destroy(channel, iframe);
+            };
+            iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
 
-            listen(channel, messageHandler(callback, cancelCallback));
+            listen(channel, actionHandler(close, callback, cancelCallback));
             node.appendChild(iframe);
+            
             return {
-                close: destroy
+                close: close
             }
         }
 
         return filePicker;
 
     }
-    
+
     module.exports = init;
-    
+
 
 })();

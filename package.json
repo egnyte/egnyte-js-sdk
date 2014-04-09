@@ -1,7 +1,7 @@
 {
   "name": "egnyte-widget",
-  "version": "0.1.0",
-  "description": "An embedable widget Egnyte integrations",
+  "version": "0.1.1",
+  "description": "An embedable widget for Egnyte integrations",
   "main": "egnyte.js",
   "keywords": [
     "egnyte",

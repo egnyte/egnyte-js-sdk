@@ -3,7 +3,7 @@ describe("Filepicker", function () {
     var node;
 
     beforeEach(function () {
-        eg = EG.init("#");
+        eg = EgnyteWidget.init("#");
 
         node = document.createElement('div');
         document.body.appendChild(node);
@@ -24,7 +24,7 @@ describe("Filepicker", function () {
     it('should react to postmessage', function (done) {
 
         //for matching origin
-        eg = EG.init(window.location.origin);
+        eg = EgnyteWidget.init(window.location.origin);
         eg.filePicker(node, function () {}, function () {
             //finishes the test successfully
             done();

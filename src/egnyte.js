@@ -1,18 +1,12 @@
 (function () {
     "use strict";
 
+    var helpers = require('./helpers');
 
-    var options = {
-        filePicker: {
-            viewAddress: "folderExplorerDev.html",
-            channelMarker: "'E"
-        }
-    };
+    var options = {};
 
-
-
-    function init(egnyteDomainURL) {
-
+    function init(egnyteDomainURL, opts) {
+        options = helpers.extend(options, opts);
         options.egnyteDomainURL = egnyteDomainURL;
 
         return {
@@ -21,7 +15,7 @@
 
     }
 
-    window.EG = {
+    window.EgnyteWidget = {
         init: init
     }
 
