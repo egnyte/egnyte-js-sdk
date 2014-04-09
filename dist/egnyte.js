@@ -42,8 +42,6 @@ module.exports = {
 
     var options = {};
 
-
-
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
         options.egnyteDomainURL = egnyteDomainURL;
@@ -54,7 +52,7 @@ module.exports = {
 
     }
 
-    window.EG = {
+    window.EgnyteWidget = {
         init: init
     }
 
@@ -75,7 +73,6 @@ module.exports = {
         channel.handler = helpers.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
         dom.addListener(window, "message", channel.handler);
     }
-
 
     function destroy(channel, iframe) {
         dom.removeListener(window, "message", channel.handler);
@@ -117,6 +114,7 @@ module.exports = {
 
             listen(channel, actionHandler(close, callback, cancelCallback));
             node.appendChild(iframe);
+            
             return {
                 close: close
             }
@@ -152,6 +150,7 @@ module.exports = {
 
     parse_json: parse_json,
 
+    //returns postMessage specific handler
     createMessageHandler: function (sourceOrigin, marker, callback) {
         return function (event) {
             if (!sourceOrigin || event.origin === sourceOrigin) {

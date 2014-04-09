@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>filepicker widget</title>
+    <script src="../dist/egnyte.js"></script>
+    <style>
+        #there{
+            width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="there">
+
+
+    </div>
+
+    <button onclick="openPicker()">open picker</button>
+    Take a look at the console.
+    <script>
+        var node = document.getElementById("there");
+        
+        //proper usage:
+        var eg = EgnyteWidget.init("http://mydomain.egnyte.com");
+        
+        //this line will use mock instead of real egnyte domain
+        //doesn't work with file:// protocol
+        //var eg = EgnyteWidget.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
+        
+        function openPicker(){
+        
+            eg.filePicker(node,function(fileData){
+                console.info(fileData);
+            },function(){
+                console.warn("cancelled");
+            });
+        
+        }
+    </script>
+</body>
+
+</html>

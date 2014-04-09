@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>filepicker view</title>
+    <script>
+        var marker = "'E";
+        sendOK = function () {
+            window.parent.postMessage(marker + '{"action":"selection","data":["some pretended file info"]}', "*");
+        }
+        sendCancel = function () {
+            window.parent.postMessage(marker + '{"action":"cancel"}', "*");
+        }
+    </script>
+</head>
+
+<body>
+    <p>
+        This file pretends to be Egnyte file picker view that the widget embeds in iframe. 
+        The user performs one of the actions:
+    </p>
+    <button onclick="sendOK()">Select a file</button>
+    <button onclick="sendCancel()">Cancel</button>
+</body>
+
+</html>

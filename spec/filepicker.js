@@ -13,12 +13,23 @@ describe("Filepicker", function () {
         document.body.removeChild(node);
     });
 
-    it('should create iframe', function () {
+    it('should create an iframe', function () {
         var callback = function () {};
 
-        eg.filePicker(node, callback, callback);
+        var picker = eg.filePicker(node, callback, callback);
 
         expect(node.getElementsByTagName('iframe').length).toEqual(1);
+
+        picker.close();
+    });
+
+    it('should cleanup after itself', function () {
+        var callback = function () {};
+
+        var picker = eg.filePicker(node, callback, callback);
+        picker.close();
+
+        expect(node.getElementsByTagName('iframe').length).toEqual(0);
     });
 
     it('should react to postmessage', function (done) {
@@ -36,5 +47,7 @@ describe("Filepicker", function () {
 
 
     });
+
+
 
 });
