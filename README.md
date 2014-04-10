@@ -23,7 +23,7 @@ Egnyte Widget
                 //handle cancel action
             });
             
-    Minimal dimensions of the container node are 400x400 px
+    File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px
     
     Close file picker 
         
