@@ -25,11 +25,11 @@
         var node = document.getElementById("there");
         
         //proper usage:
-        var eg = EgnyteWidget.init("http://mydomain.egnyte.com");
+        //var eg = EgnyteWidget.init("http://mydomain.egnyte.com");
         
         //this line will use mock instead of real egnyte domain
         //doesn't work with file:// protocol
-        //var eg = EgnyteWidget.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
+        var eg = EgnyteWidget.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
         
         function openPicker(){
         
