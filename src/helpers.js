@@ -24,6 +24,21 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
+function sendMessage(targetWindow, channel, action, dataString) {
+    var targetOrigin = "*";
+
+    if (typeof dataString !== "string" || typeof action !== "string") {
+        throw new TypeError("only string is acceptable as action and data");
+    }
+
+    try {
+        targetOrigin = targetWindow.location.origin;
+    } catch (E) {}
+
+    dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
+    targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
+}
+
 //simple extend function
 function extend(target) {
     var i, k;
@@ -44,5 +59,6 @@ module.exports = {
     extend: extend,
     normalizeURL: normalizeURL,
     parse_json: parse_json,
-    createMessageHandler: createMessageHandler
-}
+    createMessageHandler: createMessageHandler,
+    sendMessage: sendMessage
+};

@@ -23,12 +23,12 @@ module.exports = {
 
     createFrame: function (url) {
         var iframe = document.createElement("iframe");
-        iframe.setAttribute("scrolling", "no");
+        // iframe.setAttribute("scrolling", "no");
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.minWidth = "400px";
         iframe.style.minHeight = "400px";
-        iframe.style.border = "none";
+        iframe.style.border = "1px solid #dbdbdb";
         iframe.src = url;
         return iframe;
     }
@@ -82,46 +82,79 @@ module.exports = {
         }
     }
 
-    function actionHandler(close, callback, cancelCallback) {
+
+    function actionsHandler(close, actions) {
         return function (message) {
+            var actionResult;
             if (message.action) {
+
+                if (actions.hasOwnProperty(message.action) && actions[message.action].call) {
+                    actionResult = actions[message.action](message.data);
+                }
+
                 switch (message.action) {
                 case "selection":
-                    if (callback(message.data) !== false) {
+                    if (actionResult !== false) {
                         close();
                     }
                     break;
                 case "cancel":
                     close();
-                    cancelCallback();
                     break;
                 }
+
             }
-        }
+        };
     }
 
     function init(options) {
-
+        var filePicker;
+        var ready = false;
         options = helpers.extend(defaults, options);
 
-        var filePicker = function (node, callback, cancelCallback) {
+        filePicker = function (node, callback, cancelCallback) {
             var iframe;
             var channel = {
                 marker: options.channelMarker,
                 sourceOrigin: options.egnyteDomainURL
+            };
+            //informs the view to open a certain location
+            var sendOpenAt = function () {
+                if (options.openAt) {
+                    helpers.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
+                }
             }
             var close = function () {
                 destroy(channel, iframe);
             };
+            var openAt = function (location) {
+                options.openAt = location;
+                if (ready) {
+                    sendOpenAt();
+                }
+            };
+            
+            
             iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
 
-            listen(channel, actionHandler(close, callback, cancelCallback));
+            listen(channel,
+                actionsHandler(close, {
+                    "selection": callback,
+                    "cancel": cancelCallback,
+                    "ready": function () {
+                        ready = true;
+                        sendOpenAt();
+                    }
+                })
+            );
+
             node.appendChild(iframe);
 
             return {
-                close: close
-            }
-        }
+                close: close,
+                openAt: openAt
+            };
+        };
 
         return filePicker;
 
@@ -158,6 +191,21 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
+function sendMessage(targetWindow, channel, action, dataString) {
+    var targetOrigin = "*";
+
+    if (typeof dataString !== "string" || typeof action !== "string") {
+        throw new TypeError("only string is acceptable as action and data");
+    }
+
+    try {
+        targetOrigin = targetWindow.location.origin;
+    } catch (E) {}
+
+    dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
+    targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
+}
+
 //simple extend function
 function extend(target) {
     var i, k;
@@ -178,8 +226,9 @@ module.exports = {
     extend: extend,
     normalizeURL: normalizeURL,
     parse_json: parse_json,
-    createMessageHandler: createMessageHandler
-}
+    createMessageHandler: createMessageHandler,
+    sendMessage: sendMessage
+};
 },{"./json_parse_state":5}],5:[function(require,module,exports){
 /*
     json_parse_state.js

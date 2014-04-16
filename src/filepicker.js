@@ -21,46 +21,79 @@
         }
     }
 
-    function actionHandler(close, callback, cancelCallback) {
+
+    function actionsHandler(close, actions) {
         return function (message) {
+            var actionResult;
             if (message.action) {
+
+                if (actions.hasOwnProperty(message.action) && actions[message.action].call) {
+                    actionResult = actions[message.action](message.data);
+                }
+
                 switch (message.action) {
                 case "selection":
-                    if (callback(message.data) !== false) {
+                    if (actionResult !== false) {
                         close();
                     }
                     break;
                 case "cancel":
                     close();
-                    cancelCallback();
                     break;
                 }
+
             }
-        }
+        };
     }
 
     function init(options) {
-
+        var filePicker;
+        var ready = false;
         options = helpers.extend(defaults, options);
 
-        var filePicker = function (node, callback, cancelCallback) {
+        filePicker = function (node, callback, cancelCallback) {
             var iframe;
             var channel = {
                 marker: options.channelMarker,
                 sourceOrigin: options.egnyteDomainURL
+            };
+            //informs the view to open a certain location
+            var sendOpenAt = function () {
+                if (options.openAt) {
+                    helpers.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
+                }
             }
             var close = function () {
                 destroy(channel, iframe);
             };
+            var openAt = function (location) {
+                options.openAt = location;
+                if (ready) {
+                    sendOpenAt();
+                }
+            };
+            
+            
             iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
 
-            listen(channel, actionHandler(close, callback, cancelCallback));
+            listen(channel,
+                actionsHandler(close, {
+                    "selection": callback,
+                    "cancel": cancelCallback,
+                    "ready": function () {
+                        ready = true;
+                        sendOpenAt();
+                    }
+                })
+            );
+
             node.appendChild(iframe);
 
             return {
-                close: close
-            }
-        }
+                close: close,
+                openAt: openAt
+            };
+        };
 
         return filePicker;
 
