@@ -23,7 +23,7 @@ module.exports = {
 
     createFrame: function (url) {
         var iframe = document.createElement("iframe");
-        // iframe.setAttribute("scrolling", "no");
+        iframe.setAttribute("scrolling", "no");
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.minWidth = "400px";
