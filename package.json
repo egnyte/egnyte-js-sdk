@@ -11,6 +11,10 @@
   ],
   "author": "ztenerowicz",
   "license": "MIT",
+  "dependencies": {
+    "pinkyswear": "^2.0.2",
+    "xhr": "^1.6.1"
+  },
   "devDependencies": {
     "grunt": "^0.4.4",
     "browserify": "^3.38.1",

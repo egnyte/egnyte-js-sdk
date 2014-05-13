@@ -1,13 +1,11 @@
+var helpers = require('../helpers');
 var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
 
-function normalizeURL(url) {
-    return (url).replace(/\/*$/, "");
-}
 
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
-        if (!sourceOrigin || normalizeURL(event.origin) === normalizeURL(sourceOrigin)) {
+        if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
                 try {
@@ -32,33 +30,14 @@ function sendMessage(targetWindow, channel, action, dataString) {
     }
 
     try {
-        targetOrigin = targetWindow.location.origin;
+        targetOrigin = targetWindow.location.origin || window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
     } catch (E) {}
 
     dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
 }
 
-//simple extend function
-function extend(target) {
-    var i, k;
-    for (i = 1; i < arguments.length; i++) {
-        if (arguments[i]) {
-            for (k in arguments[i]) {
-                if (arguments[i].hasOwnProperty(k)) {
-                    target[k] = arguments[i][k];
-                }
-            }
-        }
-
-    }
-    return target;
-}
-
 module.exports = {
-    extend: extend,
-    normalizeURL: normalizeURL,
-    parse_json: parse_json,
-    createMessageHandler: createMessageHandler,
-    sendMessage: sendMessage
-};
+    sendMessage: sendMessage,
+    createMessageHandler: createMessageHandler
+}

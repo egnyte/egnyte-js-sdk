@@ -1,7 +1,8 @@
 (function () {
 
-    var dom = require('./dom');
     var helpers = require('./helpers');
+    var dom = require('./picker_elements/dom');
+    var messages = require('./picker_elements/messages');
 
     var defaults = {
         filepickerViewAddress: "folderExplorer.html",
@@ -10,7 +11,7 @@
 
 
     function listen(channel, callback) {
-        channel.handler = helpers.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
+        channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
         dom.addListener(window, "message", channel.handler);
     }
 
@@ -60,7 +61,7 @@
             //informs the view to open a certain location
             var sendOpenAt = function () {
                 if (options.openAt) {
-                    helpers.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
+                    messages.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
                 }
             }
             var close = function () {

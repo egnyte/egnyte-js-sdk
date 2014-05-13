@@ -3,7 +3,8 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON("package.json"),
         clean: ["dist"],
         browserify: {
-            "dist/egnyte.js": ["src/egnyte.js"]
+            "dist/egnyte.js": ["src/egnyte.js"],
+            "dist/slim.js": ["src/slim.js"]
         },
         uglify: {
             options: {
@@ -12,8 +13,10 @@ module.exports = function (grunt) {
                     "// <%= pkg.author %> \n"
             },
             dist: {
-                src: "dist/egnyte.js",
-                dest: "dist/egnyte.min.js"
+                files: {
+                    "dist/egnyte.min.js": ["dist/egnyte.js"],
+                    "dist/slim.min.js": ["dist/slim.js"]
+                }
             }
         },
 
@@ -36,7 +39,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
 
 
-    grunt.registerTask("test", ["dist","jasmine"]);
+    grunt.registerTask("test", ["dist", "jasmine"]);
     grunt.registerTask("dist", ["clean", "browserify", "uglify"]);
 
     grunt.registerTask("default", ["test"]);
