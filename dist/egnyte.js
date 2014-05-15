@@ -395,7 +395,7 @@ function authenticateInplace(callback) {
         var access = oauthRegex.exec(window.location.hash);
 
         if (access) {
-            if (access.length > 2) {
+            if (access.length > 1) {
 
                 token = access[1];
                 callback();
@@ -486,11 +486,19 @@ var options;
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
+var quota = /<h1>Developer Over Qps<\/h1>/gi;
+
 function sendRequest(opts, callback) {
     if (api.isAuthenticated()) {
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + api.getToken();
-        return xhr(opts, callback);
+        return xhr(opts, function (error, response, body) {
+            if (response.statusCode == 403 && quota.test(response.responseText)) {
+                throw new Error(response.responseText);
+            } else {
+                callback.apply(this, arguments);
+            }
+        });
     } else {
         throw new Error("Not authenticated");
     }
@@ -520,6 +528,19 @@ function exists(pathFromRoot) {
         } else {
             defer.resolve(false);
         }
+    });
+    return defer.promise;
+}
+
+function get(pathFromRoot) {
+    var defer = promises.defer();
+    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+
+    sendRequest({
+        method: "GET",
+        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
+    }, function (error, response, body) {
+        defer.resolve(body);
     });
     return defer.promise;
 }
@@ -643,6 +664,7 @@ module.exports = function (apihelper, opts) {
     api = apihelper;
     return {
         exists: exists,
+        get: get,
         createFolder: createFolder,
         removeFolder: removeFolder,
         move: move,
@@ -653,12 +675,12 @@ module.exports = function (apihelper, opts) {
         removeFile: removeVersion
     };
 };
-},{"../promises":15,"xhr":3}],10:[function(require,module,exports){
+},{"../promises":12,"xhr":3}],10:[function(require,module,exports){
 (function () {
 
     var helpers = require('./helpers');
-    var dom = require('./picker_elements/dom');
-    var messages = require('./picker_elements/messages');
+    var dom = require('./reusables/dom');
+    var messages = require('./reusables/messages');
 
     var defaults = {
         filepickerViewAddress: "folderExplorer.html",
@@ -760,7 +782,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"./helpers":11,"./picker_elements/dom":12,"./picker_elements/messages":14}],11:[function(require,module,exports){
+},{"./helpers":11,"./reusables/dom":13,"./reusables/messages":15}],11:[function(require,module,exports){
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -789,6 +811,24 @@ module.exports = {
     normalizeURL: normalizeURL
 };
 },{}],12:[function(require,module,exports){
+//wrapper for any promises library
+var pinkySwear = require('pinkyswear');
+
+module.exports = {
+    "defer" : function(){
+        var promise = pinkySwear();
+        return {
+            promise: promise,
+            resolve: function(result){
+                promise(true,[result]);
+            },
+            reject: function(result){
+                promise(true,[result]);
+            }
+        }
+    }
+}
+},{"pinkyswear":2}],13:[function(require,module,exports){
 module.exports = {
 
     addListener: function (elem, type, callback) {
@@ -824,7 +864,7 @@ module.exports = {
     }
 
 }
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*
     json_parse_state.js
     2013-05-26
@@ -1223,7 +1263,7 @@ module.exports = (function () {
     };
 }());
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var helpers = require('../helpers');
 var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
 
@@ -1267,22 +1307,4 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../helpers":11,"./json_parse_state":13}],15:[function(require,module,exports){
-//wrapper for any promises library
-var pinkySwear = require('pinkyswear');
-
-module.exports = {
-    "defer" : function(){
-        var promise = pinkySwear();
-        return {
-            promise: promise,
-            resolve: function(result){
-                promise(true,result);
-            },
-            reject: function(result){
-                false(true,result);
-            }
-        }
-    }
-}
-},{"pinkyswear":2}]},{},[6]);
+},{"../helpers":11,"./json_parse_state":14}]},{},[6]);

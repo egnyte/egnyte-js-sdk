@@ -10,7 +10,7 @@ function authenticateInplace(callback) {
         var access = oauthRegex.exec(window.location.hash);
 
         if (access) {
-            if (access.length > 2) {
+            if (access.length > 1) {
 
                 token = access[1];
                 callback();

@@ -1,8 +1,8 @@
 (function () {
 
     var helpers = require('./helpers');
-    var dom = require('./picker_elements/dom');
-    var messages = require('./picker_elements/messages');
+    var dom = require('./reusables/dom');
+    var messages = require('./reusables/messages');
 
     var defaults = {
         filepickerViewAddress: "folderExplorer.html",
@@ -28,7 +28,7 @@
             var actionResult;
             if (message.action) {
 
-                if (actions.hasOwnProperty(message.action) && actions[message.action].call) {
+                if (actions.hasOwnProperty(message.action) && actions[message.action] && actions[message.action].call) {
                     actionResult = actions[message.action](message.data);
                 }
 

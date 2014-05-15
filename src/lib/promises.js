@@ -7,10 +7,10 @@ module.exports = {
         return {
             promise: promise,
             resolve: function(result){
-                promise(true,result);
+                promise(true,[result]);
             },
             reject: function(result){
-                false(true,result);
+                promise(true,[result]);
             }
         }
     }

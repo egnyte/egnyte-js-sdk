@@ -23,7 +23,10 @@ module.exports = function (grunt) {
         jasmine: {
             src: "dist/egnyte.js",
             options: {
-                specs: 'spec/*.js'
+                specs: 'spec/*.js',
+                '--web-security': false,
+                '--local-to-remote-url-access': true,
+                '--ignore-ssl-errors': true
             }
         },
 

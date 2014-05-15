@@ -10,11 +10,19 @@ var options;
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
+var quota = /<h1>Developer Over Qps<\/h1>/gi;
+
 function sendRequest(opts, callback) {
     if (api.isAuthenticated()) {
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + api.getToken();
-        return xhr(opts, callback);
+        return xhr(opts, function (error, response, body) {
+            if (response.statusCode == 403 && quota.test(response.responseText)) {
+                throw new Error(response.responseText);
+            } else {
+                callback.apply(this, arguments);
+            }
+        });
     } else {
         throw new Error("Not authenticated");
     }
@@ -44,6 +52,19 @@ function exists(pathFromRoot) {
         } else {
             defer.resolve(false);
         }
+    });
+    return defer.promise;
+}
+
+function get(pathFromRoot) {
+    var defer = promises.defer();
+    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+
+    sendRequest({
+        method: "GET",
+        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
+    }, function (error, response, body) {
+        defer.resolve(body);
     });
     return defer.promise;
 }
@@ -167,6 +188,7 @@ module.exports = function (apihelper, opts) {
     api = apihelper;
     return {
         exists: exists,
+        get: get,
         createFolder: createFolder,
         removeFolder: removeFolder,
         move: move,
