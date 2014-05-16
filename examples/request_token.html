@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>how to get API token</title>
+    <script src="../dist/egnyte.js"></script>
+    <style>
+        #there {
+            width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h3 id="token"></h3>
+    <script>
+        (function() {
+            if (window.location.hash.length < 3) {
+                var domain = prompt("Your Egnyte domain address", "https://acme.egnyte.com");
+                var key = prompt("Your Public API key");
+            }else{
+                var domain = "irrelevant";
+                var key = "irrelevant";
+            }
+
+            var eg = EgnyteWidget.init(domain, {
+                key: key,
+                mobile: true
+            });
+
+            eg.API.auth.authenticate(function() {
+                document.getElementById("token").innerHTML = "Your token: "+eg.API.auth.getToken();
+            });
+
+        })();
+    </script>
+</body>
+
+</html>

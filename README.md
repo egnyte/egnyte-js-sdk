@@ -7,7 +7,13 @@ Egnyte Widget
 
         var widgetInstance = EgnyteWidget.init("http://mydomain.egnyte.com");
         
- 
+    Or if you want to use API:
+
+        var widgetInstance = EgnyteWidget.init("http://mydomain.egnyte.com", {
+                key: YOURAPIKEY,
+                mobile: true      //optional
+            });
+
 2. Use features
 
   - File picker
@@ -28,3 +34,20 @@ Egnyte Widget
     Close file picker 
         
         picker.close();
+        
+   
+  - Public API
+  
+    TBD.
+   
+## Tests
+
+To run tests for the API you need to have access to the Public API first.
+Create a file `spec/conf/apiaccess.js` with the following ocntent:
+
+    egnyteDomain = "https://YOURDOMAIN.egnyte.com";
+    APIToken = "YOURACCESSTOKEN";
+
+`YOURACCESSTOKEN` is not the API key. You need to obtain the access token using your key as described in authentication section of Egnyte Public API docs.
+
+Or you can put `examples/request_token.html` on any server listening to https on a domain containing `.` (everything except localhost, 127.0.0.1 is ok) and go through the example.
