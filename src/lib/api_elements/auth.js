@@ -3,6 +3,8 @@ var oauthRegex = /access_token=([^&]+)/;
 var token;
 var options;
 
+var xhr = require("xhr");
+var quota = /<h1>Developer Over Qps<\/h1>/gi;
 
 
 function authenticateInplace(callback) {
@@ -70,6 +72,23 @@ function dropToken(externalToken) {
     token = null;
 }
 
+function sendRequest(opts, callback) {
+    if (isAuthenticated()) {
+        opts.headers = opts.headers || {};
+        opts.headers["Authorization"] = "Bearer " + getToken();
+        return xhr(opts, function (error, response, body) {
+            if (response.statusCode == 403 && quota.test(response.responseText)) {
+                throw new Error("Developer Over Qps");
+            } else {
+                callback.apply(this, arguments);
+            }
+        });
+    } else {
+        throw new Error("Not authenticated");
+    }
+
+}
+
 module.exports = function (opts) {
     options = opts;
 
@@ -85,6 +104,7 @@ module.exports = function (opts) {
         getHeaders: getHeaders,
         getToken: getToken,
         dropToken: dropToken,
-        getEndpoint: getEndpoint
+        getEndpoint: getEndpoint,
+        sendRequest: sendRequest
     };
 };

@@ -2,15 +2,15 @@
 var pinkySwear = require('pinkyswear');
 
 module.exports = {
-    "defer" : function(){
+    "defer": function () {
         var promise = pinkySwear();
         return {
             promise: promise,
-            resolve: function(result){
-                promise(true,[result]);
+            resolve: function (result) {
+                promise(true, [result]);
             },
-            reject: function(result){
-                promise(true,[result]);
+            reject: function (result) {
+                promise(true, [result]);
             }
         }
     }

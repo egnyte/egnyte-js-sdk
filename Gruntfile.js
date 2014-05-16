@@ -21,12 +21,16 @@ module.exports = function (grunt) {
         },
 
         jasmine: {
-            src: "dist/egnyte.js",
-            options: {
-                specs: 'spec/*.js',
-                '--web-security': false,
-                '--local-to-remote-url-access': true,
-                '--ignore-ssl-errors': true
+            all: {
+                src: ["dist/egnyte.js","spec/conf/apiaccess.js"],
+                vandor:["spec/vendor/blob.js"],
+                options: {
+                    keepRunner: true,
+                    specs: 'spec/*.js',
+                    '--web-security': false,
+                    '--local-to-remote-url-access': true,
+                    '--ignore-ssl-errors': true
+                }
             }
         },
 
@@ -42,7 +46,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
 
 
-    grunt.registerTask("test", ["dist", "jasmine"]);
+    grunt.registerTask("test", ["dist", "jasmine:all"]);
     grunt.registerTask("dist", ["clean", "browserify", "uglify"]);
 
     grunt.registerTask("default", ["test"]);

@@ -364,6 +364,8 @@ var oauthRegex = /access_token=([^&]+)/;
 var token;
 var options;
 
+var xhr = require("xhr");
+var quota = /<h1>Developer Over Qps<\/h1>/gi;
 
 
 function authenticateInplace(callback) {
@@ -431,6 +433,23 @@ function dropToken(externalToken) {
     token = null;
 }
 
+function sendRequest(opts, callback) {
+    if (isAuthenticated()) {
+        opts.headers = opts.headers || {};
+        opts.headers["Authorization"] = "Bearer " + getToken();
+        return xhr(opts, function (error, response, body) {
+            if (response.statusCode == 403 && quota.test(response.responseText)) {
+                throw new Error("Developer Over Qps");
+            } else {
+                callback.apply(this, arguments);
+            }
+        });
+    } else {
+        throw new Error("Not authenticated");
+    }
+
+}
+
 module.exports = function (opts) {
     options = opts;
 
@@ -446,15 +465,14 @@ module.exports = function (opts) {
         getHeaders: getHeaders,
         getToken: getToken,
         dropToken: dropToken,
-        getEndpoint: getEndpoint
+        getEndpoint: getEndpoint,
+        sendRequest: sendRequest
     };
 };
-},{}],8:[function(require,module,exports){
+},{"xhr":3}],8:[function(require,module,exports){
 //porting from nodejs app in progress
 
 var promises = require('../promises');
-var xhr = require("xhr");
-
 
 var api;
 var options;
@@ -462,24 +480,6 @@ var options;
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
-var quota = /<h1>Developer Over Qps<\/h1>/gi;
-
-function sendRequest(opts, callback) {
-    if (api.isAuthenticated()) {
-        opts.headers = opts.headers || {};
-        opts.headers["Authorization"] = "Bearer " + api.getToken();
-        return xhr(opts, function (error, response, body) {
-            if (response.statusCode == 403 && quota.test(response.responseText)) {
-                throw new Error(response.responseText);
-            } else {
-                callback.apply(this, arguments);
-            }
-        });
-    } else {
-        throw new Error("Not authenticated");
-    }
-
-}
 
 function encodeNameSafe(name) {
     name.split("/").map(function (e) {
@@ -495,7 +495,7 @@ function exists(pathFromRoot) {
     var defer = promises.defer();
     pathFromRoot = encodeNameSafe(pathFromRoot) || "";
 
-    sendRequest({
+    api.sendRequest({
         method: "GET",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     }, function (error, response, body) {
@@ -512,11 +512,24 @@ function get(pathFromRoot) {
     var defer = promises.defer();
     pathFromRoot = encodeNameSafe(pathFromRoot) || "";
 
-    sendRequest({
+    api.sendRequest({
         method: "GET",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     }, function (error, response, body) {
-        defer.resolve(body);
+        defer.resolve(JSON.parse(body));
+    });
+    return defer.promise;
+}
+
+function download(pathFromRoot) {
+    var defer = promises.defer();
+    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+
+    api.sendRequest({
+        method: "GET",
+        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
+    }, function (error, response, body) {
+        defer.resolve(response);
     });
     return defer.promise;
 }
@@ -524,7 +537,7 @@ function get(pathFromRoot) {
 function createFolder(pathFromRoot) {
     var defer = promises.defer();
     pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-    sendRequest({
+    api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
         json: {
@@ -532,9 +545,7 @@ function createFolder(pathFromRoot) {
         }
     }, function (error, response, body) {
         if (response.statusCode == 201) {
-
             defer.resolve({
-                id: response.headers.etag,
                 path: pathFromRoot
             });
         } else {
@@ -551,7 +562,7 @@ function move(pathFromRoot, newPath) {
     var defer = promises.defer();
     pathFromRoot = encodeNameSafe(pathFromRoot) || "";
     newPath = encodeNameSafe(newPath);
-    sendRequest({
+    api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
         json: {
@@ -562,7 +573,35 @@ function move(pathFromRoot, newPath) {
         if (response.statusCode == 200) {
 
             defer.resolve({
-                id: response.headers.etag,
+                oldPath: pathFromRoot,
+                path: newPath
+            });
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+function storeFile(pathFromRoot, fileOrBlob) {
+    if (!window.FormData) {
+        throw new Error("Unsupported browser");
+    }
+    var defer = promises.defer();
+    var file = fileOrBlob;
+    var formData = new window.FormData();
+    formData.append('file', file);
+    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+
+    api.sendRequest({
+        method: "POST",
+        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
+        body: formData,
+    }, function (error, response, body) {
+        if (response.statusCode === 200 || response.statusCode === 201) {
+            defer.resolve({
+                id: response.getResponseHeader("etag"),
                 path: pathFromRoot
             });
         } else {
@@ -572,50 +611,7 @@ function move(pathFromRoot, newPath) {
     return defer.promise;
 }
 
-function removeFolder(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-    sendRequest({
-        method: "DELETE",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-
-function storeFile(pathFromRoot, fileInput) {
-    if (!window.FormData) {
-        throw new Error("Unsupported browser");
-    }
-    var defer = promises.defer();
-    var file = fileInput.files[0];
-    var formData = new window.FormData();
-    formData.append('file', file);
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-
-    sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-        body: formData,
-    }, function (error, response, body) {
-        if (response.statusCode === 200 || response.statusCode === 201) {
-            defer.resolve(response.headers.etag);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-function removeVersion(pathFromRoot, versionEntryId) {
+function remove(pathFromRoot, versionEntryId) {
     pathFromRoot = encodeNameSafe(pathFromRoot) || "";
     var opts = {
         method: "DELETE",
@@ -625,7 +621,7 @@ function removeVersion(pathFromRoot, versionEntryId) {
     if (versionEntryId) {
         opts.url += "?entry_id=" + versionEntryId;
     }
-    sendRequest(opts, function (error, response, body) {
+    api.sendRequest(opts, function (error, response, body) {
         if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
             defer.resolve();
         } else {
@@ -635,23 +631,35 @@ function removeVersion(pathFromRoot, versionEntryId) {
     return defer.promise;
 }
 
+function removeFileVersion(pathFromRoot, versionEntryId) {
+    if (!versionEntryId) {
+        throw new Error("Version ID (second argument) is missing");
+    }
+    return remove(pathFromRoot, versionEntryId)
+}
+
+
+function removeEntry(pathFromRoot) {
+    return remove(pathFromRoot);
+}
+
 module.exports = function (apihelper, opts) {
     options = opts;
     api = apihelper;
     return {
         exists: exists,
         get: get,
+        download: download,
         createFolder: createFolder,
-        removeFolder: removeFolder,
         move: move,
         rename: move,
+        remove: removeEntry,
 
         storeFile: storeFile,
-        removeVersion: removeVersion,
-        removeFile: removeVersion
+        removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":10,"xhr":3}],9:[function(require,module,exports){
+},{"../promises":10}],9:[function(require,module,exports){
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -684,15 +692,15 @@ module.exports = {
 var pinkySwear = require('pinkyswear');
 
 module.exports = {
-    "defer" : function(){
+    "defer": function () {
         var promise = pinkySwear();
         return {
             promise: promise,
-            resolve: function(result){
-                promise(true,[result]);
+            resolve: function (result) {
+                promise(true, [result]);
             },
-            reject: function(result){
-                promise(true,[result]);
+            reject: function (result) {
+                promise(true, [result]);
             }
         }
     }
