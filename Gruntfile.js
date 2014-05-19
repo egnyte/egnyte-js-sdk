@@ -3,8 +3,15 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON("package.json"),
         clean: ["dist"],
         browserify: {
-            "dist/egnyte.js": ["src/egnyte.js"],
-            "dist/slim.js": ["src/slim.js"]
+            dist: {
+                files: {
+                    "dist/egnyte.js": ["src/egnyte.js"],
+                    "dist/slim.js": ["src/slim.js"]
+                },
+                options: {
+                    transform: ['node-lessify']
+                }
+            }
         },
         uglify: {
             options: {

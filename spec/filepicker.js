@@ -8,7 +8,7 @@ describe("Egnyte widget", function () {
         expect(eg1.domain).toEqual(eg2.domain);
     });
 
-    describe("Filepicker", function () {
+    describe("Remote Filepicker", function () {
         var eg;
         var node;
 
@@ -26,7 +26,7 @@ describe("Egnyte widget", function () {
         it('should create an iframe', function () {
             var callback = function () {};
 
-            var picker = eg.filePicker(node, callback, callback);
+            var picker = eg.filePickerRemote(node, callback, callback);
 
             expect(node.getElementsByTagName('iframe').length).toEqual(1);
 
@@ -36,7 +36,7 @@ describe("Egnyte widget", function () {
         it('should cleanup after itself', function () {
             var callback = function () {};
 
-            var picker = eg.filePicker(node, callback, callback);
+            var picker = eg.filePickerRemote(node, callback, callback);
             picker.close();
 
             expect(node.getElementsByTagName('iframe').length).toEqual(0);
@@ -46,7 +46,7 @@ describe("Egnyte widget", function () {
 
             //for matching origin
             eg = EgnyteWidget.init(window.location.origin);
-            eg.filePicker(node, function () {}, function () {
+            eg.filePickerRemote(node, function () {}, function () {
                 //finishes the test successfully
                 done();
             });

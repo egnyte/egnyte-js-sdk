@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var helpers = require('./lib/reusables//helpers');
+    var helpers = require('./lib/reusables/helpers');
     var options = {};
 
     function init(egnyteDomainURL, opts) {
@@ -10,7 +10,8 @@
 
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker")(options),
+            filePicker: require("./lib/filepicker/byapi")(options),
+            filePickerRemote: require("./lib/filepicker/bysession")(options),
             API:  require("./lib/api")(options)
         }
 

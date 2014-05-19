@@ -193,6 +193,152 @@ process.chdir = function (dir) {
 
 }).call(this,require("/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],3:[function(require,module,exports){
+/**
+ * Escape special characters in the given string of html.
+ *
+ * @param  {String} html
+ * @return {String}
+ * @api private
+ */
+
+module.exports = function(html) {
+  return String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+},{}],4:[function(require,module,exports){
+var escape = require('escape-html')
+
+// TODO: remove namespace
+
+module.exports = function shaven(array, namespace, returnObject) {
+
+	var HTMLString,
+		doesEscape,
+		i,
+		attributeKey,
+		callback
+
+	returnObject = returnObject || {}
+
+
+	function createElement(sugarString) {
+
+		var element = {
+				tag: sugarString.match(/^\w+/)[0],
+				attr: {},
+				children: []
+			},
+			id = sugarString.match(/#([\w-]+)/),
+			reference = sugarString.match(/\$([\w-]+)/),
+			classNames = sugarString.match(/\.[\w-]+/g)
+
+		// Assign id if is set
+		if (id) {
+
+			element.attr.id = id[1]
+
+			// Add element to the return object
+			returnObject[id[1]] = element
+		}
+
+		if (reference)
+			returnObject[reference[1]] = element
+
+		if (classNames)
+			element.attr.class = classNames.join(' ').replace(/\./g, '')
+
+		if (sugarString.match(/&$/g))
+			doesEscape = false
+
+		return element
+	}
+
+	// TODO: Create customised renderer
+	// If is object
+	// if (array === Object(array)) {
+
+	// } else {
+
+	if (typeof array[0] === 'string')
+		array[0] = createElement(array[0])
+
+
+	for (i = 1; i < array.length; i++) {
+
+		// Don't render element if value is false or null
+		if (array[i] === false || array[i] === null) {
+			array[0] = false
+			break
+		}
+
+		else if (array[i] === undefined) {
+		}
+
+
+		else if (typeof array[i] === 'string' || typeof array[i] === 'number') {
+			if (doesEscape)
+				array[i] = escape(array[i])
+
+			array[0].children.push(array[i])
+		}
+
+		else if (Array.isArray(array[i])) {
+
+			shaven(array[i], namespace, returnObject)
+
+			if (array[i][0])
+				array[0].children.push(array[i][0])
+		}
+
+		else if (typeof array[i] === "function")
+			callback = array[i]
+
+
+		else if (typeof array[i] === "object") {
+			for (attributeKey in array[i])
+				if (array[i].hasOwnProperty(attributeKey))
+					array[0].attr[attributeKey] = array[i][attributeKey]
+		}
+
+		else
+			throw new TypeError('"' + array[i] + '" is not allowed as a value.')
+	}
+	// }
+
+	if (array[0] !== false) {
+
+		HTMLString = ['<', array[0].tag]
+
+		for (var key in array[0].attr)
+			if (array[0].attr.hasOwnProperty(key))
+				HTMLString.push(' ', key, '="', array[0].attr[key], '"')
+
+		HTMLString.push('>')
+
+		array[0].children.forEach(function (child) {
+			HTMLString.push(child)
+		})
+
+		HTMLString.push('</', array[0].tag, '>')
+
+		array[0] = HTMLString.join('')
+	}
+
+	// Return root element on index 0
+	returnObject[0] = array[0]
+
+	if (callback) callback(array[0])
+
+	// returns object containing all elements with an id and the root element
+	return returnObject
+}
+
+},{"escape-html":3}],5:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -312,7 +458,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":4,"once":5}],4:[function(require,module,exports){
+},{"global/window":6,"once":7}],6:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window
@@ -323,7 +469,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -344,11 +490,11 @@ function once (fn) {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function () {
     "use strict";
 
-    var helpers = require('./lib/reusables//helpers');
+    var helpers = require('./lib/reusables/helpers');
     var options = {};
 
     function init(egnyteDomainURL, opts) {
@@ -357,7 +503,8 @@ function once (fn) {
 
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker")(options),
+            filePicker: require("./lib/filepicker/byapi")(options),
+            filePickerRemote: require("./lib/filepicker/bysession")(options),
             API:  require("./lib/api")(options)
         }
 
@@ -368,7 +515,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":7,"./lib/filepicker":11,"./lib/reusables//helpers":14}],7:[function(require,module,exports){
+},{"./lib/api":9,"./lib/filepicker/byapi":13,"./lib/filepicker/bysession":14,"./lib/reusables/helpers":17}],9:[function(require,module,exports){
 var authHelper = require("./api_elements/auth");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -385,7 +532,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/auth":8,"./api_elements/link":9,"./api_elements/storage":10}],8:[function(require,module,exports){
+},{"./api_elements/auth":10,"./api_elements/link":11,"./api_elements/storage":12}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -513,7 +660,7 @@ module.exports = function (opts) {
         sendRequest: sendRequest
     };
 };
-},{"xhr":3}],9:[function(require,module,exports){
+},{"xhr":5}],11:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -615,7 +762,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":12,"../reusables/helpers":14}],10:[function(require,module,exports){
+},{"../promises":15,"../reusables/helpers":17}],12:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -796,12 +943,46 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":12,"../reusables/helpers":14}],11:[function(require,module,exports){
+},{"../promises":15,"../reusables/helpers":17}],13:[function(require,module,exports){
 (function () {
 
-    var helpers = require('./reusables/helpers');
-    var dom = require('./reusables/dom');
-    var messages = require('./reusables/messages');
+    var helpers = require('../reusables/helpers');
+    var dom = require('../reusables/dom');
+    var shaven = require('shaven');
+
+    var defaults = {
+    };
+
+
+    function init(options) {
+        var filePicker;
+        options = helpers.extend(defaults, options);
+
+        filePicker = function (node, callback, cancelCallback) {
+           
+            var close = function () {
+            };
+            
+
+            return {
+                close: close,
+            };
+        };
+
+        return filePicker;
+
+    }
+
+    module.exports = init;
+
+
+})();
+},{"../reusables/dom":16,"../reusables/helpers":17,"shaven":4}],14:[function(require,module,exports){
+(function () {
+
+    var helpers = require('../reusables/helpers');
+    var dom = require('../reusables/dom');
+    var messages = require('../reusables/messages');
 
     var defaults = {
         filepickerViewAddress: "folderExplorer.html",
@@ -903,7 +1084,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"./reusables/dom":13,"./reusables/helpers":14,"./reusables/messages":15}],12:[function(require,module,exports){
+},{"../reusables/dom":16,"../reusables/helpers":17,"../reusables/messages":18}],15:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -921,7 +1102,7 @@ module.exports = {
         }
     }
 }
-},{"pinkyswear":2}],13:[function(require,module,exports){
+},{"pinkyswear":2}],16:[function(require,module,exports){
 module.exports = {
 
     addListener: function (elem, type, callback) {
@@ -957,7 +1138,7 @@ module.exports = {
     }
 
 }
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 }
@@ -992,7 +1173,7 @@ module.exports = {
     normalizeURL: normalizeURL,
     encodeNameSafe: encodeNameSafe
 };
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1035,4 +1216,4 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":14}]},{},[6]);
+},{"../reusables/helpers":17}]},{},[8]);

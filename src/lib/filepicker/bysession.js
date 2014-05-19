@@ -1,8 +1,8 @@
 (function () {
 
-    var helpers = require('./reusables/helpers');
-    var dom = require('./reusables/dom');
-    var messages = require('./reusables/messages');
+    var helpers = require('../reusables/helpers');
+    var dom = require('../reusables/dom');
+    var messages = require('../reusables/messages');
 
     var defaults = {
         filepickerViewAddress: "folderExplorer.html",
