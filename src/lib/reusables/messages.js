@@ -1,5 +1,4 @@
-var helpers = require('../helpers');
-var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
+var helpers = require('../reusables/helpers');
 
 
 //returns postMessage specific handler
@@ -9,7 +8,7 @@ function createMessageHandler(sourceOrigin, marker, callback) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
                 try {
-                    message = parse_json(message.substring(2));
+                    message = JSON.parse(message.substring(2));
 
                 } catch (e) {
                     //broken? ignore

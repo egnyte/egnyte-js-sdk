@@ -1,7 +1,7 @@
 (function () {
     "use strict";
 
-    var helpers = require('./lib/helpers');
+    var helpers = require('./lib/reusables/helpers');
     var options ;
 
     function init(egnyteDomainURL, opts) {

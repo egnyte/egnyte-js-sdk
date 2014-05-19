@@ -1,6 +1,5 @@
-//porting from nodejs app in progress
-
 var promises = require('../promises');
+var helpers = require('../reusables/helpers');
 
 var api;
 var options;
@@ -9,19 +8,9 @@ var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-function encodeNameSafe(name) {
-    name.split("/").map(function (e) {
-        return e.replace(/[^a-z0-9 ]*/gi, "");
-    })
-        .join("/")
-        .replace(/^\//, "");
-
-    return (name);
-}
-
 function exists(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -38,20 +27,20 @@ function exists(pathFromRoot) {
 
 function get(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     }, function (error, response, body) {
-        defer.resolve(JSON.parse(body));
+        defer.resolve(body);
     });
     return defer.promise;
 }
 
 function download(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -64,7 +53,7 @@ function download(pathFromRoot) {
 
 function createFolder(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -88,8 +77,8 @@ function move(pathFromRoot, newPath) {
         throw new Error("Cannot move to empty path");
     }
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-    newPath = encodeNameSafe(newPath);
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    newPath = helpers.encodeNameSafe(newPath);
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -120,7 +109,7 @@ function storeFile(pathFromRoot, fileOrBlob) {
     var file = fileOrBlob;
     var formData = new window.FormData();
     formData.append('file', file);
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "POST",
@@ -140,14 +129,16 @@ function storeFile(pathFromRoot, fileOrBlob) {
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     var opts = {
         method: "DELETE",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     };
     var defer = promises.defer();
     if (versionEntryId) {
-        opts.url += "?entry_id=" + versionEntryId;
+        opts.params = {
+            "entry_id": versionEntryId
+        };
     }
     api.sendRequest(opts, function (error, response, body) {
         if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {

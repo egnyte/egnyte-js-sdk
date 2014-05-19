@@ -13,17 +13,19 @@ module.exports = function (grunt) {
                     "// <%= pkg.author %> \n"
             },
             dist: {
-                files: {
-                    "dist/egnyte.min.js": ["dist/egnyte.js"],
-                    "dist/slim.min.js": ["dist/slim.js"]
-                }
+                files: [{
+                    src: 'dist/*.js', // source files mask
+                    dest: 'dist/', // destination folder
+                    expand: true, // allow dynamic building
+                    flatten: true, // remove all unnecessary nesting
+                    ext: '.min.js' // replace .js to .min.js
+                }]
             }
         },
 
         jasmine: {
             all: {
-                src: ["dist/egnyte.js","spec/conf/apiaccess.js"],
-                vandor:["spec/vendor/blob.js"],
+                src: ["dist/egnyte.js", "spec/conf/apiaccess.js"],
                 options: {
                     keepRunner: true,
                     specs: 'spec/*.js',

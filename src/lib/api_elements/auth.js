@@ -72,15 +72,32 @@ function dropToken(externalToken) {
     token = null;
 }
 
+function params(obj) {
+    var str = [];
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    }
+    return str.join("&");
+}
+
 function sendRequest(opts, callback) {
     if (isAuthenticated()) {
+        if (opts.params) {
+            opts.url += "?" + params(opts.params);
+        }
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + getToken();
         return xhr(opts, function (error, response, body) {
+            try {
+                //this shouldn't be required, but server sometimes responds with content-type text/plain
+                body = JSON.parse(body);
+            } catch (e) {}
             if (response.statusCode == 403 && quota.test(response.responseText)) {
                 throw new Error("Developer Over Qps");
             } else {
-                callback.apply(this, arguments);
+                callback.call(this, error, response, body);
             }
         });
     } else {

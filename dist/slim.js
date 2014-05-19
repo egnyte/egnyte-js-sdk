@@ -347,18 +347,21 @@ function once (fn) {
 },{}],6:[function(require,module,exports){
 var authHelper = require("./api_elements/auth");
 var storageFacade = require("./api_elements/storage");
+var linkFacade = require("./api_elements/link");
 
 
 module.exports = function (options) {
     var auth = authHelper(options);
     var storage = storageFacade(auth, options);
+    var link = linkFacade(auth, options);
 
     return {
         auth: auth,
-        storage: storage
+        storage: storage,
+        link: link
     };
 };
-},{"./api_elements/auth":7,"./api_elements/storage":8}],7:[function(require,module,exports){
+},{"./api_elements/auth":7,"./api_elements/link":8,"./api_elements/storage":9}],7:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -433,15 +436,32 @@ function dropToken(externalToken) {
     token = null;
 }
 
+function params(obj) {
+    var str = [];
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    }
+    return str.join("&");
+}
+
 function sendRequest(opts, callback) {
     if (isAuthenticated()) {
+        if (opts.params) {
+            opts.url += "?" + params(opts.params);
+        }
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + getToken();
         return xhr(opts, function (error, response, body) {
+            try {
+                //this shouldn't be required, but server sometimes responds with content-type text/plain
+                body = JSON.parse(body);
+            } catch (e) {}
             if (response.statusCode == 403 && quota.test(response.responseText)) {
                 throw new Error("Developer Over Qps");
             } else {
-                callback.apply(this, arguments);
+                callback.call(this, error, response, body);
             }
         });
     } else {
@@ -470,9 +490,110 @@ module.exports = function (opts) {
     };
 };
 },{"xhr":3}],8:[function(require,module,exports){
-//porting from nodejs app in progress
-
 var promises = require('../promises');
+var helpers = require('../reusables/helpers');
+
+
+var api;
+var options;
+
+
+var linksEndpoint = "/links";
+
+
+function createLink(setup) {
+    var defaults = {
+        path: null,
+        type: "file",
+        accessibility: "domain"
+    };
+    var defer = promises.defer();
+    setup = helpers.extend(defaults, setup);
+    setup.path = helpers.encodeNameSafe(setup.path);
+
+    if (!setup.path) {
+        throw new Error("Path attribute missing or incorrect");
+    }
+
+    api.sendRequest({
+        method: "POST",
+        url: api.getEndpoint() + linksEndpoint,
+        json: setup
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+function removeLink(id) {
+    var defer = promises.defer();
+    api.sendRequest({
+        method: "DELETE",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve();
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+function listLink(id) {
+    var defer = promises.defer();
+    api.sendRequest({
+        method: "GET",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+function listLinks(filters) {
+    var defer = promises.defer();
+    filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+
+    api.sendRequest({
+        method: "get",
+        url: api.getEndpoint() + linksEndpoint,
+        params: filters
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+
+module.exports = function (apihelper, opts) {
+    options = opts;
+    api = apihelper;
+    return {
+        createLink: createLink,
+        removeLink: removeLink,
+        listLink: listLink,
+        listLinks: listLinks
+    };
+};
+},{"../promises":10,"../reusables/helpers":11}],9:[function(require,module,exports){
+var promises = require('../promises');
+var helpers = require('../reusables/helpers');
 
 var api;
 var options;
@@ -481,19 +602,9 @@ var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-function encodeNameSafe(name) {
-    name.split("/").map(function (e) {
-        return e.replace(/[^a-z0-9 ]*/gi, "");
-    })
-        .join("/")
-        .replace(/^\//, "");
-
-    return (name);
-}
-
 function exists(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -510,20 +621,20 @@ function exists(pathFromRoot) {
 
 function get(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     }, function (error, response, body) {
-        defer.resolve(JSON.parse(body));
+        defer.resolve(body);
     });
     return defer.promise;
 }
 
 function download(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -536,7 +647,7 @@ function download(pathFromRoot) {
 
 function createFolder(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -560,8 +671,8 @@ function move(pathFromRoot, newPath) {
         throw new Error("Cannot move to empty path");
     }
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-    newPath = encodeNameSafe(newPath);
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    newPath = helpers.encodeNameSafe(newPath);
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -592,7 +703,7 @@ function storeFile(pathFromRoot, fileOrBlob) {
     var file = fileOrBlob;
     var formData = new window.FormData();
     formData.append('file', file);
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "POST",
@@ -612,14 +723,16 @@ function storeFile(pathFromRoot, fileOrBlob) {
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     var opts = {
         method: "DELETE",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     };
     var defer = promises.defer();
     if (versionEntryId) {
-        opts.url += "?entry_id=" + versionEntryId;
+        opts.params = {
+            "entry_id": versionEntryId
+        };
     }
     api.sendRequest(opts, function (error, response, body) {
         if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
@@ -659,14 +772,38 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":10}],9:[function(require,module,exports){
+},{"../promises":10,"../reusables/helpers":11}],10:[function(require,module,exports){
+//wrapper for any promises library
+var pinkySwear = require('pinkyswear');
 
+module.exports = {
+    "defer": function () {
+        var promise = pinkySwear();
+        return {
+            promise: promise,
+            resolve: function (result) {
+                promise(true, [result]);
+            },
+            reject: function (result) {
+                promise(false, [result]);
+            }
+        }
+    }
+}
+},{"pinkyswear":2}],11:[function(require,module,exports){
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 }
 
+function encodeNameSafe(name) {
+    name.split("/").map(function (e) {
+        return e.replace(/[^a-z0-9 ]*/gi, "");
+    })
+        .join("/")
+        .replace(/^\//, "");
 
-
+    return (name);
+}
 //simple extend function
 function extend(target) {
     var i, k;
@@ -685,31 +822,14 @@ function extend(target) {
 
 module.exports = {
     extend: extend,
-    normalizeURL: normalizeURL
+    normalizeURL: normalizeURL,
+    encodeNameSafe: encodeNameSafe
 };
-},{}],10:[function(require,module,exports){
-//wrapper for any promises library
-var pinkySwear = require('pinkyswear');
-
-module.exports = {
-    "defer": function () {
-        var promise = pinkySwear();
-        return {
-            promise: promise,
-            resolve: function (result) {
-                promise(true, [result]);
-            },
-            reject: function (result) {
-                promise(true, [result]);
-            }
-        }
-    }
-}
-},{"pinkyswear":2}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function () {
     "use strict";
 
-    var helpers = require('./lib/helpers');
+    var helpers = require('./lib/reusables/helpers');
     var options ;
 
     function init(egnyteDomainURL, opts) {
@@ -728,4 +848,4 @@ module.exports = {
     }
 
 })();
-},{"./lib/api":6,"./lib/helpers":9}]},{},[11]);
+},{"./lib/api":6,"./lib/reusables/helpers":11}]},{},[12]);

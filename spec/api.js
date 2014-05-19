@@ -5,7 +5,6 @@ describe("API to JS (integration test)", function () {
     function getTestBlob(txt) {
         // JavaScript file-like object...
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-
         //PhanthomJS has a broken Blob
         try {
             var blob = new Blob([content], {
@@ -16,16 +15,28 @@ describe("API to JS (integration test)", function () {
             builder.append(content);
             var blob = builder.getBlob();
         }
-
         return blob;
-
     }
+
 
     if (!window.egnyteDomain || !window.APIToken) {
         throw new Error("spec/conf/apiaccess.js is missing");
     }
 
     beforeEach(function () {
+        jasmine.addMatchers({
+            toAutoFail: function () {
+                return {
+                    compare: function (actual, expected) {
+                        return {
+                            pass: false,
+                            message: 'this not to happen. ' + expected
+                        };
+                    }
+                };
+            }
+        });
+
         eg = EgnyteWidget.init(egnyteDomain, {
             token: APIToken
         });
@@ -37,15 +48,18 @@ describe("API to JS (integration test)", function () {
     });
 
     describe("Storage", function () {
+        return;
         //this test suite has unicorns and bacon, it can't get any better/
-        var testpath = "/Private/hackathon1/bacon" + ~~(1000 * Math.random());
-        var testpath2 = "/Private/hackathon1/unicorn" + ~~(1000 * Math.random());
+        var testpath = "/Private/hackathon1/bacon" + ~~(10000 * Math.random());
+        var testpath2 = "/Private/hackathon1/unicorn" + ~~(10000 * Math.random());
         var recentFileObject;
 
         it("Should claim that root exists", function (done) {
             eg.API.storage.exists("/Private").then(function (e) {
                 expect(e).toBe(true);
                 done();
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
             });
 
         });
@@ -53,6 +67,8 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.exists("/jiberish").then(function (e) {
                 expect(e).toBe(false);
                 done();
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
             });
 
         });
@@ -67,6 +83,8 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(true);
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -90,6 +108,8 @@ describe("API to JS (integration test)", function () {
                                 setTimeout(done, 400); //delay to stay in QPS
                             });
                     }, 400);
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -101,6 +121,8 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -126,6 +148,8 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -147,6 +171,8 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -162,6 +188,8 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
@@ -174,17 +202,108 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
                     setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
                 });
 
         });
 
+    });
+
+    describe("Link", function () {
+        var testpath = "/Private/hackathon1/cow_and_chicken" + ~~(10000 * Math.random());
+        var recentFile;
+        var recentLink;
+
+        it("Needs a file to link to", function (done) {
+            var blob = getTestBlob("hey!");
+
+            eg.API.storage.storeFile(testpath, blob)
+                .then(function (e) {
+                    recentFile = e;
+                    setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
+                });
+        });
 
 
+        it("Can create a link to file", function (done) {
+
+            eg.API.link.createLink({
+                path: recentFile.path,
+                type: "file",
+                accessibility: "password"
+            }).then(function (e) {
+                expect(e["path"]).toEqual(recentFile.path);
+                expect(e["type"]).toEqual("file");
+                expect(e.links[0].id).toBeTruthy();
+                expect(e.links[0].url).toMatch(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i);
+                expect(e["password"]).toBeTruthy();
+                recentLink = e;
+            }).then(function () {
+                return eg.API.link.listLink(recentLink.links[0].id);
+            }).then(function (e) {
+                expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
+                setTimeout(done, 400); //delay to stay in QPS
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
+            });
+
+        });
+
+        it("Can list links and filter the list", function (done) {
+
+            eg.API.link.listLinks({
+                path: recentFile.path
+            }).then(function (e) {
+                expect(e.ids.filter(function (id) {
+                    return (id === recentLink.links[0].id);
+                }).length).toEqual(1);
+
+                var other = e.ids.filter(function (id) {
+                    return (id !== recentLink.links[0].id);
+                });
+                if (other.length) {
+                    eg.API.link.listLink(other[0]).then(function (e) {
+                        expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
+                        setTimeout(done, 400); //delay to stay in QPS
+                    });
+                } else {
+                    setTimeout(done, 400); //delay to stay in QPS
+                }
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
+            });
+
+        });
+
+        it("Can destroy a link to file", function (done) {
+
+            eg.API.link.removeLink(recentLink.links[0].id).then(function (e) {
+                expect(e).toBeUndefined();
+            }).then(function () {
+                return eg.API.link.listLink(recentLink.links[0].id);
+            }).then(function () {
+                //Should not succeed
+                expect(this).toAutoFail("Link still exists");
+            }, function (e) {
+                //I expect a 404 instead
+                expect(e).toEqual(404);
+                setTimeout(done, 400); //delay to stay in QPS
+            });
+
+        });
 
 
-
-
-
+        it("Needs to clean up the file", function (done) {
+            eg.API.storage.remove(testpath)
+                .then(function (e) {
+                    setTimeout(done, 400); //delay to stay in QPS
+                }).error(function (e) {
+                    expect(this).toAutoFail(e);
+                });
+        });
 
     });
 });

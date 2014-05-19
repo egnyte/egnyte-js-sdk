@@ -10,7 +10,7 @@ module.exports = {
                 promise(true, [result]);
             },
             reject: function (result) {
-                promise(true, [result]);
+                promise(false, [result]);
             }
         }
     }

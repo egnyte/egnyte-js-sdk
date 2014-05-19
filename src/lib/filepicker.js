@@ -1,6 +1,6 @@
 (function () {
 
-    var helpers = require('./helpers');
+    var helpers = require('./reusables/helpers');
     var dom = require('./reusables/dom');
     var messages = require('./reusables/messages');
 

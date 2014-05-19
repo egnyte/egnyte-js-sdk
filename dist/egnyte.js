@@ -348,7 +348,7 @@ function once (fn) {
 (function () {
     "use strict";
 
-    var helpers = require('./lib/helpers');
+    var helpers = require('./lib/reusables//helpers');
     var options = {};
 
     function init(egnyteDomainURL, opts) {
@@ -368,21 +368,24 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":7,"./lib/filepicker":10,"./lib/helpers":11}],7:[function(require,module,exports){
+},{"./lib/api":7,"./lib/filepicker":11,"./lib/reusables//helpers":14}],7:[function(require,module,exports){
 var authHelper = require("./api_elements/auth");
 var storageFacade = require("./api_elements/storage");
+var linkFacade = require("./api_elements/link");
 
 
 module.exports = function (options) {
     var auth = authHelper(options);
     var storage = storageFacade(auth, options);
+    var link = linkFacade(auth, options);
 
     return {
         auth: auth,
-        storage: storage
+        storage: storage,
+        link: link
     };
 };
-},{"./api_elements/auth":8,"./api_elements/storage":9}],8:[function(require,module,exports){
+},{"./api_elements/auth":8,"./api_elements/link":9,"./api_elements/storage":10}],8:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -457,15 +460,32 @@ function dropToken(externalToken) {
     token = null;
 }
 
+function params(obj) {
+    var str = [];
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    }
+    return str.join("&");
+}
+
 function sendRequest(opts, callback) {
     if (isAuthenticated()) {
+        if (opts.params) {
+            opts.url += "?" + params(opts.params);
+        }
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + getToken();
         return xhr(opts, function (error, response, body) {
+            try {
+                //this shouldn't be required, but server sometimes responds with content-type text/plain
+                body = JSON.parse(body);
+            } catch (e) {}
             if (response.statusCode == 403 && quota.test(response.responseText)) {
                 throw new Error("Developer Over Qps");
             } else {
-                callback.apply(this, arguments);
+                callback.call(this, error, response, body);
             }
         });
     } else {
@@ -494,9 +514,110 @@ module.exports = function (opts) {
     };
 };
 },{"xhr":3}],9:[function(require,module,exports){
-//porting from nodejs app in progress
-
 var promises = require('../promises');
+var helpers = require('../reusables/helpers');
+
+
+var api;
+var options;
+
+
+var linksEndpoint = "/links";
+
+
+function createLink(setup) {
+    var defaults = {
+        path: null,
+        type: "file",
+        accessibility: "domain"
+    };
+    var defer = promises.defer();
+    setup = helpers.extend(defaults, setup);
+    setup.path = helpers.encodeNameSafe(setup.path);
+
+    if (!setup.path) {
+        throw new Error("Path attribute missing or incorrect");
+    }
+
+    api.sendRequest({
+        method: "POST",
+        url: api.getEndpoint() + linksEndpoint,
+        json: setup
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+function removeLink(id) {
+    var defer = promises.defer();
+    api.sendRequest({
+        method: "DELETE",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve();
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+function listLink(id) {
+    var defer = promises.defer();
+    api.sendRequest({
+        method: "GET",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+function listLinks(filters) {
+    var defer = promises.defer();
+    filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+
+    api.sendRequest({
+        method: "get",
+        url: api.getEndpoint() + linksEndpoint,
+        params: filters
+    }, function (error, response, body) {
+        if (response.statusCode == 200) {
+            defer.resolve(body);
+        } else {
+            defer.reject(response.statusCode);
+        }
+    });
+    return defer.promise;
+}
+
+
+
+module.exports = function (apihelper, opts) {
+    options = opts;
+    api = apihelper;
+    return {
+        createLink: createLink,
+        removeLink: removeLink,
+        listLink: listLink,
+        listLinks: listLinks
+    };
+};
+},{"../promises":12,"../reusables/helpers":14}],10:[function(require,module,exports){
+var promises = require('../promises');
+var helpers = require('../reusables/helpers');
 
 var api;
 var options;
@@ -505,19 +626,9 @@ var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-function encodeNameSafe(name) {
-    name.split("/").map(function (e) {
-        return e.replace(/[^a-z0-9 ]*/gi, "");
-    })
-        .join("/")
-        .replace(/^\//, "");
-
-    return (name);
-}
-
 function exists(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -534,20 +645,20 @@ function exists(pathFromRoot) {
 
 function get(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     }, function (error, response, body) {
-        defer.resolve(JSON.parse(body));
+        defer.resolve(body);
     });
     return defer.promise;
 }
 
 function download(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "GET",
@@ -560,7 +671,7 @@ function download(pathFromRoot) {
 
 function createFolder(pathFromRoot) {
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -584,8 +695,8 @@ function move(pathFromRoot, newPath) {
         throw new Error("Cannot move to empty path");
     }
     var defer = promises.defer();
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
-    newPath = encodeNameSafe(newPath);
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    newPath = helpers.encodeNameSafe(newPath);
     api.sendRequest({
         method: "POST",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
@@ -616,7 +727,7 @@ function storeFile(pathFromRoot, fileOrBlob) {
     var file = fileOrBlob;
     var formData = new window.FormData();
     formData.append('file', file);
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
     api.sendRequest({
         method: "POST",
@@ -636,14 +747,16 @@ function storeFile(pathFromRoot, fileOrBlob) {
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = encodeNameSafe(pathFromRoot) || "";
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
     var opts = {
         method: "DELETE",
         url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
     };
     var defer = promises.defer();
     if (versionEntryId) {
-        opts.url += "?entry_id=" + versionEntryId;
+        opts.params = {
+            "entry_id": versionEntryId
+        };
     }
     api.sendRequest(opts, function (error, response, body) {
         if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
@@ -683,10 +796,10 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":12}],10:[function(require,module,exports){
+},{"../promises":12,"../reusables/helpers":14}],11:[function(require,module,exports){
 (function () {
 
-    var helpers = require('./helpers');
+    var helpers = require('./reusables/helpers');
     var dom = require('./reusables/dom');
     var messages = require('./reusables/messages');
 
@@ -790,35 +903,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"./helpers":11,"./reusables/dom":13,"./reusables/messages":15}],11:[function(require,module,exports){
-
-function normalizeURL(url) {
-    return (url).replace(/\/*$/, "");
-}
-
-
-
-//simple extend function
-function extend(target) {
-    var i, k;
-    for (i = 1; i < arguments.length; i++) {
-        if (arguments[i]) {
-            for (k in arguments[i]) {
-                if (arguments[i].hasOwnProperty(k)) {
-                    target[k] = arguments[i][k];
-                }
-            }
-        }
-
-    }
-    return target;
-}
-
-module.exports = {
-    extend: extend,
-    normalizeURL: normalizeURL
-};
-},{}],12:[function(require,module,exports){
+},{"./reusables/dom":13,"./reusables/helpers":14,"./reusables/messages":15}],12:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -831,7 +916,7 @@ module.exports = {
                 promise(true, [result]);
             },
             reject: function (result) {
-                promise(true, [result]);
+                promise(false, [result]);
             }
         }
     }
@@ -873,407 +958,42 @@ module.exports = {
 
 }
 },{}],14:[function(require,module,exports){
-/*
-    json_parse_state.js
-    2013-05-26
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+}
 
-    Public Domain.
+function encodeNameSafe(name) {
+    name.split("/").map(function (e) {
+        return e.replace(/[^a-z0-9 ]*/gi, "");
+    })
+        .join("/")
+        .replace(/^\//, "");
 
-    NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
-
-    This file creates a json_parse function.
-
-        json_parse(text, reviver)
-            This method parses a JSON text to produce an object or array.
-            It can throw a SyntaxError exception.
-
-            The optional reviver parameter is a function that can filter and
-            transform the results. It receives each of the keys and values,
-            and its return value is used instead of the original value.
-            If it returns what it received, then the structure is not modified.
-            If it returns undefined then the member is deleted.
-
-            Example:
-
-            // Parse the text. Values that look like ISO date strings will
-            // be converted to Date objects.
-
-            myData = json_parse(text, function (key, value) {
-                var a;
-                if (typeof value === 'string') {
-                    a =
-/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
-                    if (a) {
-                        return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
-                            +a[5], +a[6]));
-                    }
-                }
-                return value;
-            });
-
-    This is a reference implementation. You are free to copy, modify, or
-    redistribute.
-
-    This code should be minified before deployment.
-    See http://javascript.crockford.com/jsmin.html
-
-    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
-    NOT CONTROL.
-*/
-
-/*jslint regexp: true, unparam: true */
-
-/*members "", "\"", ",", "\/", ":", "[", "\\", "]", acomma, avalue, b,
-    call, colon, container, exec, f, false, firstavalue, firstokey,
-    fromCharCode, go, hasOwnProperty, key, length, n, null, ocomma, okey,
-    ovalue, pop, prototype, push, r, replace, slice, state, t, test, true,
-    value, "{", "}"
-*/
-
-module.exports = (function () {
-    "use strict";
-
-// This function creates a JSON parse function that uses a state machine rather
-// than the dangerous eval function to parse a JSON text.
-
-    var state,      // The state of the parser, one of
-                    // 'go'         The starting state
-                    // 'ok'         The final, accepting state
-                    // 'firstokey'  Ready for the first key of the object or
-                    //              the closing of an empty object
-                    // 'okey'       Ready for the next key of the object
-                    // 'colon'      Ready for the colon
-                    // 'ovalue'     Ready for the value half of a key/value pair
-                    // 'ocomma'     Ready for a comma or closing }
-                    // 'firstavalue' Ready for the first value of an array or
-                    //              an empty array
-                    // 'avalue'     Ready for the next value of an array
-                    // 'acomma'     Ready for a comma or closing ]
-        stack,      // The stack, for controlling nesting.
-        container,  // The current container object or array
-        key,        // The current key
-        value,      // The current value
-        escapes = { // Escapement translation table
-            '\\': '\\',
-            '"': '"',
-            '/': '/',
-            't': '\t',
-            'n': '\n',
-            'r': '\r',
-            'f': '\f',
-            'b': '\b'
-        },
-        string = {   // The actions for string tokens
-            go: function () {
-                state = 'ok';
-            },
-            firstokey: function () {
-                key = value;
-                state = 'colon';
-            },
-            okey: function () {
-                key = value;
-                state = 'colon';
-            },
-            ovalue: function () {
-                state = 'ocomma';
-            },
-            firstavalue: function () {
-                state = 'acomma';
-            },
-            avalue: function () {
-                state = 'acomma';
-            }
-        },
-        number = {   // The actions for number tokens
-            go: function () {
-                state = 'ok';
-            },
-            ovalue: function () {
-                state = 'ocomma';
-            },
-            firstavalue: function () {
-                state = 'acomma';
-            },
-            avalue: function () {
-                state = 'acomma';
-            }
-        },
-        action = {
-
-// The action table describes the behavior of the machine. It contains an
-// object for each token. Each object contains a method that is called when
-// a token is matched in a state. An object will lack a method for illegal
-// states.
-
-            '{': {
-                go: function () {
-                    stack.push({state: 'ok'});
-                    container = {};
-                    state = 'firstokey';
-                },
-                ovalue: function () {
-                    stack.push({container: container, state: 'ocomma', key: key});
-                    container = {};
-                    state = 'firstokey';
-                },
-                firstavalue: function () {
-                    stack.push({container: container, state: 'acomma'});
-                    container = {};
-                    state = 'firstokey';
-                },
-                avalue: function () {
-                    stack.push({container: container, state: 'acomma'});
-                    container = {};
-                    state = 'firstokey';
-                }
-            },
-            '}': {
-                firstokey: function () {
-                    var pop = stack.pop();
-                    value = container;
-                    container = pop.container;
-                    key = pop.key;
-                    state = pop.state;
-                },
-                ocomma: function () {
-                    var pop = stack.pop();
-                    container[key] = value;
-                    value = container;
-                    container = pop.container;
-                    key = pop.key;
-                    state = pop.state;
-                }
-            },
-            '[': {
-                go: function () {
-                    stack.push({state: 'ok'});
-                    container = [];
-                    state = 'firstavalue';
-                },
-                ovalue: function () {
-                    stack.push({container: container, state: 'ocomma', key: key});
-                    container = [];
-                    state = 'firstavalue';
-                },
-                firstavalue: function () {
-                    stack.push({container: container, state: 'acomma'});
-                    container = [];
-                    state = 'firstavalue';
-                },
-                avalue: function () {
-                    stack.push({container: container, state: 'acomma'});
-                    container = [];
-                    state = 'firstavalue';
-                }
-            },
-            ']': {
-                firstavalue: function () {
-                    var pop = stack.pop();
-                    value = container;
-                    container = pop.container;
-                    key = pop.key;
-                    state = pop.state;
-                },
-                acomma: function () {
-                    var pop = stack.pop();
-                    container.push(value);
-                    value = container;
-                    container = pop.container;
-                    key = pop.key;
-                    state = pop.state;
-                }
-            },
-            ':': {
-                colon: function () {
-                    if (Object.hasOwnProperty.call(container, key)) {
-                        throw new SyntaxError('Duplicate key "' + key + '"');
-                    }
-                    state = 'ovalue';
-                }
-            },
-            ',': {
-                ocomma: function () {
-                    container[key] = value;
-                    state = 'okey';
-                },
-                acomma: function () {
-                    container.push(value);
-                    state = 'avalue';
-                }
-            },
-            'true': {
-                go: function () {
-                    value = true;
-                    state = 'ok';
-                },
-                ovalue: function () {
-                    value = true;
-                    state = 'ocomma';
-                },
-                firstavalue: function () {
-                    value = true;
-                    state = 'acomma';
-                },
-                avalue: function () {
-                    value = true;
-                    state = 'acomma';
-                }
-            },
-            'false': {
-                go: function () {
-                    value = false;
-                    state = 'ok';
-                },
-                ovalue: function () {
-                    value = false;
-                    state = 'ocomma';
-                },
-                firstavalue: function () {
-                    value = false;
-                    state = 'acomma';
-                },
-                avalue: function () {
-                    value = false;
-                    state = 'acomma';
-                }
-            },
-            'null': {
-                go: function () {
-                    value = null;
-                    state = 'ok';
-                },
-                ovalue: function () {
-                    value = null;
-                    state = 'ocomma';
-                },
-                firstavalue: function () {
-                    value = null;
-                    state = 'acomma';
-                },
-                avalue: function () {
-                    value = null;
-                    state = 'acomma';
+    return (name);
+}
+//simple extend function
+function extend(target) {
+    var i, k;
+    for (i = 1; i < arguments.length; i++) {
+        if (arguments[i]) {
+            for (k in arguments[i]) {
+                if (arguments[i].hasOwnProperty(k)) {
+                    target[k] = arguments[i][k];
                 }
             }
-        };
+        }
 
-    function debackslashify(text) {
-
-// Remove and replace any backslash escapement.
-
-        return text.replace(/\\(?:u(.{4})|([^u]))/g, function (a, b, c) {
-            return b ? String.fromCharCode(parseInt(b, 16)) : escapes[c];
-        });
     }
+    return target;
+}
 
-    return function (source, reviver) {
-
-// A regular expression is used to extract tokens from the JSON text.
-// The extraction process is cautious.
-
-        var r,          // The result of the exec method.
-            tx = /^[\x20\t\n\r]*(?:([,:\[\]{}]|true|false|null)|(-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)|"((?:[^\r\n\t\\\"]|\\(?:["\\\/trnfb]|u[0-9a-fA-F]{4}))*)")/;
-
-// Set the starting state.
-
-        state = 'go';
-
-// The stack records the container, key, and state for each object or array
-// that contains another object or array while processing nested structures.
-
-        stack = [];
-
-// If any error occurs, we will catch it and ultimately throw a syntax error.
-
-        try {
-
-// For each token...
-
-            for (;;) {
-                r = tx.exec(source);
-                if (!r) {
-                    break;
-                }
-
-// r is the result array from matching the tokenizing regular expression.
-//  r[0] contains everything that matched, including any initial whitespace.
-//  r[1] contains any punctuation that was matched, or true, false, or null.
-//  r[2] contains a matched number, still in string form.
-//  r[3] contains a matched string, without quotes but with escapement.
-
-                if (r[1]) {
-
-// Token: Execute the action for this state and token.
-
-                    action[r[1]][state]();
-
-                } else if (r[2]) {
-
-// Number token: Convert the number string into a number value and execute
-// the action for this state and number.
-
-                    value = +r[2];
-                    number[state]();
-                } else {
-
-// String token: Replace the escapement sequences and execute the action for
-// this state and string.
-
-                    value = debackslashify(r[3]);
-                    string[state]();
-                }
-
-// Remove the token from the string. The loop will continue as long as there
-// are tokens. This is a slow process, but it allows the use of ^ matching,
-// which assures that no illegal tokens slip through.
-
-                source = source.slice(r[0].length);
-            }
-
-// If we find a state/token combination that is illegal, then the action will
-// cause an error. We handle the error by simply changing the state.
-
-        } catch (e) {
-            state = e;
-        }
-
-// The parsing is finished. If we are not in the final 'ok' state, or if the
-// remaining source contains anything except whitespace, then we did not have
-//a well-formed JSON text.
-
-        if (state !== 'ok' || /[^\x20\t\n\r]/.test(source)) {
-            throw state instanceof SyntaxError ? state : new SyntaxError('JSON');
-        }
-
-// If there is a reviver function, we recursively walk the new structure,
-// passing each name/value pair to the reviver function for possible
-// transformation, starting with a temporary root object that holds the current
-// value in an empty key. If there is not a reviver function, we simply return
-// that value.
-
-        return typeof reviver === 'function' ? (function walk(holder, key) {
-            var k, v, value = holder[key];
-            if (value && typeof value === 'object') {
-                for (k in value) {
-                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-                        v = walk(value, k);
-                        if (v !== undefined) {
-                            value[k] = v;
-                        } else {
-                            delete value[k];
-                        }
-                    }
-                }
-            }
-            return reviver.call(holder, key, value);
-        }({'': value}, '')) : value;
-    };
-}());
-
+module.exports = {
+    extend: extend,
+    normalizeURL: normalizeURL,
+    encodeNameSafe: encodeNameSafe
+};
 },{}],15:[function(require,module,exports){
-var helpers = require('../helpers');
-var parse_json = (JSON && JSON.parse) ? JSON.parse : require("./json_parse_state");
+var helpers = require('../reusables/helpers');
 
 
 //returns postMessage specific handler
@@ -1283,7 +1003,7 @@ function createMessageHandler(sourceOrigin, marker, callback) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
                 try {
-                    message = parse_json(message.substring(2));
+                    message = JSON.parse(message.substring(2));
 
                 } catch (e) {
                     //broken? ignore
@@ -1315,4 +1035,4 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../helpers":11,"./json_parse_state":14}]},{},[6]);
+},{"../reusables/helpers":14}]},{},[6]);

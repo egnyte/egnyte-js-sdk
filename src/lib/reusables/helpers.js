@@ -1,10 +1,16 @@
-
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 }
 
+function encodeNameSafe(name) {
+    name.split("/").map(function (e) {
+        return e.replace(/[^a-z0-9 ]*/gi, "");
+    })
+        .join("/")
+        .replace(/^\//, "");
 
-
+    return (name);
+}
 //simple extend function
 function extend(target) {
     var i, k;
@@ -23,5 +29,6 @@ function extend(target) {
 
 module.exports = {
     extend: extend,
-    normalizeURL: normalizeURL
+    normalizeURL: normalizeURL,
+    encodeNameSafe: encodeNameSafe
 };
