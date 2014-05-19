@@ -48,7 +48,6 @@ describe("API to JS (integration test)", function () {
     });
 
     describe("Storage", function () {
-        return;
         //this test suite has unicorns and bacon, it can't get any better/
         var testpath = "/Private/hackathon1/bacon" + ~~(10000 * Math.random());
         var testpath2 = "/Private/hackathon1/unicorn" + ~~(10000 * Math.random());
