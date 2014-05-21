@@ -193,152 +193,6 @@ process.chdir = function (dir) {
 
 }).call(this,require("/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],3:[function(require,module,exports){
-/**
- * Escape special characters in the given string of html.
- *
- * @param  {String} html
- * @return {String}
- * @api private
- */
-
-module.exports = function(html) {
-  return String(html)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-},{}],4:[function(require,module,exports){
-var escape = require('escape-html')
-
-// TODO: remove namespace
-
-module.exports = function shaven(array, namespace, returnObject) {
-
-	var HTMLString,
-		doesEscape,
-		i,
-		attributeKey,
-		callback
-
-	returnObject = returnObject || {}
-
-
-	function createElement(sugarString) {
-
-		var element = {
-				tag: sugarString.match(/^\w+/)[0],
-				attr: {},
-				children: []
-			},
-			id = sugarString.match(/#([\w-]+)/),
-			reference = sugarString.match(/\$([\w-]+)/),
-			classNames = sugarString.match(/\.[\w-]+/g)
-
-		// Assign id if is set
-		if (id) {
-
-			element.attr.id = id[1]
-
-			// Add element to the return object
-			returnObject[id[1]] = element
-		}
-
-		if (reference)
-			returnObject[reference[1]] = element
-
-		if (classNames)
-			element.attr.class = classNames.join(' ').replace(/\./g, '')
-
-		if (sugarString.match(/&$/g))
-			doesEscape = false
-
-		return element
-	}
-
-	// TODO: Create customised renderer
-	// If is object
-	// if (array === Object(array)) {
-
-	// } else {
-
-	if (typeof array[0] === 'string')
-		array[0] = createElement(array[0])
-
-
-	for (i = 1; i < array.length; i++) {
-
-		// Don't render element if value is false or null
-		if (array[i] === false || array[i] === null) {
-			array[0] = false
-			break
-		}
-
-		else if (array[i] === undefined) {
-		}
-
-
-		else if (typeof array[i] === 'string' || typeof array[i] === 'number') {
-			if (doesEscape)
-				array[i] = escape(array[i])
-
-			array[0].children.push(array[i])
-		}
-
-		else if (Array.isArray(array[i])) {
-
-			shaven(array[i], namespace, returnObject)
-
-			if (array[i][0])
-				array[0].children.push(array[i][0])
-		}
-
-		else if (typeof array[i] === "function")
-			callback = array[i]
-
-
-		else if (typeof array[i] === "object") {
-			for (attributeKey in array[i])
-				if (array[i].hasOwnProperty(attributeKey))
-					array[0].attr[attributeKey] = array[i][attributeKey]
-		}
-
-		else
-			throw new TypeError('"' + array[i] + '" is not allowed as a value.')
-	}
-	// }
-
-	if (array[0] !== false) {
-
-		HTMLString = ['<', array[0].tag]
-
-		for (var key in array[0].attr)
-			if (array[0].attr.hasOwnProperty(key))
-				HTMLString.push(' ', key, '="', array[0].attr[key], '"')
-
-		HTMLString.push('>')
-
-		array[0].children.forEach(function (child) {
-			HTMLString.push(child)
-		})
-
-		HTMLString.push('</', array[0].tag, '>')
-
-		array[0] = HTMLString.join('')
-	}
-
-	// Return root element on index 0
-	returnObject[0] = array[0]
-
-	if (callback) callback(array[0])
-
-	// returns object containing all elements with an id and the root element
-	return returnObject
-}
-
-},{"escape-html":3}],5:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -458,7 +312,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":6,"once":7}],6:[function(require,module,exports){
+},{"global/window":4,"once":5}],4:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window
@@ -469,7 +323,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -490,7 +344,7 @@ function once (fn) {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -515,7 +369,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":9,"./lib/filepicker/byapi":13,"./lib/filepicker/bysession":14,"./lib/reusables/helpers":17}],9:[function(require,module,exports){
+},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":17}],7:[function(require,module,exports){
 var authHelper = require("./api_elements/auth");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -532,7 +386,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/auth":10,"./api_elements/link":11,"./api_elements/storage":12}],10:[function(require,module,exports){
+},{"./api_elements/auth":8,"./api_elements/link":9,"./api_elements/storage":10}],8:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -660,7 +514,7 @@ module.exports = function (opts) {
         sendRequest: sendRequest
     };
 };
-},{"xhr":5}],11:[function(require,module,exports){
+},{"xhr":3}],9:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -762,7 +616,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":15,"../reusables/helpers":17}],12:[function(require,module,exports){
+},{"../promises":15,"../reusables/helpers":17}],10:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -943,26 +797,63 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":15,"../reusables/helpers":17}],13:[function(require,module,exports){
+},{"../promises":15,"../reusables/helpers":17}],11:[function(require,module,exports){
 (function () {
 
-    var helpers = require('../reusables/helpers');
-    var dom = require('../reusables/dom');
-    var shaven = require('shaven');
+    var helpers = require("../reusables/helpers");
+    var dom = require("../reusables/dom");
+    var View = require("../filepicker_elements/view");
 
-    var defaults = {
-    };
+    var defaults = {};
 
+    function controllerFactory(view) {
+        return function (path) {
+            view.loading();
+            eg.API.storage.get(path).then(function (m) {
+                if(view.els.list) return;
+                view.model = m;
+                view.render();
+            }).error(function () {
+                console.error(arguments);
+            });
+        }
+    }
 
     function init(options) {
         var filePicker;
         options = helpers.extend(defaults, options);
 
         filePicker = function (node, callback, cancelCallback) {
-           
-            var close = function () {
+            var controller, close, fpView;
+            close = function () {
+                fpView.destroy();
             };
-            
+
+            fpView = new View({
+                el: node,
+                model: {},
+                handlers: {
+                    file: function (item) {
+                        callback(item);
+                        close();
+                    },
+                    folder: function (item) {
+                        controller(item.path);
+                    },
+                    back: function () {
+                        var path = this.model.path.replace(/\/[^\/]+\/?$/i, "");
+                        controller(path);
+                    },
+                    close: function(){
+                        cancelCallback();
+                        close();
+                    }
+                }
+            });
+
+            controller = controllerFactory(fpView)
+
+            controller("/Private/hackathon1");
 
             return {
                 close: close,
@@ -977,7 +868,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":16,"../reusables/helpers":17,"shaven":4}],14:[function(require,module,exports){
+},{"../filepicker_elements/view":13,"../reusables/dom":16,"../reusables/helpers":17}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
@@ -1084,7 +975,141 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":16,"../reusables/helpers":17,"../reusables/messages":18}],15:[function(require,module,exports){
+},{"../reusables/dom":16,"../reusables/helpers":17,"../reusables/messages":18}],13:[function(require,module,exports){
+//template engine based upon JsonML
+var dom = require("../reusables/dom");
+var helpers = require("../reusables/helpers");
+var jungle = require("../../vendor/zenjungle");
+
+require("./view.less");
+
+var moduleClass = "eg-filepicker";
+
+var fileext = /.*\.([a-z]*)$/i;
+
+function getExt(name) {
+    if (fileext.test(name)) {
+        return name.replace(fileext, "$1");
+    } else {
+        return "";
+    }
+}
+
+function View(opts) {
+    this.el = opts.el;
+
+    this.handlers = helpers.extend(this.handlers, opts.handlers);
+    this.model = opts.model;
+
+    var back = jungle([["span",
+        {
+            class: "eg-filepicker-back eg-btn"
+        }, "<"]]);
+    this.els.back = back.children[0];
+    var close = jungle([["span",
+        {
+            class: "eg-filepicker-close eg-btn"
+        }, "x"]]);
+    this.els.close = close.children[0];
+
+    var that = this;
+
+    dom.addListener(this.els.back, "click", function (e) {
+        that.handlers.back.call(that, e);
+    });
+    dom.addListener(this.els.close, "click", function (e) {
+        that.handlers.close.call(that, e);
+    });
+
+}
+
+var noop = function () {};
+
+View.prototype.els = {};
+View.prototype.model = {};
+View.prototype.handlers = {
+    item: noop,
+    back: noop,
+    folder: noop,
+    file: noop,
+    close: noop
+};
+
+View.prototype.renderItem = function (itemModel, handler) {
+    var that = this;
+    var ext = (itemModel.is_folder) ? "" : getExt(itemModel.name);
+    var itemFragm = jungle([["li.eg-filepicker-item",
+        ["span.eg-filepicker-ico-" + ((itemModel.is_folder) ? "folder" : "file"),
+            {
+                "data-ext": ext
+            },
+            ["span", ext]
+        ],
+        ["span.eg-filepicker-name", itemModel.name]
+    ]]);
+    var itemNode = itemFragm.children[0];
+
+    dom.addListener(itemNode, "click", function (e) {
+        handler.call(that, itemModel, e);
+    });
+
+    this.els.list.appendChild(itemFragm);
+}
+
+View.prototype.loading = function () {
+    var that = this;
+    if (this.els.list) {
+        this.els.list.innerHTML = "";
+        this.els.list.appendChild(jungle([["div.eg-spinner",["div"], "loading"]]));
+    }
+}
+
+View.prototype.destroy = function () {
+    this.el.innerHTML = "";
+    this.el = null;
+    this.model = null;
+    this.handlers = null;
+}
+
+
+View.prototype.render = function (node) {
+    var that = this;
+
+    if (node) {
+        this.el = node;
+    }
+    this.els.list = document.createElement("ul");
+
+    var listFragm = jungle([["div.eg-filepicker",
+        this.els.close,
+        ["div.eg-filepicker-breadcrumb",
+            this.els.back,
+            ["span.eg-filepicker-path", this.model.path]
+        ],
+        this.els.list
+
+    ]]);
+
+    this.el.innerHTML = "";
+    this.el.appendChild(listFragm);
+
+
+    helpers.each(this.model.folders, function (folder) {
+        that.renderItem(folder, that.handlers.folder)
+    });
+
+    helpers.each(this.model.files, function (file) {
+        that.renderItem(file, that.handlers.file);
+    });
+
+
+}
+
+
+module.exports = View;
+},{"../../vendor/zenjungle":19,"../reusables/dom":16,"../reusables/helpers":17,"./view.less":14}],14:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:0 10px;text-align:center;background-color:#f5f5f5;border:1px solid #ccc;border-radius:2px;font-weight:700}.eg-filepicker{border:1px solid #ccc;font-family:sans-serif;position:relative}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-breadcrumb{padding:5px;border-bottom:1px solid #ccc}.eg-filepicker-back{margin-right:10px}.eg-filepicker-close{position:absolute;right:5px;top:5px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:5px;cursor:pointer}.eg-filepicker-item:hover{background-color:#f1f5f8}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-name{margin-left:.3em}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:16px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.9em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #ccc}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],15:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1139,39 +1164,58 @@ module.exports = {
 
 }
 },{}],17:[function(require,module,exports){
-function normalizeURL(url) {
-    return (url).replace(/\/*$/, "");
-}
+var subs = {}
 
-function encodeNameSafe(name) {
-    name.split("/").map(function (e) {
-        return e.replace(/[^a-z0-9 ]*/gi, "");
-    })
-        .join("/")
-        .replace(/^\//, "");
-
-    return (name);
-}
-//simple extend function
-function extend(target) {
-    var i, k;
-    for (i = 1; i < arguments.length; i++) {
-        if (arguments[i]) {
-            for (k in arguments[i]) {
-                if (arguments[i].hasOwnProperty(k)) {
-                    target[k] = arguments[i][k];
+module.exports = {
+    //simple extend function
+    extend: function extend(target) {
+        var i, k;
+        for (i = 1; i < arguments.length; i++) {
+            if (arguments[i]) {
+                for (k in arguments[i]) {
+                    if (arguments[i].hasOwnProperty(k)) {
+                        target[k] = arguments[i][k];
+                    }
                 }
             }
         }
+        return target;
+    },
+    subscribe: function (topic, cb) {
+        if (!subs[topic]) {
+            subs[topic] = [];
+        }
+        subs[topic].push(cb);
+    },
+    publish: function (topic, data) {
+        if (subs[topic]) {
+            setTimeout(function () {
+                each(subs[topic], function (cb) {
+                    cb(data);
+                })
+            }, 0);
+        }
+    },
+    each: function each(arr, fun) {
+        if (arr) {
+            for (var i = 0; i < arr.length; i++) {
+                if (i in arr)
+                    fun.call(null, arr[i], i, arr);
+            }
+        }
+    },
+    normalizeURL: function (url) {
+        return (url).replace(/\/*$/, "");
+    },
+    encodeNameSafe: function (name) {
+        name.split("/").map(function (e) {
+            return e.replace(/[^a-z0-9 ]*/gi, "");
+        })
+            .join("/")
+            .replace(/^\//, "");
 
+        return (name);
     }
-    return target;
-}
-
-module.exports = {
-    extend: extend,
-    normalizeURL: normalizeURL,
-    encodeNameSafe: encodeNameSafe
 };
 },{}],18:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
@@ -1216,4 +1260,114 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":17}]},{},[8]);
+},{"../reusables/helpers":17}],19:[function(require,module,exports){
+/**
+ * zenjungle - HTML via JSON with elements of Zen Coding 
+ *
+ * https://github.com/radmen/zenjungle
+ * Copyright (c) 2012 Radoslaw Mejer <radmen@gmail.com>
+ */
+
+module.exports = (function() {
+  // helpers
+  var is_object = function(object) {
+        return '[object Object]' == Object.prototype.toString.call(object);
+      },
+      is_array = function(object) {
+        return '[object Array]' == Object.prototype.toString.call(object);
+      },
+      each = function(object, callback) {
+        var key;
+
+        for(key in object) {
+          object.hasOwnProperty(key) && callback(object[key], key);
+        }
+      },
+      merge = function() {
+        var merged = {}
+
+        each(arguments, function(arg) {
+          each(arg, function(value, key) {
+            merged[key] = value;
+          })
+        });
+
+        return merged;
+      }
+  
+  // converts some patterns to properties
+  var zen = function(string) {
+    var replace = {
+          '\\[([a-z\\-]+)=([^\\]]+)\\]': function(match) {
+            var prop = {};
+            prop[match[1]] = match[2].replace(/^["']/, '').replace(/["']$/, '');
+
+            return prop;
+          },
+          '#([a-zA-Z][a-zA-Z0-9\\-_]*)': function(match) {
+            return {'id': match[1]};
+          },
+          '\\.([a-zA-Z][a-zA-Z0-9\\-_]*)': function(match) {
+            return {'class': match[1]};
+          }
+        },
+        props = {};
+    
+    each(replace, function(parser, regex) {
+      var match;
+      
+      regex = new RegExp(regex);
+      
+      while(regex.test(string)) {
+        match = regex.exec(string);
+        string = string.replace(match[0], '');
+        
+        props = merge(props, parser(match));
+      }
+    });
+    
+    return [string, props];
+  }
+  
+  var monkeys = function(what, where) {
+    where = where || document.createDocumentFragment();
+    
+    each(what, function(element) {
+      var zenned,
+          props,
+          new_el;
+          
+      if(is_array(element)) {
+        
+        if('string' === typeof element[0]) {
+          zenned = zen(element.shift());
+          props = is_object(element[0]) ? element.shift() : {};
+          new_el = document.createElement(zenned[0]);
+          
+          each(merge(zenned[1], props), function(value, key) {
+            new_el.setAttribute(key, value);
+          });
+          
+          where.appendChild(new_el);
+          monkeys(element, new_el);
+        }
+        else {
+          monkeys(element, where);
+        }
+      }
+      else if(1 == element.nodeType || 11 == element.nodeType) {
+        where.appendChild(element);
+      }
+      else if('string' === typeof(element) || 'number' === typeof(element) ) {
+          	where.appendChild(document.createTextNode(element));
+      }
+    });
+    
+    return where;
+  }
+  
+  return monkeys;
+})();
+
+
+},{}]},{},[6]);

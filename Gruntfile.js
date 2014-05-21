@@ -9,7 +9,7 @@ module.exports = function (grunt) {
                     "dist/slim.js": ["src/slim.js"]
                 },
                 options: {
-                    transform: ['node-lessify']
+                    transform: ['grunt-less-browserify']
                 }
             }
         },
@@ -44,7 +44,7 @@ module.exports = function (grunt) {
         },
 
         watch: {
-            files: ["src/**/*.js"],
+            files: ["src/**/*.js","src/**/*.less"],
             tasks: ["dist"]
         }
     })

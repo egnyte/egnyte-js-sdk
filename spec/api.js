@@ -54,7 +54,7 @@ describe("API to JS (integration test)", function () {
         var recentFileObject;
 
         it("Should claim that root exists", function (done) {
-            eg.API.storage.exists("/Private").then(function (e) {
+            eg.API.storage.exists("/Private/hackathon1").then(function (e) {
                 expect(e).toBe(true);
                 done();
             }).error(function (e) {
