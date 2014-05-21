@@ -810,7 +810,6 @@ module.exports = function (apihelper, opts) {
         return function (path) {
             view.loading();
             eg.API.storage.get(path).then(function (m) {
-                if(view.els.list) return;
                 view.model = m;
                 view.render();
             }).error(function () {
