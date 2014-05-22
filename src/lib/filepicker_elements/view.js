@@ -1,3 +1,5 @@
+"use strict";
+
 //template engine based upon JsonML
 var dom = require("../reusables/dom");
 var helpers = require("../reusables/helpers");
@@ -7,22 +9,31 @@ require("./view.less");
 
 var moduleClass = "eg-filepicker";
 
-var fileext = /.*\.([a-z]*)$/i;
 
-function getExt(name) {
-    if (fileext.test(name)) {
-        return name.replace(fileext, "$1");
-    } else {
-        return "";
-    }
-}
 
 function View(opts) {
+    var self = this;
     this.el = opts.el;
+    this.els = {};
 
-    this.handlers = helpers.extend(this.handlers, opts.handlers);
+    this.handlers = helpers.extend({
+        selection: helpers.noop,
+        close: helpers.noop
+    }, opts.handlers);
+    this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
+    //bind to model changes
+    this.model.onloading = function () {
+        self.loading();
+    }
+    this.model.onchanged = function () {
+        self.render();
+    }
+    this.model.onerror = function () {
+        //handle error messaging
+    }
 
+    //create reusable view elements
     var back = jungle([["span",
         {
             class: "eg-filepicker-back eg-btn"
@@ -34,98 +45,103 @@ function View(opts) {
         }, "x"]]);
     this.els.close = close.children[0];
 
+    var ok = jungle([["span.eg-btn", "ok"]]);
+    this.els.ok = ok.children[0];
+
     var that = this;
 
     dom.addListener(this.els.back, "click", function (e) {
-        that.handlers.back.call(that, e);
+        that.model.goUp();
     });
     dom.addListener(this.els.close, "click", function (e) {
         that.handlers.close.call(that, e);
     });
+    dom.addListener(this.els.ok, "click", function (e) {
+        that.handlers.selection.call(that, that.model.getSelected());
+    });
 
 }
 
-var noop = function () {};
+View.prototype.render = function () {
+    var self = this;
 
-View.prototype.els = {};
-View.prototype.model = {};
-View.prototype.handlers = {
-    item: noop,
-    back: noop,
-    folder: noop,
-    file: noop,
-    close: noop
-};
+    this.els.list = document.createElement("ul");
 
-View.prototype.renderItem = function (itemModel, handler) {
-    var that = this;
-    var ext = (itemModel.is_folder) ? "" : getExt(itemModel.name);
-    var itemFragm = jungle([["li.eg-filepicker-item",
-        ["span.eg-filepicker-ico-" + ((itemModel.is_folder) ? "folder" : "file"),
-            {
-                "data-ext": ext
-            },
-            ["span", ext]
+    var layoutFragm = jungle([["div.eg-filepicker",
+        this.els.close,
+        ["div.eg-filepicker-bar",
+            this.els.back,
+            ["span.eg-filepicker-path", this.model.path]
         ],
-        ["span.eg-filepicker-name", itemModel.name]
+        this.els.list,
+        ["div.eg-filepicker-bar",
+            this.els.ok
+        ]
+    ]]);
+
+    this.el.innerHTML = "";
+    this.el.appendChild(layoutFragm);
+
+
+    helpers.each(this.model.items, function (item) {
+        self.renderItem(item);
+    });
+
+
+}
+
+View.prototype.renderItem = function (itemModel) {
+    var self = this;
+
+    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).children[0];
+    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).children[0];
+    itemCheckbox.checked = itemModel.selected;
+
+    var itemFragm = jungle([["li.eg-filepicker-item",
+        itemCheckbox,
+        ["span.eg-filepicker-ico-" + ((itemModel.data.is_folder) ? "folder" : "file"),
+            {
+                "data-ext": itemModel.ext
+            },
+            ["span", itemModel.ext]
+        ],
+        itemName
     ]]);
     var itemNode = itemFragm.children[0];
 
+    dom.addListener(itemName, "click", function (e) {
+        e.stopPropagation();
+        itemModel.defaultAction();
+        return false;
+    });
+
     dom.addListener(itemNode, "click", function (e) {
-        handler.call(that, itemModel, e);
+        itemModel.toggleSelect();
     });
 
     this.els.list.appendChild(itemFragm);
 }
 
+
+
 View.prototype.loading = function () {
     var that = this;
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-spinner",["div"], "loading"]]));
+        this.els.list.appendChild(jungle([["div.eg-spinner", ["div"], "loading"]]));
     }
 }
 
 View.prototype.destroy = function () {
     this.el.innerHTML = "";
     this.el = null;
+    this.els = null;
     this.model = null;
     this.handlers = null;
 }
 
 
-View.prototype.render = function (node) {
-    var that = this;
 
-    if (node) {
-        this.el = node;
-    }
-    this.els.list = document.createElement("ul");
-
-    var listFragm = jungle([["div.eg-filepicker",
-        this.els.close,
-        ["div.eg-filepicker-breadcrumb",
-            this.els.back,
-            ["span.eg-filepicker-path", this.model.path]
-        ],
-        this.els.list
-
-    ]]);
-
-    this.el.innerHTML = "";
-    this.el.appendChild(listFragm);
-
-
-    helpers.each(this.model.folders, function (folder) {
-        that.renderItem(folder, that.handlers.folder)
-    });
-
-    helpers.each(this.model.files, function (file) {
-        that.renderItem(file, that.handlers.file);
-    });
-
-
-}
 
 
 module.exports = View;

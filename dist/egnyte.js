@@ -46,8 +46,11 @@ process.argv = [];
 function noop() {}
 
 process.on = noop;
+process.addListener = noop;
 process.once = noop;
 process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
 process.emit = noop;
 
 process.binding = function (name) {
@@ -191,8 +194,8 @@ process.chdir = function (dir) {
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 
 
-}).call(this,require("/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],3:[function(require,module,exports){
+}).call(this,require("FWaASH"))
+},{"FWaASH":1}],3:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -355,11 +358,13 @@ function once (fn) {
         options = helpers.extend(options, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
+        var api = require("./lib/api")(options);
+
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(options),
+            filePicker: require("./lib/filepicker/byapi")(options, api),
             filePickerRemote: require("./lib/filepicker/bysession")(options),
-            API:  require("./lib/api")(options)
+            API: api
         }
 
     }
@@ -369,7 +374,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":17}],7:[function(require,module,exports){
+},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":18}],7:[function(require,module,exports){
 var authHelper = require("./api_elements/auth");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -616,7 +621,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":15,"../reusables/helpers":17}],10:[function(require,module,exports){
+},{"../promises":16,"../reusables/helpers":18}],10:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -797,62 +802,55 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":15,"../reusables/helpers":17}],11:[function(require,module,exports){
+},{"../promises":16,"../reusables/helpers":18}],11:[function(require,module,exports){
 (function () {
 
     var helpers = require("../reusables/helpers");
     var dom = require("../reusables/dom");
     var View = require("../filepicker_elements/view");
+    var Model = require("../filepicker_elements/model");
 
     var defaults = {};
 
-    function controllerFactory(view) {
-        return function (path) {
-            view.loading();
-            eg.API.storage.get(path).then(function (m) {
-                view.model = m;
-                view.render();
-            }).error(function () {
-                console.error(arguments);
-            });
-        }
-    }
-
-    function init(options) {
+    function init(options, API) {
         var filePicker;
         options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback) {
-            var controller, close, fpView;
+        filePicker = function (node, callback, cancelCallback, selectOpts) {
+            var close, fpView, fpModel,
+                defaults={
+                    folder: true,
+                    file: true,
+                    multiple: true
+                };
+            selectOpts = helpers.extend(defaults,selectOpts);
+            
             close = function () {
                 fpView.destroy();
+                fpView=null;
+                fpModel=null;
             };
+            
+            fpModel = new Model(API,{
+                select: selectOpts
+            });
 
             fpView = new View({
                 el: node,
-                model: {},
+                model: fpModel,
                 handlers: {
-                    file: function (item) {
+                    selection: function (item) {
                         callback(item);
                         close();
                     },
-                    folder: function (item) {
-                        controller(item.path);
-                    },
-                    back: function () {
-                        var path = this.model.path.replace(/\/[^\/]+\/?$/i, "");
-                        controller(path);
-                    },
-                    close: function(){
+                    close: function () {
                         cancelCallback();
                         close();
                     }
                 }
             });
-
-            controller = controllerFactory(fpView)
-
-            controller("/Private/hackathon1");
+            
+            fpModel.fetch("/");
 
             return {
                 close: close,
@@ -867,7 +865,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/view":13,"../reusables/dom":16,"../reusables/helpers":17}],12:[function(require,module,exports){
+},{"../filepicker_elements/model":13,"../filepicker_elements/view":14,"../reusables/dom":17,"../reusables/helpers":18}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
@@ -974,17 +972,11 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":16,"../reusables/helpers":17,"../reusables/messages":18}],13:[function(require,module,exports){
-//template engine based upon JsonML
-var dom = require("../reusables/dom");
+},{"../reusables/dom":17,"../reusables/helpers":18,"../reusables/messages":19}],13:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
-var jungle = require("../../vendor/zenjungle");
 
-require("./view.less");
 
-var moduleClass = "eg-filepicker";
-
-var fileext = /.*\.([a-z]*)$/i;
+var fileext = /.*\.([a-z0-9]*)$/i;
 
 function getExt(name) {
     if (fileext.test(name)) {
@@ -994,12 +986,166 @@ function getExt(name) {
     }
 }
 
+
+//Item model
+function Item(data, parent) {
+    this.data = data;
+    if (!this.data.is_folder) {
+        this.ext = getExt(data.name);
+    } else {
+        this.ext = "";
+    }
+    this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder));
+    this.parent = parent;
+}
+
+Item.prototype.defaultAction = function () {
+    if (this.data.is_folder) {
+        this.parent.fetch(this.data.path);
+    } else {
+        this.toggleSelect();
+    }
+};
+
+Item.prototype.toggleSelect = function () {
+    if (!this.parent.opts.select.multiple) {
+        this.parent.deselect();
+    }
+    if (this.isSelectable) {
+        this.selected = !this.selected;
+    }
+    this.parent.onchanged();
+    // Waiting for requirements
+    //    else {
+    //        //when folders arent selectable, default to opening too
+    //        if (this.data.is_folder) {
+    //            this.parent.fetch(this.data.path);
+    //        }
+    //    }
+};
+
+//Collection
+function Model(API, opts) {
+    this.opts = opts;
+    this.API = API;
+}
+
+var mock = {
+    path: "/Mock/folder",
+    name: "folder",
+    folders: [
+        {
+            path: "/Mock/folder/foo",
+            name: "foo",
+            is_folder: true
+        }
+    ],
+    files: [
+        {
+            path: "/Mock/folder/bar",
+            name: "bar.png",
+            is_folder: false
+        }
+    ]
+};
+
+Model.prototype.onloading = helpers.noop;
+Model.prototype.onchanged = helpers.noop;
+Model.prototype.onerror = helpers.noop;
+
+Model.prototype.set = function (m) {
+    var self = this;
+    this.path = m.path;
+    this.items = [];
+    helpers.each(m.folders, function (f) {
+        self.items.push(new Item(f, self));
+    });
+    //ignore files if they're not selectable
+    if (this.opts.select.file) {
+        helpers.each(m.files, function (f) {
+            self.items.push(new Item(f, self));
+        });
+    }
+
+    this.onchanged();
+};
+
+Model.prototype.fetch = function (path) {
+    var self = this;
+    if (path) {
+        this.path = path;
+    }
+    self.onloading();
+    self.API.storage.get(this.path).then(function (m) {
+        self.set(m);
+    }).error(function (e) {
+        this.onerror();
+    });
+}
+
+
+Model.prototype.goUp = function () {
+    var path = this.path.replace(/\/[^\/]+\/?$/i, "") || "/";
+    
+    if (path !== this.path) {
+        this.fetch(path);
+    }
+}
+
+Model.prototype.getSelected = function () {
+    var selected = [];
+    helpers.each(this.items, function (item) {
+        if (item.selected) {
+            selected.push(item.data);
+        }
+    });
+    return selected;
+}
+
+Model.prototype.deselect = function () {
+    helpers.each(this.items, function (item) {
+        item.selected = false;
+    });
+}
+
+module.exports = Model;
+},{"../reusables/helpers":18}],14:[function(require,module,exports){
+"use strict";
+
+//template engine based upon JsonML
+var dom = require("../reusables/dom");
+var helpers = require("../reusables/helpers");
+var jungle = require("../../vendor/zenjungle");
+
+require("./view.less");
+
+var moduleClass = "eg-filepicker";
+
+
+
 function View(opts) {
+    var self = this;
     this.el = opts.el;
+    this.els = {};
 
-    this.handlers = helpers.extend(this.handlers, opts.handlers);
+    this.handlers = helpers.extend({
+        selection: helpers.noop,
+        close: helpers.noop
+    }, opts.handlers);
+    this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
+    //bind to model changes
+    this.model.onloading = function () {
+        self.loading();
+    }
+    this.model.onchanged = function () {
+        self.render();
+    }
+    this.model.onerror = function () {
+        //handle error messaging
+    }
 
+    //create reusable view elements
     var back = jungle([["span",
         {
             class: "eg-filepicker-back eg-btn"
@@ -1011,104 +1157,109 @@ function View(opts) {
         }, "x"]]);
     this.els.close = close.children[0];
 
+    var ok = jungle([["span.eg-btn", "ok"]]);
+    this.els.ok = ok.children[0];
+
     var that = this;
 
     dom.addListener(this.els.back, "click", function (e) {
-        that.handlers.back.call(that, e);
+        that.model.goUp();
     });
     dom.addListener(this.els.close, "click", function (e) {
         that.handlers.close.call(that, e);
     });
+    dom.addListener(this.els.ok, "click", function (e) {
+        that.handlers.selection.call(that, that.model.getSelected());
+    });
 
 }
 
-var noop = function () {};
+View.prototype.render = function () {
+    var self = this;
 
-View.prototype.els = {};
-View.prototype.model = {};
-View.prototype.handlers = {
-    item: noop,
-    back: noop,
-    folder: noop,
-    file: noop,
-    close: noop
-};
+    this.els.list = document.createElement("ul");
 
-View.prototype.renderItem = function (itemModel, handler) {
-    var that = this;
-    var ext = (itemModel.is_folder) ? "" : getExt(itemModel.name);
-    var itemFragm = jungle([["li.eg-filepicker-item",
-        ["span.eg-filepicker-ico-" + ((itemModel.is_folder) ? "folder" : "file"),
-            {
-                "data-ext": ext
-            },
-            ["span", ext]
+    var layoutFragm = jungle([["div.eg-filepicker",
+        this.els.close,
+        ["div.eg-filepicker-bar",
+            this.els.back,
+            ["span.eg-filepicker-path", this.model.path]
         ],
-        ["span.eg-filepicker-name", itemModel.name]
+        this.els.list,
+        ["div.eg-filepicker-bar",
+            this.els.ok
+        ]
+    ]]);
+
+    this.el.innerHTML = "";
+    this.el.appendChild(layoutFragm);
+
+
+    helpers.each(this.model.items, function (item) {
+        self.renderItem(item);
+    });
+
+
+}
+
+View.prototype.renderItem = function (itemModel) {
+    var self = this;
+
+    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).children[0];
+    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).children[0];
+    itemCheckbox.checked = itemModel.selected;
+
+    var itemFragm = jungle([["li.eg-filepicker-item",
+        itemCheckbox,
+        ["span.eg-filepicker-ico-" + ((itemModel.data.is_folder) ? "folder" : "file"),
+            {
+                "data-ext": itemModel.ext
+            },
+            ["span", itemModel.ext]
+        ],
+        itemName
     ]]);
     var itemNode = itemFragm.children[0];
 
+    dom.addListener(itemName, "click", function (e) {
+        e.stopPropagation();
+        itemModel.defaultAction();
+        return false;
+    });
+
     dom.addListener(itemNode, "click", function (e) {
-        handler.call(that, itemModel, e);
+        itemModel.toggleSelect();
     });
 
     this.els.list.appendChild(itemFragm);
 }
 
+
+
 View.prototype.loading = function () {
     var that = this;
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-spinner",["div"], "loading"]]));
+        this.els.list.appendChild(jungle([["div.eg-spinner", ["div"], "loading"]]));
     }
 }
 
 View.prototype.destroy = function () {
     this.el.innerHTML = "";
     this.el = null;
+    this.els = null;
     this.model = null;
     this.handlers = null;
 }
 
 
-View.prototype.render = function (node) {
-    var that = this;
 
-    if (node) {
-        this.el = node;
-    }
-    this.els.list = document.createElement("ul");
-
-    var listFragm = jungle([["div.eg-filepicker",
-        this.els.close,
-        ["div.eg-filepicker-breadcrumb",
-            this.els.back,
-            ["span.eg-filepicker-path", this.model.path]
-        ],
-        this.els.list
-
-    ]]);
-
-    this.el.innerHTML = "";
-    this.el.appendChild(listFragm);
-
-
-    helpers.each(this.model.folders, function (folder) {
-        that.renderItem(folder, that.handlers.folder)
-    });
-
-    helpers.each(this.model.files, function (file) {
-        that.renderItem(file, that.handlers.file);
-    });
-
-
-}
 
 
 module.exports = View;
-},{"../../vendor/zenjungle":19,"../reusables/dom":16,"../reusables/helpers":17,"./view.less":14}],14:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:0 10px;text-align:center;background-color:#f5f5f5;border:1px solid #ccc;border-radius:2px;font-weight:700}.eg-filepicker{border:1px solid #ccc;font-family:sans-serif;position:relative}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-breadcrumb{padding:5px;border-bottom:1px solid #ccc}.eg-filepicker-back{margin-right:10px}.eg-filepicker-close{position:absolute;right:5px;top:5px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:5px;cursor:pointer}.eg-filepicker-item:hover{background-color:#f1f5f8}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-name{margin-left:.3em}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:16px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.9em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #ccc}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],15:[function(require,module,exports){
+},{"../../vendor/zenjungle":20,"../reusables/dom":17,"../reusables/helpers":18,"./view.less":15}],15:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:0 10px;text-align:center;background-color:#f5f5f5;border:1px solid #aaa;border-radius:2px;font-weight:700;cursor:pointer}.eg-filepicker{border:1px solid #ddd;font-family:sans-serif;position:relative}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{padding:5px;background:#ddd}.eg-filepicker-back{margin-right:10px}.eg-filepicker-close{position:absolute;right:5px;top:5px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding-top:5px;cursor:pointer}.eg-filepicker-item:hover{background-color:#f1f5f8}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:10px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:16px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.9em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #ddd}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],16:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1126,7 +1277,7 @@ module.exports = {
         }
     }
 }
-},{"pinkyswear":2}],16:[function(require,module,exports){
+},{"pinkyswear":2}],17:[function(require,module,exports){
 module.exports = {
 
     addListener: function (elem, type, callback) {
@@ -1162,8 +1313,7 @@ module.exports = {
     }
 
 }
-},{}],17:[function(require,module,exports){
-var subs = {}
+},{}],18:[function(require,module,exports){
 
 module.exports = {
     //simple extend function
@@ -1180,26 +1330,19 @@ module.exports = {
         }
         return target;
     },
-    subscribe: function (topic, cb) {
-        if (!subs[topic]) {
-            subs[topic] = [];
-        }
-        subs[topic].push(cb);
-    },
-    publish: function (topic, data) {
-        if (subs[topic]) {
-            setTimeout(function () {
-                each(subs[topic], function (cb) {
-                    cb(data);
-                })
-            }, 0);
-        }
-    },
-    each: function each(arr, fun) {
-        if (arr) {
-            for (var i = 0; i < arr.length; i++) {
-                if (i in arr)
-                    fun.call(null, arr[i], i, arr);
+    noop: function () {},
+    each: function each(collection, fun) {
+        if (collection) {
+            if (collection.length === +collection.length) {
+                for (var i = 0; i < collection.length; i++) {
+                    fun.call(null, collection[i], i, collection);
+                }
+            } else {
+                for (var i in collection) {
+                    if (collection.hasOwnProperty(i)) {
+                        fun.call(null, collection[i], i, collection);
+                    }
+                }
             }
         }
     },
@@ -1216,7 +1359,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1259,7 +1402,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":17}],19:[function(require,module,exports){
+},{"../reusables/helpers":18}],20:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding 
  *
@@ -1369,4 +1512,4 @@ module.exports = (function() {
 })();
 
 
-},{}]},{},[6]);
+},{}]},{},[6])
