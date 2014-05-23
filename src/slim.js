@@ -15,7 +15,7 @@
 
     }
 
-    window.EgnyteWidget = {
+    window.Egnyte = {
         init: init
     }
 

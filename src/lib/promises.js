@@ -6,12 +6,18 @@ module.exports = {
         var promise = pinkySwear();
         return {
             promise: promise,
-            resolve: function (result) {
-                promise(true, [result]);
+            resolve: function (a) {
+                promise(true, [a]);
             },
-            reject: function (result) {
-                promise(false, [result]);
+            reject: function (a) {
+                promise(false, [a]);
             }
-        }
+        };
+    },
+    "start": function (value) {
+        var promise = pinkySwear();
+        promise(value);
+        return promise;
     }
+
 }

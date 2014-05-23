@@ -6,7 +6,7 @@
     <title>filepicker widget</title>
     <script src="../dist/egnyte.js"></script>
     <style>
-        #there{
+        #there {
             width: 400px;
         }
     </style>
@@ -23,22 +23,27 @@
     Take a look at the console.
     <script>
         var node = document.getElementById("there");
-        
-        //proper usage:
-        //var eg = EgnyteWidget.init("http://mydomain.egnyte.com");
-        
-        //this line will use mock instead of real egnyte domain
-        //doesn't work with file:// protocol
-        var eg = EgnyteWidget.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
-        
-        function openPicker(){
-        
-            eg.filePickerRemote(node,function(fileData){
-                console.info(fileData);
-            },function(){
-                console.warn("cancelled");
+
+         //proper usage:
+         //var eg = Egnyte.init("http://mydomain.egnyte.com");
+
+         //this line will use mock instead of real egnyte domain
+         //doesn't work with file:// protocol
+        var eg = Egnyte.init(window.location.origin, {
+            filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock_filepicker.html"
+        });
+
+        function openPicker() {
+
+            eg.filePickerRemote(node, {
+                selection: function(fileData) {
+                    console.info(fileData);
+                },
+                cancel: function() {
+                    console.warn("cancelled");
+                }
             });
-        
+
         }
     </script>
 </body>

@@ -27,51 +27,65 @@
     <script>
         var node = document.getElementById("there");
 
-        eg = EgnyteWidget.init(egnyteDomain, {
+        eg = Egnyte.init(egnyteDomain, {
             token: APIToken
         });
 
         function openPicker1() {
 
-            eg.filePicker(node, function (fileData) {
-                console.info(fileData);
-            }, function () {
-                console.warn("cancelled");
-            }, {
+            eg.filePicker(node, {
+                selection: function(fileData) {
+                    console.info(fileData);
+                },
+                cancel: function() {
+                    console.warn("cancelled");
+                }
                 //defaults kick in
             });
 
         }
 
         function openPicker2() {
-            eg.filePicker(node, function (fileData) {
-                console.info(fileData);
-            }, function () {
-                console.warn("cancelled");
-            }, {
-                folder: false,
-                file: true
+            eg.filePicker(node, {
+                selection: function(fileData) {
+                    console.info(fileData);
+                },
+                cancel: function() {
+                    console.warn("cancelled");
+                },
+                select: {
+                    folder: false,
+                    file: true
+                }
             });
         }
 
         function openPicker3() {
-            eg.filePicker(node, function (fileData) {
-                console.info(fileData);
-            }, function () {
-                console.warn("cancelled");
-            }, {
-                folder: true,
-                file: false
+            eg.filePicker(node, {
+                selection: function(fileData) {
+                    console.info(fileData);
+                },
+                cancel: function() {
+                    console.warn("cancelled");
+                },
+                select: {
+                    folder: true,
+                    file: false
+                }
             });
         }
 
         function openPicker4() {
-            eg.filePicker(node, function (fileData) {
-                console.info(fileData);
-            }, function () {
-                console.warn("cancelled");
-            }, {
-                multiple: false
+            eg.filePicker(node, {
+                selection: function(fileData) {
+                    console.info(fileData);
+                },
+                cancel: function() {
+                    console.warn("cancelled");
+                },
+                select: {
+                    multiple: false
+                }
             });
         }
     </script>

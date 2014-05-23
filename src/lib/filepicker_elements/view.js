@@ -26,8 +26,13 @@ function View(opts) {
     this.model.onloading = function () {
         self.loading();
     }
-    this.model.onchanged = function () {
+    this.model.onupdate = function () {
         self.render();
+        if (self.handlers.ready) {
+            var runReady = self.handlers.ready;
+            self.handlers.ready = null;
+            setTimeout(runReady, 0);
+        }
     }
     this.model.onerror = function () {
         //handle error messaging
@@ -36,17 +41,21 @@ function View(opts) {
     //create reusable view elements
     var back = jungle([["span",
         {
-            class: "eg-filepicker-back eg-btn"
+            "class": "eg-filepicker-back eg-btn"
         }, "<"]]);
-    this.els.back = back.children[0];
+    console.log(back,back.firstChild,back.childNodes[0]);
+    this.els.back = back.childNodes[0];
     var close = jungle([["span",
         {
-            class: "eg-filepicker-close eg-btn"
+            "class": "eg-filepicker-close eg-btn"
         }, "x"]]);
-    this.els.close = close.children[0];
+    this.els.close = close.childNodes[0];
 
-    var ok = jungle([["span.eg-btn", "ok"]]);
-    this.els.ok = ok.children[0];
+    var ok = jungle([["span",
+        {
+            "class": "eg-filepicker-ok eg-btn"
+        }, "ok"]]);
+    this.els.ok = ok.childNodes[0];
 
     var that = this;
 
@@ -78,9 +87,11 @@ View.prototype.render = function () {
             this.els.ok
         ]
     ]]);
+    
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
+    console.log(this.el.innerHTML);
 
 
     helpers.each(this.model.items, function (item) {
@@ -93,9 +104,13 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).children[0];
-    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).children[0];
+    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).childNodes[0];
+    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
+
+    itemModel.onchange = function () {
+        itemCheckbox.checked = itemModel.selected;
+    };
 
     var itemFragm = jungle([["li.eg-filepicker-item",
         itemCheckbox,
@@ -107,7 +122,7 @@ View.prototype.renderItem = function (itemModel) {
         ],
         itemName
     ]]);
-    var itemNode = itemFragm.children[0];
+    var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
         e.stopPropagation();

@@ -52,7 +52,10 @@
         var ready = false;
         options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback) {
+        filePicker = function (node, setup) {
+            if (!setup) {
+                throw new Error("Setup required as a second argument");
+            }
             var iframe;
             var channel = {
                 marker: options.channelMarker,
@@ -60,30 +63,25 @@
             };
             //informs the view to open a certain location
             var sendOpenAt = function () {
-                if (options.openAt) {
-                    messages.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
+                if (setup.path) {
+                    messages.sendMessage(iframe.contentWindow, channel, "openAt", setup.path);
                 }
             }
             var close = function () {
                 destroy(channel, iframe);
             };
-            var openAt = function (location) {
-                options.openAt = location;
-                if (ready) {
-                    sendOpenAt();
-                }
-            };
-            
-            
+
+
             iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
 
             listen(channel,
                 actionsHandler(close, {
-                    "selection": callback,
-                    "cancel": cancelCallback,
+                    "selection": setup.selection || helpers.noop,
+                    "cancel": setup.cancel || helpers.noop,
                     "ready": function () {
                         ready = true;
                         sendOpenAt();
+                        setup.ready || setup.ready();
                     }
                 })
             );
@@ -91,8 +89,7 @@
             node.appendChild(iframe);
 
             return {
-                close: close,
-                openAt: openAt
+                close: close
             };
         };
 

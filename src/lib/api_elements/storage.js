@@ -9,152 +9,152 @@ var fscontent = "/fs-content";
 
 
 function exists(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(true);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return true;
         } else {
-            defer.resolve(false);
+            return false;
+        }
+    }, function (result) { //result.error result.response, result.body
+        if (result.response.statusCode == 404) {
+            return false;
+        } else {
+            throw result.error;
         }
     });
-    return defer.promise;
 }
 
 function get(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(body);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.body;
     });
-    return defer.promise;
 }
 
 function download(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(response);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.response;
     });
-    return defer.promise;
 }
 
 function createFolder(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "add_folder"
-        }
-    }, function (error, response, body) {
-        if (response.statusCode == 201) {
-            defer.resolve({
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "add_folder"
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 201) {
+            return {
                 path: pathFromRoot
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 function move(pathFromRoot, newPath) {
-    if (!newPath) {
-        throw new Error("Cannot move to empty path");
-    }
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    newPath = helpers.encodeNameSafe(newPath);
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "move",
-            "destination": "/" + newPath,
+    return promises.start(true).then(function () {
+        if (!newPath) {
+            throw new Error("Cannot move to empty path");
         }
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-
-            defer.resolve({
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        newPath = helpers.encodeNameSafe(newPath);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "move",
+                "destination": "/" + newPath,
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return {
                 oldPath: pathFromRoot,
                 path: newPath
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 
 function storeFile(pathFromRoot, fileOrBlob) {
-    if (!window.FormData) {
-        throw new Error("Unsupported browser");
-    }
-    var defer = promises.defer();
-    var file = fileOrBlob;
-    var formData = new window.FormData();
-    formData.append('file', file);
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        if (!window.FormData) {
+            throw new Error("Unsupported browser");
+        }
+        var file = fileOrBlob;
+        var formData = new window.FormData();
+        formData.append('file', file);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-        body: formData,
-    }, function (error, response, body) {
-        if (response.statusCode === 200 || response.statusCode === 201) {
-            defer.resolve({
-                id: response.getResponseHeader("etag"),
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            body: formData,
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode === 200 || result.response.statusCode === 201) {
+            return ({
+                id: result.response.getResponseHeader("etag"),
                 path: pathFromRoot
             });
         } else {
-            defer.reject(response.statusCode);
+            throw new Error(result.response.statusCode);
         }
     });
-    return defer.promise;
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    var opts = {
-        method: "DELETE",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    };
-    var defer = promises.defer();
-    if (versionEntryId) {
-        opts.params = {
-            "entry_id": versionEntryId
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        var opts = {
+            method: "DELETE",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
-    }
-    api.sendRequest(opts, function (error, response, body) {
-        if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
+        if (versionEntryId) {
+            opts.params = {
+                "entry_id": versionEntryId
+            };
         }
+        return api.promiseRequest(opts);
+
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
     });
-    return defer.promise;
 }
 
 function removeFileVersion(pathFromRoot, versionEntryId) {
-    if (!versionEntryId) {
-        throw new Error("Version ID (second argument) is missing");
-    }
-    return remove(pathFromRoot, versionEntryId)
+    return promises.start(true).then(function () {
+        if (!versionEntryId) {
+            throw new Error("Version ID (second argument) is missing");
+        }
+        return remove(pathFromRoot, versionEntryId)
+    });
 }
 
 

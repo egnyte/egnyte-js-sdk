@@ -6,7 +6,7 @@
     <title>filepicker widget</title>
     <script src="../dist/egnyte.js"></script>
     <style>
-        #there{
+        #there {
             width: 400px;
         }
     </style>
@@ -23,28 +23,30 @@
     Take a look at the console.
     <script>
         var node = document.getElementById("there");
-        
-        //proper usage:
-        var eg = EgnyteWidget.init("http://localhost:8080",{ filepickerViewAddress:"folderExplorerDev.html"});
-        var eg = EgnyteWidget.init("https://localhost:9999",{ filepickerViewAddress:"src/folderExplorerDev.html"});
-        
-        //this line will use mock instead of real egnyte domain
-        //doesn't work with file:// protocol
-        //var eg = EgnyteWidget.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
-        
-        function openPicker(){
-        
-            eg.filePickerRemote(node,function(fileData){
-                var fp = eg.filePickerRemote(node,function(fileData2){
-                        console.info(fileData2);
-                    })
-                setTimeout(function(){
-                    fp.openAt(fileData[0].path);
-                },3000);
-            },function(){
-                console.warn("cancelled");
+
+         //proper usage:
+        var eg = Egnyte.init("http://acme.egnyte.com");
+        var eg = Egnyte.init("https://localhost:9999", {
+            filepickerViewAddress: "src/folderExplorerDev.html"
+        });
+
+         //this line will use mock instead of real egnyte domain
+         //doesn't work with file:// protocol
+         //var eg = Egnyte.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/,"/") + "mock_filepicker.html" });
+
+        function openPicker() {
+
+            eg.filePickerRemote(node, {
+                selection: function(fileData) {
+                    
+                    var fp = eg.filePickerRemote(node, {
+                        selection: function(fileData2) {
+                            console.info(fileData2);
+                        },
+                        path: fileData[0].path
+                    });
+                }
             });
-        
         }
     </script>
 </body>

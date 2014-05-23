@@ -3,8 +3,8 @@ var oauthRegex = /access_token=([^&]+)/;
 var token;
 var options;
 
+var promises = require('../promises');
 var xhr = require("xhr");
-var quota = /<h1>Developer Over Qps<\/h1>/gi;
 
 
 function authenticateInplace(callback) {
@@ -94,16 +94,39 @@ function sendRequest(opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            if (response.statusCode == 403 && quota.test(response.responseText)) {
-                throw new Error("Developer Over Qps");
-            } else {
-                callback.call(this, error, response, body);
-            }
+            callback.call(this, error, response, body);
         });
     } else {
-        throw new Error("Not authenticated");
+        callback.call(this, new Error("Not authenticated"), {
+            statusCode: 0
+        }, null);
     }
 
+}
+
+function promiseRequest(opts) {
+    var defer = promises.defer();
+    try {
+        sendRequest(opts, function (error, response, body) {
+            if (error) {
+                defer.reject({
+                    error: error,
+                    response: response,
+                    body: body
+                });
+            } else {
+                defer.resolve({
+                    response: response,
+                    body: body
+                });
+            }
+        });
+    } catch (error) {
+        defer.reject({
+            error: error
+        });
+    }
+    return defer.promise;
 }
 
 module.exports = function (opts) {
@@ -122,6 +145,7 @@ module.exports = function (opts) {
         getToken: getToken,
         dropToken: dropToken,
         getEndpoint: getEndpoint,
-        sendRequest: sendRequest
+        sendRequest: sendRequest,
+        promiseRequest: promiseRequest
     };
 };

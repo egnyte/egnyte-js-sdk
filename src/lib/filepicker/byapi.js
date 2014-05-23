@@ -7,26 +7,28 @@
 
     var defaults = {};
 
-    function init(options, API) {
+    function init(API) {
         var filePicker;
-        options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback, selectOpts) {
+        filePicker = function (node, setup) {
+            if (!setup) {
+                throw new Error("Setup required as a second argument");
+            }
             var close, fpView, fpModel,
-                defaults={
+                defaults = {
                     folder: true,
                     file: true,
                     multiple: true
                 };
-            selectOpts = helpers.extend(defaults,selectOpts);
-            
+            var selectOpts = helpers.extend(defaults, setup.select);
+
             close = function () {
                 fpView.destroy();
-                fpView=null;
-                fpModel=null;
+                fpView = null;
+                fpModel = null;
             };
-            
-            fpModel = new Model(API,{
+
+            fpModel = new Model(API, {
                 select: selectOpts
             });
 
@@ -34,18 +36,19 @@
                 el: node,
                 model: fpModel,
                 handlers: {
+                    ready: setup.ready,
                     selection: function (item) {
-                        callback(item);
+                        setup.selection(item);
                         close();
                     },
                     close: function () {
-                        cancelCallback();
+                        setup.cancel();
                         close();
                     }
                 }
             });
-            
-            fpModel.fetch("/");
+
+            fpModel.fetch(setup.path || "/");
 
             return {
                 close: close,

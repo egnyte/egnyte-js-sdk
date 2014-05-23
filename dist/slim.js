@@ -348,30 +348,114 @@ function once (fn) {
 }
 
 },{}],6:[function(require,module,exports){
-var authHelper = require("./api_elements/auth");
+var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
 
 
 module.exports = function (options) {
-    var auth = authHelper(options);
-    var storage = storageFacade(auth, options);
-    var link = linkFacade(auth, options);
+    var main = APIMain(options);
+    var storage = storageFacade(main, options);
+    var link = linkFacade(main, options);
 
     return {
-        auth: auth,
+        auth: main,
         storage: storage,
         link: link
     };
 };
-},{"./api_elements/auth":7,"./api_elements/link":8,"./api_elements/storage":9}],7:[function(require,module,exports){
+},{"./api_elements/link":7,"./api_elements/main":8,"./api_elements/storage":9}],7:[function(require,module,exports){
+var promises = require('../promises');
+var helpers = require('../reusables/helpers');
+
+
+var api;
+var options;
+
+
+var linksEndpoint = "/links";
+
+
+function createLink(setup) {
+    var defaults = {
+        path: null,
+        type: "file",
+        accessibility: "domain"
+    };
+    return promises.start(true)
+        .then(function () {
+            setup = helpers.extend(defaults, setup);
+            setup.path = helpers.encodeNameSafe(setup.path);
+
+            if (!setup.path) {
+                throw new Error("Path attribute missing or incorrect");
+            }
+
+            return api.promiseRequest({
+                method: "POST",
+                url: api.getEndpoint() + linksEndpoint,
+                json: setup
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+}
+
+
+function removeLink(id) {
+    return api.promiseRequest({
+        method: "DELETE",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
+    });
+}
+
+function listLink(id) {
+    return api.promiseRequest({
+        method: "GET",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
+        return result.body;
+    });
+}
+
+
+function listLinks(filters) {
+    return promises.start(true)
+        .then(function () {
+            filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+
+            return api.promiseRequest({
+                method: "get",
+                url: api.getEndpoint() + linksEndpoint,
+                params: filters
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+}
+
+
+
+module.exports = function (apihelper, opts) {
+    options = opts;
+    api = apihelper;
+    return {
+        createLink: createLink,
+        removeLink: removeLink,
+        listLink: listLink,
+        listLinks: listLinks
+    };
+};
+},{"../promises":10,"../reusables/helpers":11}],8:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
 var options;
 
+var promises = require('../promises');
 var xhr = require("xhr");
-var quota = /<h1>Developer Over Qps<\/h1>/gi;
 
 
 function authenticateInplace(callback) {
@@ -461,16 +545,39 @@ function sendRequest(opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            if (response.statusCode == 403 && quota.test(response.responseText)) {
-                throw new Error("Developer Over Qps");
-            } else {
-                callback.call(this, error, response, body);
-            }
+            callback.call(this, error, response, body);
         });
     } else {
-        throw new Error("Not authenticated");
+        callback.call(this, new Error("Not authenticated"), {
+            statusCode: 0
+        }, null);
     }
 
+}
+
+function promiseRequest(opts) {
+    var defer = promises.defer();
+    try {
+        sendRequest(opts, function (error, response, body) {
+            if (error) {
+                defer.reject({
+                    error: error,
+                    response: response,
+                    body: body
+                });
+            } else {
+                defer.resolve({
+                    response: response,
+                    body: body
+                });
+            }
+        });
+    } catch (error) {
+        defer.reject({
+            error: error
+        });
+    }
+    return defer.promise;
 }
 
 module.exports = function (opts) {
@@ -489,112 +596,11 @@ module.exports = function (opts) {
         getToken: getToken,
         dropToken: dropToken,
         getEndpoint: getEndpoint,
-        sendRequest: sendRequest
+        sendRequest: sendRequest,
+        promiseRequest: promiseRequest
     };
 };
-},{"xhr":3}],8:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
-
-
-var api;
-var options;
-
-
-var linksEndpoint = "/links";
-
-
-function createLink(setup) {
-    var defaults = {
-        path: null,
-        type: "file",
-        accessibility: "domain"
-    };
-    var defer = promises.defer();
-    setup = helpers.extend(defaults, setup);
-    setup.path = helpers.encodeNameSafe(setup.path);
-
-    if (!setup.path) {
-        throw new Error("Path attribute missing or incorrect");
-    }
-
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + linksEndpoint,
-        json: setup
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-function removeLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
-        method: "DELETE",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-function listLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-function listLinks(filters) {
-    var defer = promises.defer();
-    filters.path = filters.path && helpers.encodeNameSafe(filters.path);
-
-    api.sendRequest({
-        method: "get",
-        url: api.getEndpoint() + linksEndpoint,
-        params: filters
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        createLink: createLink,
-        removeLink: removeLink,
-        listLink: listLink,
-        listLinks: listLinks
-    };
-};
-},{"../promises":10,"../reusables/helpers":11}],9:[function(require,module,exports){
+},{"../promises":10,"xhr":3}],9:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -606,152 +612,152 @@ var fscontent = "/fs-content";
 
 
 function exists(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(true);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return true;
         } else {
-            defer.resolve(false);
+            return false;
+        }
+    }, function (result) { //result.error result.response, result.body
+        if (result.response.statusCode == 404) {
+            return false;
+        } else {
+            throw result.error;
         }
     });
-    return defer.promise;
 }
 
 function get(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(body);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.body;
     });
-    return defer.promise;
 }
 
 function download(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(response);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.response;
     });
-    return defer.promise;
 }
 
 function createFolder(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "add_folder"
-        }
-    }, function (error, response, body) {
-        if (response.statusCode == 201) {
-            defer.resolve({
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "add_folder"
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 201) {
+            return {
                 path: pathFromRoot
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 function move(pathFromRoot, newPath) {
-    if (!newPath) {
-        throw new Error("Cannot move to empty path");
-    }
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    newPath = helpers.encodeNameSafe(newPath);
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "move",
-            "destination": "/" + newPath,
+    return promises.start(true).then(function () {
+        if (!newPath) {
+            throw new Error("Cannot move to empty path");
         }
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-
-            defer.resolve({
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        newPath = helpers.encodeNameSafe(newPath);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "move",
+                "destination": "/" + newPath,
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return {
                 oldPath: pathFromRoot,
                 path: newPath
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 
 function storeFile(pathFromRoot, fileOrBlob) {
-    if (!window.FormData) {
-        throw new Error("Unsupported browser");
-    }
-    var defer = promises.defer();
-    var file = fileOrBlob;
-    var formData = new window.FormData();
-    formData.append('file', file);
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        if (!window.FormData) {
+            throw new Error("Unsupported browser");
+        }
+        var file = fileOrBlob;
+        var formData = new window.FormData();
+        formData.append('file', file);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-        body: formData,
-    }, function (error, response, body) {
-        if (response.statusCode === 200 || response.statusCode === 201) {
-            defer.resolve({
-                id: response.getResponseHeader("etag"),
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            body: formData,
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode === 200 || result.response.statusCode === 201) {
+            return ({
+                id: result.response.getResponseHeader("etag"),
                 path: pathFromRoot
             });
         } else {
-            defer.reject(response.statusCode);
+            throw new Error(result.response.statusCode);
         }
     });
-    return defer.promise;
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    var opts = {
-        method: "DELETE",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    };
-    var defer = promises.defer();
-    if (versionEntryId) {
-        opts.params = {
-            "entry_id": versionEntryId
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        var opts = {
+            method: "DELETE",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
-    }
-    api.sendRequest(opts, function (error, response, body) {
-        if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
+        if (versionEntryId) {
+            opts.params = {
+                "entry_id": versionEntryId
+            };
         }
+        return api.promiseRequest(opts);
+
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
     });
-    return defer.promise;
 }
 
 function removeFileVersion(pathFromRoot, versionEntryId) {
-    if (!versionEntryId) {
-        throw new Error("Version ID (second argument) is missing");
-    }
-    return remove(pathFromRoot, versionEntryId)
+    return promises.start(true).then(function () {
+        if (!versionEntryId) {
+            throw new Error("Version ID (second argument) is missing");
+        }
+        return remove(pathFromRoot, versionEntryId)
+    });
 }
 
 
@@ -784,16 +790,37 @@ module.exports = {
         var promise = pinkySwear();
         return {
             promise: promise,
-            resolve: function (result) {
-                promise(true, [result]);
+            resolve: function (a) {
+                promise(true, [a]);
             },
-            reject: function (result) {
-                promise(false, [result]);
+            reject: function (a) {
+                promise(false, [a]);
+            }
+        };
+    },
+    "start": function (value) {
+        var promise = pinkySwear();
+        promise(value);
+        return promise;
+    }
+
+}
+},{"pinkyswear":2}],11:[function(require,module,exports){
+function each(collection, fun) {
+    if (collection) {
+        if (collection.length === +collection.length) {
+            for (var i = 0; i < collection.length; i++) {
+                fun.call(null, collection[i], i, collection);
+            }
+        } else {
+            for (var i in collection) {
+                if (collection.hasOwnProperty(i)) {
+                    fun.call(null, collection[i], i, collection);
+                }
             }
         }
     }
 }
-},{"pinkyswear":2}],11:[function(require,module,exports){
 
 module.exports = {
     //simple extend function
@@ -811,32 +838,21 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    each: function each(collection, fun) {
-        if (collection) {
-            if (collection.length === +collection.length) {
-                for (var i = 0; i < collection.length; i++) {
-                    fun.call(null, collection[i], i, collection);
-                }
-            } else {
-                for (var i in collection) {
-                    if (collection.hasOwnProperty(i)) {
-                        fun.call(null, collection[i], i, collection);
-                    }
-                }
-            }
-        }
-    },
+    each: each,
     normalizeURL: function (url) {
         return (url).replace(/\/*$/, "");
     },
     encodeNameSafe: function (name) {
-        name.split("/").map(function (e) {
-            return e.replace(/[^a-z0-9 ]*/gi, "");
-        })
-            .join("/")
-            .replace(/^\//, "");
+        if (!name) {
+            throw new Error("No name given");
+        }
+        var name2 = [];
+        each(name.split("/"), function (e) {
+            name2.push(e.replace(/[^a-z0-9 ]*/gi, ""));
+        });
+        name2 = name2.join("/").replace(/^\/\//, "/");
 
-        return (name);
+        return (name2);
     }
 };
 },{}],12:[function(require,module,exports){
@@ -857,7 +873,7 @@ module.exports = {
 
     }
 
-    window.EgnyteWidget = {
+    window.Egnyte = {
         init: init
     }
 

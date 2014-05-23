@@ -38,8 +38,9 @@ Item.prototype.toggleSelect = function () {
     }
     if (this.isSelectable) {
         this.selected = !this.selected;
+        this.onchange();
     }
-    this.parent.onchanged();
+    
     // Waiting for requirements
     //    else {
     //        //when folders arent selectable, default to opening too
@@ -75,7 +76,7 @@ var mock = {
 };
 
 Model.prototype.onloading = helpers.noop;
-Model.prototype.onchanged = helpers.noop;
+Model.prototype.onupdate = helpers.noop;
 Model.prototype.onerror = helpers.noop;
 
 Model.prototype.set = function (m) {
@@ -92,7 +93,7 @@ Model.prototype.set = function (m) {
         });
     }
 
-    this.onchanged();
+    this.onupdate();
 };
 
 Model.prototype.fetch = function (path) {
@@ -129,7 +130,10 @@ Model.prototype.getSelected = function () {
 
 Model.prototype.deselect = function () {
     helpers.each(this.items, function (item) {
-        item.selected = false;
+        if(item.selected){
+            item.selected = false;
+            item.onchange();
+        }
     });
 }
 

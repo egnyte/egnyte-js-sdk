@@ -15,76 +15,58 @@ function createLink(setup) {
         type: "file",
         accessibility: "domain"
     };
-    var defer = promises.defer();
-    setup = helpers.extend(defaults, setup);
-    setup.path = helpers.encodeNameSafe(setup.path);
+    return promises.start(true)
+        .then(function () {
+            setup = helpers.extend(defaults, setup);
+            setup.path = helpers.encodeNameSafe(setup.path);
 
-    if (!setup.path) {
-        throw new Error("Path attribute missing or incorrect");
-    }
+            if (!setup.path) {
+                throw new Error("Path attribute missing or incorrect");
+            }
 
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + linksEndpoint,
-        json: setup
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
+            return api.promiseRequest({
+                method: "POST",
+                url: api.getEndpoint() + linksEndpoint,
+                json: setup
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
 }
 
 
 function removeLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
+    return api.promiseRequest({
         method: "DELETE",
         url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
-        }
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
     });
-    return defer.promise;
 }
 
 function listLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
+    return api.promiseRequest({
         method: "GET",
         url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
+    }).then(function (result) { //result.response result.body
+        return result.body;
     });
-    return defer.promise;
 }
 
 
 function listLinks(filters) {
-    var defer = promises.defer();
-    filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+    return promises.start(true)
+        .then(function () {
+            filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-    api.sendRequest({
-        method: "get",
-        url: api.getEndpoint() + linksEndpoint,
-        params: filters
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
+            return api.promiseRequest({
+                method: "get",
+                url: api.getEndpoint() + linksEndpoint,
+                params: filters
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
 }
 
 

@@ -1,15 +1,15 @@
-var authHelper = require("./api_elements/auth");
+var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
 
 
 module.exports = function (options) {
-    var auth = authHelper(options);
-    var storage = storageFacade(auth, options);
-    var link = linkFacade(auth, options);
+    var main = APIMain(options);
+    var storage = storageFacade(main, options);
+    var link = linkFacade(main, options);
 
     return {
-        auth: auth,
+        auth: main,
         storage: storage,
         link: link
     };

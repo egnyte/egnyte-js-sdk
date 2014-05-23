@@ -362,43 +362,127 @@ function once (fn) {
 
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(options, api),
+            filePicker: require("./lib/filepicker/byapi")(api),
             filePickerRemote: require("./lib/filepicker/bysession")(options),
             API: api
         }
 
     }
 
-    window.EgnyteWidget = {
+    window.Egnyte = {
         init: init
     }
 
 })();
 },{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":18}],7:[function(require,module,exports){
-var authHelper = require("./api_elements/auth");
+var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
 
 
 module.exports = function (options) {
-    var auth = authHelper(options);
-    var storage = storageFacade(auth, options);
-    var link = linkFacade(auth, options);
+    var main = APIMain(options);
+    var storage = storageFacade(main, options);
+    var link = linkFacade(main, options);
 
     return {
-        auth: auth,
+        auth: main,
         storage: storage,
         link: link
     };
 };
-},{"./api_elements/auth":8,"./api_elements/link":9,"./api_elements/storage":10}],8:[function(require,module,exports){
+},{"./api_elements/link":8,"./api_elements/main":9,"./api_elements/storage":10}],8:[function(require,module,exports){
+var promises = require('../promises');
+var helpers = require('../reusables/helpers');
+
+
+var api;
+var options;
+
+
+var linksEndpoint = "/links";
+
+
+function createLink(setup) {
+    var defaults = {
+        path: null,
+        type: "file",
+        accessibility: "domain"
+    };
+    return promises.start(true)
+        .then(function () {
+            setup = helpers.extend(defaults, setup);
+            setup.path = helpers.encodeNameSafe(setup.path);
+
+            if (!setup.path) {
+                throw new Error("Path attribute missing or incorrect");
+            }
+
+            return api.promiseRequest({
+                method: "POST",
+                url: api.getEndpoint() + linksEndpoint,
+                json: setup
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+}
+
+
+function removeLink(id) {
+    return api.promiseRequest({
+        method: "DELETE",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
+    });
+}
+
+function listLink(id) {
+    return api.promiseRequest({
+        method: "GET",
+        url: api.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
+        return result.body;
+    });
+}
+
+
+function listLinks(filters) {
+    return promises.start(true)
+        .then(function () {
+            filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+
+            return api.promiseRequest({
+                method: "get",
+                url: api.getEndpoint() + linksEndpoint,
+                params: filters
+            });
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+}
+
+
+
+module.exports = function (apihelper, opts) {
+    options = opts;
+    api = apihelper;
+    return {
+        createLink: createLink,
+        removeLink: removeLink,
+        listLink: listLink,
+        listLinks: listLinks
+    };
+};
+},{"../promises":16,"../reusables/helpers":18}],9:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
 var options;
 
+var promises = require('../promises');
 var xhr = require("xhr");
-var quota = /<h1>Developer Over Qps<\/h1>/gi;
 
 
 function authenticateInplace(callback) {
@@ -488,16 +572,39 @@ function sendRequest(opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            if (response.statusCode == 403 && quota.test(response.responseText)) {
-                throw new Error("Developer Over Qps");
-            } else {
-                callback.call(this, error, response, body);
-            }
+            callback.call(this, error, response, body);
         });
     } else {
-        throw new Error("Not authenticated");
+        callback.call(this, new Error("Not authenticated"), {
+            statusCode: 0
+        }, null);
     }
 
+}
+
+function promiseRequest(opts) {
+    var defer = promises.defer();
+    try {
+        sendRequest(opts, function (error, response, body) {
+            if (error) {
+                defer.reject({
+                    error: error,
+                    response: response,
+                    body: body
+                });
+            } else {
+                defer.resolve({
+                    response: response,
+                    body: body
+                });
+            }
+        });
+    } catch (error) {
+        defer.reject({
+            error: error
+        });
+    }
+    return defer.promise;
 }
 
 module.exports = function (opts) {
@@ -516,112 +623,11 @@ module.exports = function (opts) {
         getToken: getToken,
         dropToken: dropToken,
         getEndpoint: getEndpoint,
-        sendRequest: sendRequest
+        sendRequest: sendRequest,
+        promiseRequest: promiseRequest
     };
 };
-},{"xhr":3}],9:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
-
-
-var api;
-var options;
-
-
-var linksEndpoint = "/links";
-
-
-function createLink(setup) {
-    var defaults = {
-        path: null,
-        type: "file",
-        accessibility: "domain"
-    };
-    var defer = promises.defer();
-    setup = helpers.extend(defaults, setup);
-    setup.path = helpers.encodeNameSafe(setup.path);
-
-    if (!setup.path) {
-        throw new Error("Path attribute missing or incorrect");
-    }
-
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + linksEndpoint,
-        json: setup
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-function removeLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
-        method: "DELETE",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-function listLink(id) {
-    var defer = promises.defer();
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-function listLinks(filters) {
-    var defer = promises.defer();
-    filters.path = filters.path && helpers.encodeNameSafe(filters.path);
-
-    api.sendRequest({
-        method: "get",
-        url: api.getEndpoint() + linksEndpoint,
-        params: filters
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(body);
-        } else {
-            defer.reject(response.statusCode);
-        }
-    });
-    return defer.promise;
-}
-
-
-
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        createLink: createLink,
-        removeLink: removeLink,
-        listLink: listLink,
-        listLinks: listLinks
-    };
-};
-},{"../promises":16,"../reusables/helpers":18}],10:[function(require,module,exports){
+},{"../promises":16,"xhr":3}],10:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -633,152 +639,152 @@ var fscontent = "/fs-content";
 
 
 function exists(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-            defer.resolve(true);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return true;
         } else {
-            defer.resolve(false);
+            return false;
+        }
+    }, function (result) { //result.error result.response, result.body
+        if (result.response.statusCode == 404) {
+            return false;
+        } else {
+            throw result.error;
         }
     });
-    return defer.promise;
 }
 
 function get(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(body);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.body;
     });
-    return defer.promise;
 }
 
 function download(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-    api.sendRequest({
-        method: "GET",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-    }, function (error, response, body) {
-        defer.resolve(response);
+        return api.promiseRequest({
+            method: "GET",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        });
+    }).then(function (result) { //result.response result.body
+        return result.response;
     });
-    return defer.promise;
 }
 
 function createFolder(pathFromRoot) {
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "add_folder"
-        }
-    }, function (error, response, body) {
-        if (response.statusCode == 201) {
-            defer.resolve({
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "add_folder"
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 201) {
+            return {
                 path: pathFromRoot
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 function move(pathFromRoot, newPath) {
-    if (!newPath) {
-        throw new Error("Cannot move to empty path");
-    }
-    var defer = promises.defer();
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    newPath = helpers.encodeNameSafe(newPath);
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-        json: {
-            "action": "move",
-            "destination": "/" + newPath,
+    return promises.start(true).then(function () {
+        if (!newPath) {
+            throw new Error("Cannot move to empty path");
         }
-    }, function (error, response, body) {
-        if (response.statusCode == 200) {
-
-            defer.resolve({
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        newPath = helpers.encodeNameSafe(newPath);
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            json: {
+                "action": "move",
+                "destination": "/" + newPath,
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode == 200) {
+            return {
                 oldPath: pathFromRoot,
                 path: newPath
-            });
-        } else {
-            defer.reject(response.statusCode);
+            };
         }
     });
-    return defer.promise;
 }
 
 
 function storeFile(pathFromRoot, fileOrBlob) {
-    if (!window.FormData) {
-        throw new Error("Unsupported browser");
-    }
-    var defer = promises.defer();
-    var file = fileOrBlob;
-    var formData = new window.FormData();
-    formData.append('file', file);
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+    return promises.start(true).then(function () {
+        if (!window.FormData) {
+            throw new Error("Unsupported browser");
+        }
+        var file = fileOrBlob;
+        var formData = new window.FormData();
+        formData.append('file', file);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-    api.sendRequest({
-        method: "POST",
-        url: api.getEndpoint() + fscontent + "/" + encodeURI(pathFromRoot),
-        body: formData,
-    }, function (error, response, body) {
-        if (response.statusCode === 200 || response.statusCode === 201) {
-            defer.resolve({
-                id: response.getResponseHeader("etag"),
+        return api.promiseRequest({
+            method: "POST",
+            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            body: formData,
+        });
+    }).then(function (result) { //result.response result.body
+        if (result.response.statusCode === 200 || result.response.statusCode === 201) {
+            return ({
+                id: result.response.getResponseHeader("etag"),
                 path: pathFromRoot
             });
         } else {
-            defer.reject(response.statusCode);
+            throw new Error(result.response.statusCode);
         }
     });
-    return defer.promise;
 }
 
 function remove(pathFromRoot, versionEntryId) {
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-    var opts = {
-        method: "DELETE",
-        url: api.getEndpoint() + fsmeta + "/" + encodeURI(pathFromRoot),
-    };
-    var defer = promises.defer();
-    if (versionEntryId) {
-        opts.params = {
-            "entry_id": versionEntryId
+    return promises.start(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        var opts = {
+            method: "DELETE",
+            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
-    }
-    api.sendRequest(opts, function (error, response, body) {
-        if (response.statusCode == 200 /*|| response.statusCode == 404*/ ) {
-            defer.resolve();
-        } else {
-            defer.reject(response.statusCode);
+        if (versionEntryId) {
+            opts.params = {
+                "entry_id": versionEntryId
+            };
         }
+        return api.promiseRequest(opts);
+
+    }).then(function (result) { //result.response result.body
+        return result.response.statusCode;
     });
-    return defer.promise;
 }
 
 function removeFileVersion(pathFromRoot, versionEntryId) {
-    if (!versionEntryId) {
-        throw new Error("Version ID (second argument) is missing");
-    }
-    return remove(pathFromRoot, versionEntryId)
+    return promises.start(true).then(function () {
+        if (!versionEntryId) {
+            throw new Error("Version ID (second argument) is missing");
+        }
+        return remove(pathFromRoot, versionEntryId)
+    });
 }
 
 
@@ -812,26 +818,28 @@ module.exports = function (apihelper, opts) {
 
     var defaults = {};
 
-    function init(options, API) {
+    function init(API) {
         var filePicker;
-        options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback, selectOpts) {
+        filePicker = function (node, setup) {
+            if (!setup) {
+                throw new Error("Setup required as a second argument");
+            }
             var close, fpView, fpModel,
-                defaults={
+                defaults = {
                     folder: true,
                     file: true,
                     multiple: true
                 };
-            selectOpts = helpers.extend(defaults,selectOpts);
-            
+            var selectOpts = helpers.extend(defaults, setup.select);
+
             close = function () {
                 fpView.destroy();
-                fpView=null;
-                fpModel=null;
+                fpView = null;
+                fpModel = null;
             };
-            
-            fpModel = new Model(API,{
+
+            fpModel = new Model(API, {
                 select: selectOpts
             });
 
@@ -839,18 +847,19 @@ module.exports = function (apihelper, opts) {
                 el: node,
                 model: fpModel,
                 handlers: {
+                    ready: setup.ready,
                     selection: function (item) {
-                        callback(item);
+                        setup.selection(item);
                         close();
                     },
                     close: function () {
-                        cancelCallback();
+                        setup.cancel();
                         close();
                     }
                 }
             });
-            
-            fpModel.fetch("/");
+
+            fpModel.fetch(setup.path || "/");
 
             return {
                 close: close,
@@ -920,7 +929,10 @@ module.exports = function (apihelper, opts) {
         var ready = false;
         options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback) {
+        filePicker = function (node, setup) {
+            if (!setup) {
+                throw new Error("Setup required as a second argument");
+            }
             var iframe;
             var channel = {
                 marker: options.channelMarker,
@@ -928,30 +940,25 @@ module.exports = function (apihelper, opts) {
             };
             //informs the view to open a certain location
             var sendOpenAt = function () {
-                if (options.openAt) {
-                    messages.sendMessage(iframe.contentWindow, channel, "openAt", options.openAt);
+                if (setup.path) {
+                    messages.sendMessage(iframe.contentWindow, channel, "openAt", setup.path);
                 }
             }
             var close = function () {
                 destroy(channel, iframe);
             };
-            var openAt = function (location) {
-                options.openAt = location;
-                if (ready) {
-                    sendOpenAt();
-                }
-            };
-            
-            
+
+
             iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.filepickerViewAddress);
 
             listen(channel,
                 actionsHandler(close, {
-                    "selection": callback,
-                    "cancel": cancelCallback,
+                    "selection": setup.selection || helpers.noop,
+                    "cancel": setup.cancel || helpers.noop,
                     "ready": function () {
                         ready = true;
                         sendOpenAt();
+                        setup.ready || setup.ready();
                     }
                 })
             );
@@ -959,8 +966,7 @@ module.exports = function (apihelper, opts) {
             node.appendChild(iframe);
 
             return {
-                close: close,
-                openAt: openAt
+                close: close
             };
         };
 
@@ -1013,8 +1019,9 @@ Item.prototype.toggleSelect = function () {
     }
     if (this.isSelectable) {
         this.selected = !this.selected;
+        this.onchange();
     }
-    this.parent.onchanged();
+    
     // Waiting for requirements
     //    else {
     //        //when folders arent selectable, default to opening too
@@ -1050,7 +1057,7 @@ var mock = {
 };
 
 Model.prototype.onloading = helpers.noop;
-Model.prototype.onchanged = helpers.noop;
+Model.prototype.onupdate = helpers.noop;
 Model.prototype.onerror = helpers.noop;
 
 Model.prototype.set = function (m) {
@@ -1067,7 +1074,7 @@ Model.prototype.set = function (m) {
         });
     }
 
-    this.onchanged();
+    this.onupdate();
 };
 
 Model.prototype.fetch = function (path) {
@@ -1104,7 +1111,10 @@ Model.prototype.getSelected = function () {
 
 Model.prototype.deselect = function () {
     helpers.each(this.items, function (item) {
-        item.selected = false;
+        if(item.selected){
+            item.selected = false;
+            item.onchange();
+        }
     });
 }
 
@@ -1138,8 +1148,13 @@ function View(opts) {
     this.model.onloading = function () {
         self.loading();
     }
-    this.model.onchanged = function () {
+    this.model.onupdate = function () {
         self.render();
+        if (self.handlers.ready) {
+            var runReady = self.handlers.ready;
+            self.handlers.ready = null;
+            setTimeout(runReady, 0);
+        }
     }
     this.model.onerror = function () {
         //handle error messaging
@@ -1148,17 +1163,21 @@ function View(opts) {
     //create reusable view elements
     var back = jungle([["span",
         {
-            class: "eg-filepicker-back eg-btn"
+            "class": "eg-filepicker-back eg-btn"
         }, "<"]]);
-    this.els.back = back.children[0];
+    console.log(back,back.firstChild,back.childNodes[0]);
+    this.els.back = back.childNodes[0];
     var close = jungle([["span",
         {
-            class: "eg-filepicker-close eg-btn"
+            "class": "eg-filepicker-close eg-btn"
         }, "x"]]);
-    this.els.close = close.children[0];
+    this.els.close = close.childNodes[0];
 
-    var ok = jungle([["span.eg-btn", "ok"]]);
-    this.els.ok = ok.children[0];
+    var ok = jungle([["span",
+        {
+            "class": "eg-filepicker-ok eg-btn"
+        }, "ok"]]);
+    this.els.ok = ok.childNodes[0];
 
     var that = this;
 
@@ -1190,9 +1209,11 @@ View.prototype.render = function () {
             this.els.ok
         ]
     ]]);
+    
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
+    console.log(this.el.innerHTML);
 
 
     helpers.each(this.model.items, function (item) {
@@ -1205,9 +1226,13 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).children[0];
-    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).children[0];
+    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).childNodes[0];
+    var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
+
+    itemModel.onchange = function () {
+        itemCheckbox.checked = itemModel.selected;
+    };
 
     var itemFragm = jungle([["li.eg-filepicker-item",
         itemCheckbox,
@@ -1219,7 +1244,7 @@ View.prototype.renderItem = function (itemModel) {
         ],
         itemName
     ]]);
-    var itemNode = itemFragm.children[0];
+    var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
         e.stopPropagation();
@@ -1258,7 +1283,7 @@ View.prototype.destroy = function () {
 
 module.exports = View;
 },{"../../vendor/zenjungle":20,"../reusables/dom":17,"../reusables/helpers":18,"./view.less":15}],15:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:0 10px;text-align:center;background-color:#f5f5f5;border:1px solid #aaa;border-radius:2px;font-weight:700;cursor:pointer}.eg-filepicker{border:1px solid #ddd;font-family:sans-serif;position:relative}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{padding:5px;background:#ddd}.eg-filepicker-back{margin-right:10px}.eg-filepicker-close{position:absolute;right:5px;top:5px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding-top:5px;cursor:pointer}.eg-filepicker-item:hover{background-color:#f1f5f8}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:10px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:16px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.9em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #ddd}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:0 10px;text-align:center;background-color:#f5f5f5;border:1px solid #aaa;border-radius:2px;font-weight:700;cursor:pointer}.eg-filepicker{border:1px solid #ddd;font-family:sans-serif;position:relative}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{padding:5px;background:#ddd}.eg-filepicker-back{margin-right:10px}.eg-filepicker-close{position:absolute;right:5px;top:5px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:5px 0;cursor:pointer}.eg-filepicker-item:hover{background-color:#f1f5f8}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:10px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.9em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #ddd}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],16:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
@@ -1268,14 +1293,20 @@ module.exports = {
         var promise = pinkySwear();
         return {
             promise: promise,
-            resolve: function (result) {
-                promise(true, [result]);
+            resolve: function (a) {
+                promise(true, [a]);
             },
-            reject: function (result) {
-                promise(false, [result]);
+            reject: function (a) {
+                promise(false, [a]);
             }
-        }
+        };
+    },
+    "start": function (value) {
+        var promise = pinkySwear();
+        promise(value);
+        return promise;
     }
+
 }
 },{"pinkyswear":2}],17:[function(require,module,exports){
 module.exports = {
@@ -1314,6 +1345,21 @@ module.exports = {
 
 }
 },{}],18:[function(require,module,exports){
+function each(collection, fun) {
+    if (collection) {
+        if (collection.length === +collection.length) {
+            for (var i = 0; i < collection.length; i++) {
+                fun.call(null, collection[i], i, collection);
+            }
+        } else {
+            for (var i in collection) {
+                if (collection.hasOwnProperty(i)) {
+                    fun.call(null, collection[i], i, collection);
+                }
+            }
+        }
+    }
+}
 
 module.exports = {
     //simple extend function
@@ -1331,32 +1377,21 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    each: function each(collection, fun) {
-        if (collection) {
-            if (collection.length === +collection.length) {
-                for (var i = 0; i < collection.length; i++) {
-                    fun.call(null, collection[i], i, collection);
-                }
-            } else {
-                for (var i in collection) {
-                    if (collection.hasOwnProperty(i)) {
-                        fun.call(null, collection[i], i, collection);
-                    }
-                }
-            }
-        }
-    },
+    each: each,
     normalizeURL: function (url) {
         return (url).replace(/\/*$/, "");
     },
     encodeNameSafe: function (name) {
-        name.split("/").map(function (e) {
-            return e.replace(/[^a-z0-9 ]*/gi, "");
-        })
-            .join("/")
-            .replace(/^\//, "");
+        if (!name) {
+            throw new Error("No name given");
+        }
+        var name2 = [];
+        each(name.split("/"), function (e) {
+            name2.push(e.replace(/[^a-z0-9 ]*/gi, ""));
+        });
+        name2 = name2.join("/").replace(/^\/\//, "/");
 
-        return (name);
+        return (name2);
     }
 };
 },{}],19:[function(require,module,exports){

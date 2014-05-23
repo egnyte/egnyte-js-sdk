@@ -7,7 +7,7 @@
     <script>
         var marker = "'E";
         sendOK = function () {
-            window.parent.postMessage(marker + '{"action":"selection","data":["some pretended file info"]}', "*");
+            window.parent.postMessage(marker + '{"action":"selection","data":[{"path":"/Private/adam/foo.png","name":"foo.png","is_folder":false}]}', "*");
         }
         sendCancel = function () {
             window.parent.postMessage(marker + '{"action":"cancel"}', "*");

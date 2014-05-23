@@ -1,3 +1,18 @@
+function each(collection, fun) {
+    if (collection) {
+        if (collection.length === +collection.length) {
+            for (var i = 0; i < collection.length; i++) {
+                fun.call(null, collection[i], i, collection);
+            }
+        } else {
+            for (var i in collection) {
+                if (collection.hasOwnProperty(i)) {
+                    fun.call(null, collection[i], i, collection);
+                }
+            }
+        }
+    }
+}
 
 module.exports = {
     //simple extend function
@@ -15,31 +30,20 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    each: function each(collection, fun) {
-        if (collection) {
-            if (collection.length === +collection.length) {
-                for (var i = 0; i < collection.length; i++) {
-                    fun.call(null, collection[i], i, collection);
-                }
-            } else {
-                for (var i in collection) {
-                    if (collection.hasOwnProperty(i)) {
-                        fun.call(null, collection[i], i, collection);
-                    }
-                }
-            }
-        }
-    },
+    each: each,
     normalizeURL: function (url) {
         return (url).replace(/\/*$/, "");
     },
     encodeNameSafe: function (name) {
-        name.split("/").map(function (e) {
-            return e.replace(/[^a-z0-9 ]*/gi, "");
-        })
-            .join("/")
-            .replace(/^\//, "");
+        if (!name) {
+            throw new Error("No name given");
+        }
+        var name2 = [];
+        each(name.split("/"), function (e) {
+            name2.push(e.replace(/[^a-z0-9 ]*/gi, ""));
+        });
+        name2 = name2.join("/").replace(/^\/\//, "/");
 
-        return (name);
+        return (name2);
     }
 };

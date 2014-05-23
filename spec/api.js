@@ -24,6 +24,7 @@ describe("API to JS (integration test)", function () {
     }
 
     beforeEach(function () {
+        jasmine.getEnv().defaultTimeoutInterval = 5000; //QA API can be laggy
         jasmine.addMatchers({
             toAutoFail: function () {
                 return {
@@ -37,7 +38,7 @@ describe("API to JS (integration test)", function () {
             }
         });
 
-        eg = EgnyteWidget.init(egnyteDomain, {
+        eg = Egnyte.init(egnyteDomain, {
             token: APIToken
         });
     });
@@ -47,16 +48,19 @@ describe("API to JS (integration test)", function () {
         expect(eg.API.auth.isAuthenticated()).toBe(true);
     });
 
+    var testpath;
+    var testpath2;
+    var testpath3;
+
     describe("Storage", function () {
-        //this test suite has unicorns and bacon, it can't get any better/
-        var testpath = "/Private/hackathon1/bacon" + ~~(10000 * Math.random());
-        var testpath2 = "/Private/hackathon1/unicorn" + ~~(10000 * Math.random());
+
+
         var recentFileObject;
 
         it("Should claim that root exists", function (done) {
-            eg.API.storage.exists("/Private/hackathon1").then(function (e) {
+            eg.API.storage.exists("/Private").then(function (e) {
                 expect(e).toBe(true);
-                done();
+                setTimeout(done, 400);
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -65,7 +69,20 @@ describe("API to JS (integration test)", function () {
         it("Should claim that jiberish doesn't exists", function (done) {
             eg.API.storage.exists("/jiberish").then(function (e) {
                 expect(e).toBe(false);
-                done();
+                setTimeout(done, 400);
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
+            });
+
+        });
+        it("Should be able to fetch a private folder", function (done) {
+            eg.API.storage.get("/Private").then(function (e) {
+                expect(e["folders"]).toBeDefined();
+                //this test suite has unicorns and bacon, it can't get any better/
+                testpath = e.folders[0].path + "/bacon" + ~~(10000 * Math.random());
+                testpath2 = e.folders[0].path + "/unicorn" + ~~(10000 * Math.random());
+                testpath3 = e.folders[0].path + "/candy" + ~~(10000 * Math.random());
+                setTimeout(done, 400);
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -210,14 +227,13 @@ describe("API to JS (integration test)", function () {
     });
 
     describe("Link", function () {
-        var testpath = "/Private/hackathon1/cow_and_chicken" + ~~(10000 * Math.random());
         var recentFile;
         var recentLink;
 
         it("Needs a file to link to", function (done) {
             var blob = getTestBlob("hey!");
 
-            eg.API.storage.storeFile(testpath, blob)
+            eg.API.storage.storeFile(testpath3, blob)
                 .then(function (e) {
                     recentFile = e;
                     setTimeout(done, 400); //delay to stay in QPS
@@ -267,6 +283,8 @@ describe("API to JS (integration test)", function () {
                     eg.API.link.listLink(other[0]).then(function (e) {
                         expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
                         setTimeout(done, 400); //delay to stay in QPS
+                    }).error(function (e) {
+                        throw new Error("Link from the list doesn't seem to exist at all");
                     });
                 } else {
                     setTimeout(done, 400); //delay to stay in QPS
@@ -280,15 +298,15 @@ describe("API to JS (integration test)", function () {
         it("Can destroy a link to file", function (done) {
 
             eg.API.link.removeLink(recentLink.links[0].id).then(function (e) {
-                expect(e).toBeUndefined();
+                expect(e).toEqual(200);
             }).then(function () {
                 return eg.API.link.listLink(recentLink.links[0].id);
             }).then(function () {
                 //Should not succeed
                 expect(this).toAutoFail("Link still exists");
-            }, function (e) {
+            }, function (result) {
                 //I expect a 404 instead
-                expect(e).toEqual(404);
+                expect(result.response.statusCode).toEqual(404);
                 setTimeout(done, 400); //delay to stay in QPS
             });
 
@@ -296,7 +314,7 @@ describe("API to JS (integration test)", function () {
 
 
         it("Needs to clean up the file", function (done) {
-            eg.API.storage.remove(testpath)
+            eg.API.storage.remove(testpath3)
                 .then(function (e) {
                     setTimeout(done, 400); //delay to stay in QPS
                 }).error(function (e) {

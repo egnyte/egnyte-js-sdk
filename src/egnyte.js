@@ -12,14 +12,14 @@
 
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(options, api),
+            filePicker: require("./lib/filepicker/byapi")(api),
             filePickerRemote: require("./lib/filepicker/bysession")(options),
             API: api
         }
 
     }
 
-    window.EgnyteWidget = {
+    window.Egnyte = {
         init: init
     }
 

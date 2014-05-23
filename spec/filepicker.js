@@ -1,64 +1,62 @@
-describe("Egnyte widget", function () {
-   
+describe("Remote Filepicker", function () {
+
+    var eg;
+    var node;
+
+    beforeEach(function () {
+        eg = Egnyte.init("#");
+
+        node = document.createElement('div');
+        document.body.appendChild(node);
+    });
+
+    afterEach(function () {
+        document.body.removeChild(node);
+    });
 
     it('should ignore trailing slash difference in domains', function () {
-        var eg1 = EgnyteWidget.init("http://example.com");
-        var eg2 = EgnyteWidget.init("http://example.com///");
+        var eg1 = Egnyte.init("http://example.com");
+        var eg2 = Egnyte.init("http://example.com///");
 
         expect(eg1.domain).toEqual(eg2.domain);
     });
 
-    describe("Remote Filepicker", function () {
-        var eg;
-        var node;
+    it('should create an iframe', function () {
+        var callback = function () {};
 
-        beforeEach(function () {
-            eg = EgnyteWidget.init("#");
+        var picker = eg.filePickerRemote(node,{});
 
-            node = document.createElement('div');
-            document.body.appendChild(node);
-        });
+        expect(node.getElementsByTagName('iframe').length).toEqual(1);
 
-        afterEach(function () {
-            document.body.removeChild(node);
-        });
+        picker.close();
+    });
 
-        it('should create an iframe', function () {
-            var callback = function () {};
+    it('should cleanup after itself', function () {
+        var callback = function () {};
 
-            var picker = eg.filePickerRemote(node, callback, callback);
+        var picker = eg.filePickerRemote(node,{});
+        picker.close();
 
-            expect(node.getElementsByTagName('iframe').length).toEqual(1);
+        expect(node.getElementsByTagName('iframe').length).toEqual(0);
+    });
 
-            picker.close();
-        });
+    it('should react to postmessage', function (done) {
 
-        it('should cleanup after itself', function () {
-            var callback = function () {};
-
-            var picker = eg.filePickerRemote(node, callback, callback);
-            picker.close();
-
-            expect(node.getElementsByTagName('iframe').length).toEqual(0);
-        });
-
-        it('should react to postmessage', function (done) {
-
-            //for matching origin
-            eg = EgnyteWidget.init(window.location.origin);
-            eg.filePickerRemote(node, function () {}, function () {
+        //for matching origin
+        eg = Egnyte.init(window.location.origin);
+        eg.filePickerRemote(node, {
+            cancel: function () {
                 //finishes the test successfully
                 done();
-            });
-            //to stop it from opening itself in iframe
-            node.innerHTML='';
-
-            window.postMessage("'E" + '{"action":"cancel"}', "*");
-
-
+            }
         });
+        //to stop it from opening itself in iframe
+        node.innerHTML = '';
 
+        window.postMessage("'E" + '{"action":"cancel"}', "*");
 
 
     });
+
+
 });
