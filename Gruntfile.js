@@ -16,8 +16,8 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: "// <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today('yyyy-mm-dd') %>) \n" +
-                    "// license:<%= pkg.license %> \n" +
-                    "// <%= pkg.author %> \n"
+                "// license:<%= pkg.license %> \n" +
+                "// <%= pkg.author %> \n"
             },
             dist: {
                 files: [{
@@ -42,6 +42,18 @@ module.exports = function (grunt) {
                 }
             }
         },
+        connect: {
+            server:{
+                options: {
+                    port: 9999,
+                    hostname: "localhost",
+                    base: ".",
+                    protocol: "https",
+                    keepalive: true                
+                }
+            }
+
+        },
 
         watch: {
             files: ["src/**/*.js","src/**/*.less"],
@@ -53,10 +65,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-contrib-connect');
 
 
     grunt.registerTask("test", ["dist", "jasmine:all"]);
     grunt.registerTask("dist", ["clean", "browserify", "uglify"]);
+    grunt.registerTask("serve", ["dist", "connect:server"]);
 
     grunt.registerTask("default", ["test"]);
 }

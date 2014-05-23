@@ -46,8 +46,11 @@ process.argv = [];
 function noop() {}
 
 process.on = noop;
+process.addListener = noop;
 process.once = noop;
 process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
 process.emit = noop;
 
 process.binding = function (name) {
@@ -191,8 +194,8 @@ process.chdir = function (dir) {
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 
 
-}).call(this,require("/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"/home/zb/repo/_git/egnyte-widget/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],3:[function(require,module,exports){
+}).call(this,require("FWaASH"))
+},{"FWaASH":1}],3:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -791,7 +794,6 @@ module.exports = {
     }
 }
 },{"pinkyswear":2}],11:[function(require,module,exports){
-var subs = {}
 
 module.exports = {
     //simple extend function
@@ -808,26 +810,19 @@ module.exports = {
         }
         return target;
     },
-    subscribe: function (topic, cb) {
-        if (!subs[topic]) {
-            subs[topic] = [];
-        }
-        subs[topic].push(cb);
-    },
-    publish: function (topic, data) {
-        if (subs[topic]) {
-            setTimeout(function () {
-                each(subs[topic], function (cb) {
-                    cb(data);
-                })
-            }, 0);
-        }
-    },
-    each: function each(arr, fun) {
-        if (arr) {
-            for (var i = 0; i < arr.length; i++) {
-                if (i in arr)
-                    fun.call(null, arr[i], i, arr);
+    noop: function () {},
+    each: function each(collection, fun) {
+        if (collection) {
+            if (collection.length === +collection.length) {
+                for (var i = 0; i < collection.length; i++) {
+                    fun.call(null, collection[i], i, collection);
+                }
+            } else {
+                for (var i in collection) {
+                    if (collection.hasOwnProperty(i)) {
+                        fun.call(null, collection[i], i, collection);
+                    }
+                }
             }
         }
     },
@@ -867,4 +862,4 @@ module.exports = {
     }
 
 })();
-},{"./lib/api":6,"./lib/reusables/helpers":11}]},{},[12]);
+},{"./lib/api":6,"./lib/reusables/helpers":11}]},{},[12])

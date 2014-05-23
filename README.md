@@ -50,4 +50,4 @@ Create a file `spec/conf/apiaccess.js` with the following ocntent:
 
 `YOURACCESSTOKEN` is not the API key. You need to obtain the access token using your key as described in authentication section of Egnyte Public API docs.
 
-Or you can put `examples/request_token.html` on any server listening to https on a domain containing `.` (everything except localhost, 127.0.0.1 is ok) and go through the example.
+Or you can run `grunt serve` and open `https://127.0.0.1:9999/examples/request_token.html` and go through the example.

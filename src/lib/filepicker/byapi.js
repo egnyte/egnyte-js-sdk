@@ -3,56 +3,49 @@
     var helpers = require("../reusables/helpers");
     var dom = require("../reusables/dom");
     var View = require("../filepicker_elements/view");
+    var Model = require("../filepicker_elements/model");
 
     var defaults = {};
 
-    function controllerFactory(view) {
-        return function (path) {
-            view.loading();
-            eg.API.storage.get(path).then(function (m) {
-                view.model = m;
-                view.render();
-            }).error(function () {
-                console.error(arguments);
-            });
-        }
-    }
-
-    function init(options) {
+    function init(options, API) {
         var filePicker;
         options = helpers.extend(defaults, options);
 
-        filePicker = function (node, callback, cancelCallback) {
-            var controller, close, fpView;
+        filePicker = function (node, callback, cancelCallback, selectOpts) {
+            var close, fpView, fpModel,
+                defaults={
+                    folder: true,
+                    file: true,
+                    multiple: true
+                };
+            selectOpts = helpers.extend(defaults,selectOpts);
+            
             close = function () {
                 fpView.destroy();
+                fpView=null;
+                fpModel=null;
             };
+            
+            fpModel = new Model(API,{
+                select: selectOpts
+            });
 
             fpView = new View({
                 el: node,
-                model: {},
+                model: fpModel,
                 handlers: {
-                    file: function (item) {
+                    selection: function (item) {
                         callback(item);
                         close();
                     },
-                    folder: function (item) {
-                        controller(item.path);
-                    },
-                    back: function () {
-                        var path = this.model.path.replace(/\/[^\/]+\/?$/i, "");
-                        controller(path);
-                    },
-                    close: function(){
+                    close: function () {
                         cancelCallback();
                         close();
                     }
                 }
             });
-
-            controller = controllerFactory(fpView)
-
-            controller("/Private/hackathon1");
+            
+            fpModel.fetch("/");
 
             return {
                 close: close,

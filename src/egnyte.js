@@ -8,11 +8,13 @@
         options = helpers.extend(options, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
+        var api = require("./lib/api")(options);
+
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(options),
+            filePicker: require("./lib/filepicker/byapi")(options, api),
             filePickerRemote: require("./lib/filepicker/bysession")(options),
-            API:  require("./lib/api")(options)
+            API: api
         }
 
     }

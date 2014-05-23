@@ -1,4 +1,3 @@
-var subs = {}
 
 module.exports = {
     //simple extend function
@@ -15,26 +14,19 @@ module.exports = {
         }
         return target;
     },
-    subscribe: function (topic, cb) {
-        if (!subs[topic]) {
-            subs[topic] = [];
-        }
-        subs[topic].push(cb);
-    },
-    publish: function (topic, data) {
-        if (subs[topic]) {
-            setTimeout(function () {
-                each(subs[topic], function (cb) {
-                    cb(data);
-                })
-            }, 0);
-        }
-    },
-    each: function each(arr, fun) {
-        if (arr) {
-            for (var i = 0; i < arr.length; i++) {
-                if (i in arr)
-                    fun.call(null, arr[i], i, arr);
+    noop: function () {},
+    each: function each(collection, fun) {
+        if (collection) {
+            if (collection.length === +collection.length) {
+                for (var i = 0; i < collection.length; i++) {
+                    fun.call(null, collection[i], i, collection);
+                }
+            } else {
+                for (var i in collection) {
+                    if (collection.hasOwnProperty(i)) {
+                        fun.call(null, collection[i], i, collection);
+                    }
+                }
             }
         }
     },

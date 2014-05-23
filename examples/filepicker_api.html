@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>filepicker widget</title>
     <script src="../dist/egnyte.js"></script>
-    <script src="../spec/conf/apiaccess.js"></script>
+    <script src="../spec/conf/apiaccess_template.js"></script>
     <style>
         #there {
             width: 400px;
@@ -20,8 +20,10 @@
 
     </div>
 
-    <button onclick="openPicker()">open picker</button>
-    Take a look at the console.
+    <button onclick="openPicker1()">open picker</button>
+    <button onclick="openPicker2()">open picker files only</button>
+    <button onclick="openPicker3()">open picker folders only</button>
+    <button onclick="openPicker4()">open picker single select</button>
     <script>
         var node = document.getElementById("there");
 
@@ -29,14 +31,48 @@
             token: APIToken
         });
 
-        function openPicker() {
+        function openPicker1() {
 
-            eg.filePicker(node, function(fileData) {
+            eg.filePicker(node, function (fileData) {
                 console.info(fileData);
-            }, function() {
+            }, function () {
                 console.warn("cancelled");
+            }, {
+                //defaults kick in
             });
 
+        }
+
+        function openPicker2() {
+            eg.filePicker(node, function (fileData) {
+                console.info(fileData);
+            }, function () {
+                console.warn("cancelled");
+            }, {
+                folder: false,
+                file: true
+            });
+        }
+
+        function openPicker3() {
+            eg.filePicker(node, function (fileData) {
+                console.info(fileData);
+            }, function () {
+                console.warn("cancelled");
+            }, {
+                folder: true,
+                file: false
+            });
+        }
+
+        function openPicker4() {
+            eg.filePicker(node, function (fileData) {
+                console.info(fileData);
+            }, function () {
+                console.warn("cancelled");
+            }, {
+                multiple: false
+            });
         }
     </script>
 </body>
