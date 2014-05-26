@@ -7,7 +7,11 @@ module.exports = {
             elem.attachEvent("on" + type, function (e) {
                 e = e || window.event; // get window.event if argument is falsy (in IE)
                 e.target || (e.target = e.srcElement);
-                callback.call(this, e);
+                var res = callback.call(this, e);
+                if (res === false) {
+                    e.cancelBubble = true;
+                }
+                return res;
             });
         }
     },
@@ -16,7 +20,7 @@ module.exports = {
         if (elem.removeEventListener) {
             elem.removeEventListener(type, callback, false);
         } else if (elem.detachEvent) {
-            elem.detachEvent('on' + type, callback);
+            //no can do
         }
     },
 

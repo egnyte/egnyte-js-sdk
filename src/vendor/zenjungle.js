@@ -8,20 +8,22 @@
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {
-            return '[object Object]' == Object.prototype.toString.call(object);
+            return (!!object && '[object Object]' == Object.prototype.toString.call(object) && !object.nodeType);
         },
         is_array = function (object) {
             return '[object Array]' == Object.prototype.toString.call(object);
         },
         each = function (object, callback) {
             var key;
-            if (object.length) {
-                for (key = 0; key < object.length; key++) {
-                    callback(object[key], key);
-                }
-            } else {
-                for (key in object) {
-                    object.hasOwnProperty(key) && callback(object[key], key);
+            if (object) {
+                if (object.length) {
+                    for (key = 0; key < object.length; key++) {
+                        callback(object[key], key);
+                    }
+                } else {
+                    for (key in object) {
+                        object.hasOwnProperty(key) && callback(object[key], key);
+                    }
                 }
             }
         },
@@ -98,7 +100,7 @@ var zenjungle = (function () {
                 } else {
                     monkeys(element, where);
                 }
-            } else if (1 == element.nodeType || 11 == element.nodeType) {
+            } else if (element.nodeType) {
                 where.appendChild(element);
             } else if ('string' === typeof (element) || 'number' === typeof (element)) {
                 where.appendChild(document.createTextNode(element));

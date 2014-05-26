@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "pinkyswear": "^2.0.2",
-    "xhr": "^1.6.1"
+    "xhr": "git://github.com/naugtur/xhr.git"
   },
   "devDependencies": {
     "browserify": "^4.0.0",

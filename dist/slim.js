@@ -233,6 +233,7 @@ function createXHR(options, callback) {
     var headers = xhr.headers = options.headers || {}
     var sync = !!options.sync
     var isJson = false
+    var key
 
     if ("json" in options) {
         isJson = true
@@ -261,9 +262,11 @@ function createXHR(options, callback) {
     }
 
     if (xhr.setRequestHeader) {
-        Object.keys(headers).forEach(function (key) {
-            xhr.setRequestHeader(key, headers[key])
-        })
+        for(key in headers){
+            if(headers.hasOwnProperty(key)){
+                xhr.setRequestHeader(key, headers[key])
+            }
+        }
     }
 
     if ("responseType" in options) {

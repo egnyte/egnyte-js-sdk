@@ -122,7 +122,9 @@ View.prototype.renderItem = function (itemModel) {
     var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
-        e.stopPropagation();
+        if(e.stopPropagation) {
+            e.stopPropagation();
+        }
         itemModel.defaultAction();
         return false;
     });

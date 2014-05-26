@@ -233,6 +233,7 @@ function createXHR(options, callback) {
     var headers = xhr.headers = options.headers || {}
     var sync = !!options.sync
     var isJson = false
+    var key
 
     if ("json" in options) {
         isJson = true
@@ -261,9 +262,11 @@ function createXHR(options, callback) {
     }
 
     if (xhr.setRequestHeader) {
-        Object.keys(headers).forEach(function (key) {
-            xhr.setRequestHeader(key, headers[key])
-        })
+        for(key in headers){
+            if(headers.hasOwnProperty(key)){
+                xhr.setRequestHeader(key, headers[key])
+            }
+        }
     }
 
     if ("responseType" in options) {
@@ -1244,7 +1247,9 @@ View.prototype.renderItem = function (itemModel) {
     var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
-        e.stopPropagation();
+        if(e.stopPropagation) {
+            e.stopPropagation();
+        }
         itemModel.defaultAction();
         return false;
     });
@@ -1315,7 +1320,11 @@ module.exports = {
             elem.attachEvent("on" + type, function (e) {
                 e = e || window.event; // get window.event if argument is falsy (in IE)
                 e.target || (e.target = e.srcElement);
-                callback.call(this, e);
+                var res = callback.call(this, e);
+                if (res === false) {
+                    e.cancelBubble = true;
+                }
+                return res;
             });
         }
     },
@@ -1324,7 +1333,7 @@ module.exports = {
         if (elem.removeEventListener) {
             elem.removeEventListener(type, callback, false);
         } else if (elem.detachEvent) {
-            elem.detachEvent('on' + type, callback);
+            //no can do
         }
     },
 
@@ -1445,20 +1454,22 @@ module.exports = {
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {
-            return '[object Object]' == Object.prototype.toString.call(object);
+            return (!!object && '[object Object]' == Object.prototype.toString.call(object) && !object.nodeType);
         },
         is_array = function (object) {
             return '[object Array]' == Object.prototype.toString.call(object);
         },
         each = function (object, callback) {
             var key;
-            if (object.length) {
-                for (key = 0; key < object.length; key++) {
-                    callback(object[key], key);
-                }
-            } else {
-                for (key in object) {
-                    object.hasOwnProperty(key) && callback(object[key], key);
+            if (object) {
+                if (object.length) {
+                    for (key = 0; key < object.length; key++) {
+                        callback(object[key], key);
+                    }
+                } else {
+                    for (key in object) {
+                        object.hasOwnProperty(key) && callback(object[key], key);
+                    }
                 }
             }
         },
@@ -1535,7 +1546,7 @@ var zenjungle = (function () {
                 } else {
                     monkeys(element, where);
                 }
-            } else if (1 == element.nodeType || 11 == element.nodeType) {
+            } else if (element.nodeType) {
                 where.appendChild(element);
             } else if ('string' === typeof (element) || 'number' === typeof (element)) {
                 where.appendChild(document.createTextNode(element));
