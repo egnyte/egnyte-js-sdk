@@ -47,13 +47,13 @@ function View(opts) {
     var close = jungle([["span",
         {
             "class": "eg-filepicker-close eg-btn"
-        }, "x"]]);
+        }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
     var ok = jungle([["span",
         {
             "class": "eg-filepicker-ok eg-btn"
-        }, "ok"]]);
+        }, "Ok"]]);
     this.els.ok = ok.childNodes[0];
 
     var that = this;
@@ -76,14 +76,14 @@ View.prototype.render = function () {
     this.els.list = document.createElement("ul");
 
     var layoutFragm = jungle([["div.eg-filepicker",
-        this.els.close,
         ["div.eg-filepicker-bar",
             this.els.back,
             ["span.eg-filepicker-path", this.model.path]
         ],
         this.els.list,
         ["div.eg-filepicker-bar",
-            this.els.ok
+            this.els.ok,
+            this.els.close
         ]
     ]]);
     

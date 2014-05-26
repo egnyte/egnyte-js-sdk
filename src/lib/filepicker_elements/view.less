@@ -1,7 +1,13 @@
 @size: 40px;
-@framecl: #ddd;
-@btcl: #F5F5F5;
-@btcl2: #aaa;
+@fontsize: 13px;
+@fontcl: #5E5F60;
+@fontclA: #fff;
+@framecl: #dbdbdb;
+@bodycl: #f1f1f1;
+@btcl: #fafafa;
+@btclA: #3191f2;
+@btframecl: #ccc;
+@btframeclA: #2b82d9;
 @itemhover: #f1f5f8;
 @filecl: #dbdbdb;
 @spacing: 5px;
@@ -10,18 +16,26 @@
 .eg-btn{
     display:inline-block;
     line-height: @size/2;
-    padding: 0 @size/4;
+    padding: 4px 18px;
     text-align:center;
+    margin-right: @spacing*2;
     background-color: @btcl;
-    border:1px solid @btcl2;
+    border:1px solid @btframecl;
     border-radius: 2px;
-    font-weight: bold;
     cursor: pointer;
 }
 .eg-filepicker {
     border: 1px solid @framecl;
+    color: @fontcl;
     font-family: sans-serif;
+    font-size: @fontsize;
     position:relative;
+    *{
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
 }
 
 .eg-filepicker ul{
@@ -33,26 +47,27 @@
 }
 
 .eg-filepicker-bar{
+    outline: 1px solid @framecl;
     padding: @spacing;
-    background: @framecl;
+    background: @bodycl;
 }
 
-.eg-filepicker-back{
-    margin-right: 10px;
+.eg-filepicker-ok{
+    background-color: @btclA;
+    border-color: @btframeclA;
+    color: @fontclA;
 }
-.eg-filepicker-close{
-    position: absolute;
-    right: @spacing;
-    top: @spacing;
+.eg-filepicker-back{
+    padding: 4px;
 }
 
 .eg-filepicker-item{
     line-height: 1.2em;
     list-style: none;
     padding: @spacing 0;
-    cursor:pointer;
     &:hover {
         background-color: @itemhover;
+        outline: 1px solid @framecl;
     }
     & *{
         vertical-align: middle;
@@ -62,13 +77,17 @@
     & input{
         margin: @spacing*2;
         &.eg-not{
-        visibility: hidden;
+            visibility: hidden;
         }
     }
 }
 
 .eg-filepicker-name{
     margin-left: .3em;
+    cursor:pointer;
+    &:hover{
+        text-decoration: underline;
+    }
 }
 
 .eg-filepicker-ico-file {
@@ -96,7 +115,7 @@
     border-top-left-radius: 0;
     font-size: @size/4;
     margin-top: .75em;
-    height: 2.9em;
+    height: 2.8em;
     overflow: visible;
     width: 4em;
     position: relative;
