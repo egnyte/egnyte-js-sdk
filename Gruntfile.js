@@ -16,8 +16,8 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: "// <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today('yyyy-mm-dd') %>) \n" +
-                "// license:<%= pkg.license %> \n" +
-                "// <%= pkg.author %> \n"
+                    "// license:<%= pkg.license %> \n" +
+                    "// <%= pkg.author %> \n"
             },
             dist: {
                 files: [{
@@ -32,9 +32,10 @@ module.exports = function (grunt) {
 
         jasmine: {
             all: {
-                src: ["dist/egnyte.js", "spec/conf/apiaccess.js"],
+                src: ["dist/egnyte.js", "spec/conf/apiaccess.js", "src/vendor/zenjungle.js"],
                 options: {
                     keepRunner: true,
+                    helpers: ["spec/helpers/clickablenodes.js"],
                     specs: 'spec/*.js',
                     '--web-security': false,
                     '--local-to-remote-url-access': true,
@@ -43,20 +44,20 @@ module.exports = function (grunt) {
             }
         },
         connect: {
-            server:{
+            server: {
                 options: {
                     port: 9999,
                     hostname: "localhost",
                     base: ".",
                     protocol: "https",
-                    keepalive: true                
+                    keepalive: true
                 }
             }
 
         },
 
         watch: {
-            files: ["src/**/*.js","src/**/*.less"],
+            files: ["src/**/*.js", "src/**/*.less"],
             tasks: ["dist"]
         }
     })

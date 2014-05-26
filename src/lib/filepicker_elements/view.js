@@ -43,7 +43,6 @@ function View(opts) {
         {
             "class": "eg-filepicker-back eg-btn"
         }, "<"]]);
-    console.log(back,back.firstChild,back.childNodes[0]);
     this.els.back = back.childNodes[0];
     var close = jungle([["span",
         {
@@ -91,8 +90,6 @@ View.prototype.render = function () {
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
-    console.log(this.el.innerHTML);
-
 
     helpers.each(this.model.items, function (item) {
         self.renderItem(item);

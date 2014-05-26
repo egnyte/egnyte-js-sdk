@@ -28,6 +28,7 @@ describe("API Filepicker", function () {
 
         node = document.createElement('div');
         document.body.appendChild(node);
+        
     });
 
     afterEach(function () {
@@ -60,9 +61,12 @@ describe("API Filepicker", function () {
                     expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
                     done();
                 }, 1);
+                    
             },
             ready: function () {
-                node.querySelector(".eg-filepicker-close").click();
+                var close = node.querySelectorAll(".eg-filepicker-close")[0];
+                expect(close).toBeTruthy();
+                close.click();
             }
         });
     });
@@ -80,7 +84,7 @@ describe("API Filepicker", function () {
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
                 list[1].click();
-                node.querySelector(".eg-filepicker-ok").click();
+                node.querySelectorAll(".eg-filepicker-ok")[0].click();
             }
         });
     });
@@ -98,7 +102,7 @@ describe("API Filepicker", function () {
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
                 list[1].click();
-                node.querySelector(".eg-filepicker-ok").click();
+                node.querySelectorAll(".eg-filepicker-ok")[0].click();
             },
             select: {
                 multiple: false
@@ -118,7 +122,7 @@ describe("API Filepicker", function () {
             ready: function () {
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
-                node.querySelector(".eg-filepicker-ok").click();
+                node.querySelectorAll(".eg-filepicker-ok")[0].click();
             },
             select: {
                 folder:false,
