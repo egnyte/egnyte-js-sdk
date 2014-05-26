@@ -10,13 +10,13 @@
 @btframeclA: #2b82d9;
 @itemhover: #f1f5f8;
 @filecl: #dbdbdb;
-@spacing: 5px;
+@spacing: 4px;
 
 
 .eg-btn{
     display:inline-block;
     line-height: @size/2;
-    padding: 4px 18px;
+    padding: @spacing 18px;
     text-align:center;
     margin-right: @spacing*2;
     background-color: @btcl;
@@ -58,7 +58,17 @@
     color: @fontclA;
 }
 .eg-filepicker-back{
-    padding: 4px;
+    padding: @spacing @size/4;
+    position:relative;
+
+    &::before {
+        bottom: @spacing;
+        right: @size/4;
+        position: absolute;
+        border:  @size/4 solid transparent;
+        border-right: @size/4 solid @fontcl;
+        content: "";
+    }
 }
 
 .eg-filepicker-item{
