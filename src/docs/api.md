@@ -124,11 +124,10 @@ API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a fi
 
 ### Storing a file
 
-Storing a file requires a `Blob` compatible object. It can be created manually using the browser's `Blob` constructor of `BlobBuilder`. A file input in a form can also produce a blob: `fileInputNode.files[0]` is a `File` object, which actually extends `Blob`.
+Storing a file requires a `Blob` compatible object. It can be created manually using the browser's `Blob` constructor or `BlobBuilder`. A file input in a form can also produce a blob: `fileInputNode.files[0]` is a `File` object, which actually extends `Blob`.
 
 To aid working with blobs cross-browser we recommend https://github.com/eligrey/Blob.js (a copy available in this repo in src/vendor/blob.js)
 
-The `storeFile` method uses `FormData` constructor, documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
 _Example_
 
@@ -148,5 +147,7 @@ $(".myForm").on("submit",function(){
 });
 
 ```
+
+The `storeFile` method uses `FormData` constructor; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
 ## Link API helpers

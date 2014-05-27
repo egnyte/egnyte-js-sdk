@@ -20,14 +20,17 @@ The options are:
  - `cancel` Function - a callback to run when the user decides to cancel selecting
  - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
  - `select` Map of selectables configuration
- ```javascript
-    {
-      folder: true, //should folders be selectable
-      file: true,   //should files be selectable (files are hidden when not selectable)
-      multi: true   //should allow multiselection
-    }
- ```
+ 
+```javascript
+{
+  folder: true, //should folders be selectable
+  file: true,   //should files be selectable (files are hidden when not selectable)
+  multi: true   //should allow multiselection
+}
+```
+
 _Example_
+
 ```javascript
 var picker = egnyte.filePicker(containerNode,{
     path: "/Private",

@@ -66,25 +66,26 @@
 <li><code>path</code> String - a path to open the filepicker at, default: &quot;/&quot;</li>
 <li><code>cancel</code> Function - a callback to run when the user decides to cancel selecting</li>
 <li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
-<li><code>select</code> Map of selectables configuration<pre><code class="lang-javascript"> {
-   folder: true, //should folders be selectable
-   file: true,   //should files be selectable (files are hidden when not selectable)
-   multi: true   //should allow multiselection
- }</code></pre>
-<em>Example</em><pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
- path: &quot;/Private&quot;,
- selection: function(list){
-     //handle selection
-     },
- cancel: function(){
-     //the user cancelled. containerNode will be emptied by the filepicker itself.
-     },
- select: {
-     multi: false //single selection
-     }
- });</code></pre>
-</li>
+<li><code>select</code> Map of selectables configuration</li>
 </ul>
+<pre><code class="lang-javascript">{
+  folder: true, //should folders be selectable
+  file: true,   //should files be selectable (files are hidden when not selectable)
+  multi: true   //should allow multiselection
+}</code></pre>
+<p><em>Example</em></p>
+<pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
+    path: &quot;/Private&quot;,
+    selection: function(list){
+        //handle selection
+        },
+    cancel: function(){
+        //the user cancelled. containerNode will be emptied by the filepicker itself.
+        },
+    select: {
+        multi: false //single selection
+        }
+    });</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
 <h2 id="close-file-picker">Close file picker</h2>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>

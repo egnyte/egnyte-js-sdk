@@ -274,9 +274,8 @@
 </tbody>
 </table>
 <h3 id="storing-a-file">Storing a file</h3>
-<p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor of <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
+<p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor or <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
 <p>To aid working with blobs cross-browser we recommend <a href="https://github.com/eligrey/Blob.js">https://github.com/eligrey/Blob.js</a> (a copy available in this repo in src/vendor/blob.js)</p>
-<p>The <code>storeFile</code> method uses <code>FormData</code> constructor, documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
 <p><em>Example</em></p>
 <pre><code class="lang-javascript">$(&quot;.myForm&quot;).on(&quot;submit&quot;,function(){
 
@@ -290,6 +289,7 @@
         });
     return false;
 });</code></pre>
+<p>The <code>storeFile</code> method uses <code>FormData</code> constructor; documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
 <h2 id="link-api-helpers">Link API helpers</h2>
 
 
