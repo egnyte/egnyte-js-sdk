@@ -1,44 +1,25 @@
-Egnyte Widget
+Egnyte SDK
 =============
+
+## Features
+
+This package contains:
+
+ - a JavaScript wrapper on Egnyte Public API with methods for working with File System API and Link API. 
+ - a file picker implementation working on top of the File System API
+ - a file picker helper to pick files from Egnyte without using the Public API
+ 
+`dist/` contains two builds:
+ - `dist/egnyte.js` is the complete functionality
+ - `dist/slim.js` is only the API wrapper
 
 ## Usage
 
-1. Initialize an instance. `init` method requires a URL to your Egnyte domain
+See `docs/` or explore:
 
-        var widgetInstance = EgnyteWidget.init("http://mydomain.egnyte.com");
-        
-    Or if you want to use API:
+[API](src/docs/api.md)  
+[File picker](src/docs/filepicker.md)  
 
-        var widgetInstance = EgnyteWidget.init("http://mydomain.egnyte.com", {
-                key: YOURAPIKEY,
-                mobile: true      //optional
-            });
-
-2. Use features
-
-  - File picker
-  
-    Open file picker:
-  
-        //find a DOM node to put the picker iframe in:
-        var containerNode = document.getElementById("myPickerContainer");
-        //open file picker
-        var picker = widgetInstance.filePicker(containerNode,function(fileData){
-                //handle file data
-            },function(){
-                //handle cancel action
-            });
-            
-    File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px
-    
-    Close file picker 
-        
-        picker.close();
-        
-   
-  - Public API
-  
-    TBD.
    
 ## Tests
 
@@ -50,4 +31,4 @@ Create a file `spec/conf/apiaccess.js` with the following ocntent:
 
 `YOURACCESSTOKEN` is not the API key. You need to obtain the access token using your key as described in authentication section of Egnyte Public API docs.
 
-Or you can run `grunt serve` and open `https://127.0.0.1:9999/examples/request_token.html` and go through the example.
+Or you can run `grunt serve` and open `https://127.0.0.1:9999/examples/request_token.html` and go through the flow in the example.

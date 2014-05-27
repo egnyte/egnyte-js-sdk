@@ -30,7 +30,7 @@
                 mobile: true
             });
 
-            eg.API.auth.authenticate(function() {
+            eg.API.auth.requestToken(function() {
                 document.getElementById("token").innerHTML = "Your token: "+eg.API.auth.getToken();
             });
 

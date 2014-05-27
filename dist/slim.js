@@ -461,7 +461,7 @@ var promises = require('../promises');
 var xhr = require("xhr");
 
 
-function authenticateInplace(callback) {
+function requestTokenInplace(callback) {
     if (!token) {
         var access = oauthRegex.exec(window.location.hash);
 
@@ -483,7 +483,7 @@ function authenticateInplace(callback) {
 }
 
 //TODO: implement popup flow
-function authenticateWindow(callback, pingbackURL) {
+function requestTokenWindow(callback, pingbackURL) {
     if (!token) {
         var dialog = window.open(options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + pingbackURL);
 
@@ -509,7 +509,7 @@ function getEndpoint() {
     return options.egnyteDomainURL + "/pubapi/v1";
 }
 
-function isAuthenticated() {
+function isAuthorized() {
     return !!token;
 }
 
@@ -537,7 +537,7 @@ function params(obj) {
 }
 
 function sendRequest(opts, callback) {
-    if (isAuthenticated()) {
+    if (isAuthorized()) {
         if (opts.params) {
             opts.url += "?" + params(opts.params);
         }
@@ -551,7 +551,7 @@ function sendRequest(opts, callback) {
             callback.call(this, error, response, body);
         });
     } else {
-        callback.call(this, new Error("Not authenticated"), {
+        callback.call(this, new Error("Not authorized"), {
             statusCode: 0
         }, null);
     }
@@ -591,9 +591,9 @@ module.exports = function (opts) {
     }
 
     return {
-        isAuthenticated: isAuthenticated,
+        isAuthorized: isAuthorized,
         setToken: setToken,
-        authenticate: authenticateInplace,
+        requestToken: requestTokenInplace,
         authorizeXHR: authorizeXHR,
         getHeaders: getHeaders,
         getToken: getToken,

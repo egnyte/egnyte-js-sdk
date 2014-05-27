@@ -45,7 +45,7 @@ describe("API to JS (integration test)", function () {
 
     it('should accept an existing token', function () {
         //token was passed in beforeEach
-        expect(eg.API.auth.isAuthenticated()).toBe(true);
+        expect(eg.API.auth.isAuthorized()).toBe(true);
     });
 
     var testpath;

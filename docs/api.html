@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Egnyte SDK docs</title>
+
+    <style>
+        body>.doc {
+            font-family: sans-serif;
+            padding: 10px 10%;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 400;
+            border-bottom: 1px dashed #eee;
+            border-left: .5em solid #eee;
+            padding-left: 10px;
+            margin-left: -.5em;
+        }
+        code {
+            margin: 0px;
+            padding: 0 2px;
+            border: 1px solid #DDD;
+            background-color: #F8F8F8;
+            border-radius: 3px;
+        }
+        pre code {
+            display: block;
+            padding: 0.8em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+        th,
+        td {
+            border: 1px solid #DDD;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="doc">
+
+        <h1 id="egnyte-public-api">Egnyte Public API</h1>
+<h2 id="initialize-and-connect-to-api">Initialize and connect to API</h2>
+<p>Initialize Egnyte SDK to use API with your key</p>
+<pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
+        key: YOURAPIKEY,
+        mobile: true      //optional, changes login prompt to mobile friendly
+    });</code></pre>
+<p>Run authentication to get an access token</p>
+<pre><code class="lang-javascript">egnyte.API.auth.requestToken(function() {
+        var accessToken = egnyte.API.auth.getToken();
+    });</code></pre>
+<p><strong>Warning</strong>: <code>API.auth.requestToken</code> will cause a page reload to let the user </p>
+<h3 id="initialize-with-token">Initialize with token</h3>
+<p>If the token is stored securely and there is no need to request it, it can be passed as initial configuration.</p>
+<pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
+        token: YOURAPITOKEN
+    });</code></pre>
+<h2 id="authorization-methods">Authorization methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.auth.isAuthorized</td>
+<td></td>
+<td>Returns <code>boolean</code> true if a token is present</td>
+</tr>
+<tr>
+<td>API.auth.setToken</td>
+<td><code>token</code></td>
+<td>Accepts a token string. New token overwrites the previous one</td>
+</tr>
+<tr>
+<td>API.auth.requestToken</td>
+<td><code>callback</code></td>
+<td>Performs authorization and calls the callback the moment the token is available</td>
+</tr>
+<tr>
+<td>API.auth.authorizeXHR</td>
+<td><code>XHR object</code></td>
+<td>Adds authorization header to given XHR object</td>
+</tr>
+<tr>
+<td>API.auth.getHeaders</td>
+<td></td>
+<td>Returns headers definition to add as headers to eg. jQuery.ajax options</td>
+</tr>
+<tr>
+<td>API.auth.getToken</td>
+<td></td>
+<td>Returns the token string</td>
+</tr>
+<tr>
+<td>API.auth.dropToken</td>
+<td></td>
+<td>Forgets the current token</td>
+</tr>
+<tr>
+<td>API.auth.getEndpoint</td>
+<td></td>
+<td>Returns the public API endpoint root URL</td>
+</tr>
+<tr>
+<td>API.auth.sendRequest</td>
+<td><code>options</code>,<code>callback</code></td>
+<td>Sends an authorized request and calls the callback when finished (see examples below)</td>
+</tr>
+<tr>
+<td>API.auth.promiseRequest</td>
+<td><code>options</code></td>
+<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="handling-requests">Handling requests</h3>
+<p><em>Request options</em></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>url</td>
+<td>String</td>
+<td>The URL to query</td>
+</tr>
+<tr>
+<td>params</td>
+<td>Map</td>
+<td>Set of query params, optional</td>
+</tr>
+<tr>
+<td>sync</td>
+<td>Boolean</td>
+<td>Make a synchronous call, optional</td>
+</tr>
+<tr>
+<td>method</td>
+<td>String</td>
+<td>Request method, optional, defaults to GET</td>
+</tr>
+<tr>
+<td>timeout</td>
+<td>Number</td>
+<td>Set a timeout for the request, optional, defaults to 5s</td>
+</tr>
+<tr>
+<td>headers</td>
+<td>Map</td>
+<td>Request headers, optional</td>
+</tr>
+<tr>
+<td>body</td>
+<td>String</td>
+<td>Body of the request for POST and PUT, optional</td>
+</tr>
+<tr>
+<td>json</td>
+<td>Object</td>
+<td>JSON serializable object to send as body, adds correct content-type too, optional</td>
+</tr>
+</tbody>
+</table>
+<p><em>Examples</em></p>
+<pre><code class="lang-javascript">egnyte.API.auth.sendRequest({
+        url:&quot;https://...&quot; //full URL address
+        params:{ //query params to be added after the ? at the end of url 
+            &quot;queryparam&quot;:&quot;param-value&quot;
+        },
+        headers:{}, //any headers to add to the query, Authorization header is added to this set by default
+        method: &quot;POST&quot;,
+        body: &quot;some content&quot;
+    }, function (error, response, body) {
+        if(error === null){
+            //response is the XHR object
+            //body contains response JSON converted to object
+        }else{
+            //handle the error or rethrow
+        }
+    });</code></pre>
+<pre><code class="lang-javascript">egnyte.API.auth.promiseRequest({
+        ...
+    }).then(function (response, body) {
+        //response is the XHR object
+        //body contains response JSON converted to object
+    }).error(function(error, response, body){
+        //handle the error 
+    });</code></pre>
+<pre><code class="lang-javascript">egnyte.API.auth.promiseRequest({
+       ...
+    }).then(function (response, body) {
+        //response is the XHR object
+        //body contains response JSON converted to object
+    },function(error, response, body){
+        //handle the error 
+    });</code></pre>
+<h2 id="file-system-api-helpers">File System API helpers</h2>
+<p>All API helpers return promises.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.storage.exists</td>
+<td><code>path</code></td>
+<td>Resolves to true if file exists and false if it doesn&#39;t, rethrows errors if different than 404</td>
+</tr>
+<tr>
+<td>API.storage.get</td>
+<td><code>path</code></td>
+<td>Resolves to file or folder definition object</td>
+</tr>
+<tr>
+<td>API.storage.download</td>
+<td><code>path</code></td>
+<td>Resolves to XHR response for the download file content query, from which body can be extracted and interpreted as needed</td>
+</tr>
+<tr>
+<td>API.storage.createFolder</td>
+<td><code>path</code></td>
+<td>Creates a folder at the given path, resolves to <code>{path:&quot;&lt;the given path&gt;&quot;</code> </td>
+</tr>
+<tr>
+<td>API.storage.storeFile</td>
+<td><code>path</code>, <code>Blob_object</code></td>
+<td>Uploads a file and stores at the given path, resolves to <code>{path:&quot;...&quot;,id:&quot;&lt;version ID&gt;&quot;}</code> (see below for details on Blob)</td>
+</tr>
+<tr>
+<td>API.storage.move</td>
+<td><code>path</code>,  <code>new path</code></td>
+<td>Moves a file or folder to new path, resolves to <code>{path:&quot;...&quot;, oldPath:&quot;...&quot;}</code></td>
+</tr>
+<tr>
+<td>API.storage.rename</td>
+<td><code>path</code>,  <code>new path</code></td>
+<td>alias for move</td>
+</tr>
+<tr>
+<td>API.storage.remove</td>
+<td><code>path</code></td>
+<td>Deletes a file or folder </td>
+</tr>
+<tr>
+<td>API.storage.removeFileVersion</td>
+<td><code>path</code>, <code>version_ID</code></td>
+<td>Deletes a version of a file </td>
+</tr>
+</tbody>
+</table>
+<h3 id="storing-a-file">Storing a file</h3>
+<p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor of <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
+<p>To aid working with blobs cross-browser we recommend <a href="https://github.com/eligrey/Blob.js">https://github.com/eligrey/Blob.js</a> (a copy available in this repo in src/vendor/blob.js)</p>
+<p>The <code>storeFile</code> method uses <code>FormData</code> constructor, documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
+<p><em>Example</em></p>
+<pre><code class="lang-javascript">$(&quot;.myForm&quot;).on(&quot;submit&quot;,function(){
+
+    var file = $(&quot;input.avatarfile&quot;)[0].files[0]
+
+    egnyte.API.storage.storeFile(&quot;/Private/mydata/avatar.png&quot;, file)
+       .then(function (response, body) {
+            //upload successful
+        },function(error, response, body){
+            //handle the error 
+        });
+    return false;
+});</code></pre>
+<h2 id="link-api-helpers">Link API helpers</h2>
+
+
+    </div>
+</body>
+
+</html>

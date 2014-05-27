@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Egnyte SDK docs</title>
+
+    <style>
+        body>.doc {
+            font-family: sans-serif;
+            padding: 10px 10%;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 400;
+            border-bottom: 1px dashed #eee;
+            border-left: .5em solid #eee;
+            padding-left: 10px;
+            margin-left: -.5em;
+        }
+        code {
+            margin: 0px;
+            padding: 0 2px;
+            border: 1px solid #DDD;
+            background-color: #F8F8F8;
+            border-radius: 3px;
+        }
+        pre code {
+            display: block;
+            padding: 0.8em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+        th,
+        td {
+            border: 1px solid #DDD;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="doc">
+
+        <h1 id="file-picker">File picker</h1>
+<h2 id="initialize-egnyte-sdk-to-use-api">Initialize Egnyte SDK to use API</h2>
+<pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
+        ...
+    });</code></pre>
+<p>See <a href="api.html"> API docs </a></p>
+<h2 id="open-file-picker-">Open file picker:</h2>
+<pre><code class="lang-javascript">    //find a DOM node to put the picker iframe in:
+    var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
+    //open file picker
+    var picker = egnyte.filePicker(containerNode,options);</code></pre>
+<p>The options are:</p>
+<ul>
+<li><code>path</code> String - a path to open the filepicker at, default: &quot;/&quot;</li>
+<li><code>cancel</code> Function - a callback to run when the user decides to cancel selecting</li>
+<li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
+<li><code>select</code> Map of selectables configuration<pre><code class="lang-javascript"> {
+   folder: true, //should folders be selectable
+   file: true,   //should files be selectable (files are hidden when not selectable)
+   multi: true   //should allow multiselection
+ }</code></pre>
+<em>Example</em><pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
+ path: &quot;/Private&quot;,
+ selection: function(list){
+     //handle selection
+     },
+ cancel: function(){
+     //the user cancelled. containerNode will be emptied by the filepicker itself.
+     },
+ select: {
+     multi: false //single selection
+     }
+ });</code></pre>
+</li>
+</ul>
+<p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
+<h2 id="close-file-picker">Close file picker</h2>
+<p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
+<pre><code class="lang-javascript">    picker.close();</code></pre>
+<h1 id="file-picker-remote">File picker remote</h1>
+<p>If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.</p>
+<p>To use the remote file picker call <code>filePickerRemote</code> instead of <code>filePicker</code> with the same options</p>
+<pre><code class="lang-javascript">    //simplified init
+    var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;);
+
+    var picker = egnyte.filePicker(containerNode,options);</code></pre>
+<p>The <code>select</code> option is not available in remote file picker.</p>
+
+
+    </div>
+</body>
+
+</html>
