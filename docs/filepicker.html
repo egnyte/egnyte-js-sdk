@@ -68,10 +68,10 @@
 <li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
 <li><code>select</code> Map of selectables configuration</li>
 </ul>
-<pre><code class="lang-javascript">{
+<pre><code class="lang-javascript">select: {
   folder: true, //should folders be selectable
   file: true,   //should files be selectable (files are hidden when not selectable)
-  multi: true   //should allow multiselection
+  multiple: true   //should allow multiselection
 }</code></pre>
 <p><em>Example</em></p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
@@ -83,7 +83,7 @@
         //the user cancelled. containerNode will be emptied by the filepicker itself.
         },
     select: {
-        multi: false //single selection
+        multiple: false //single selection
         }
     });</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>

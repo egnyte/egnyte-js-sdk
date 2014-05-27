@@ -22,10 +22,10 @@ The options are:
  - `select` Map of selectables configuration
  
 ```javascript
-{
+select: {
   folder: true, //should folders be selectable
   file: true,   //should files be selectable (files are hidden when not selectable)
-  multi: true   //should allow multiselection
+  multiple: true   //should allow multiselection
 }
 ```
 
@@ -41,7 +41,7 @@ var picker = egnyte.filePicker(containerNode,{
         //the user cancelled. containerNode will be emptied by the filepicker itself.
         },
     select: {
-        multi: false //single selection
+        multiple: false //single selection
         }
     });
 ```
