@@ -66,13 +66,22 @@
 <li><code>path</code> String - a path to open the filepicker at, default: &quot;/&quot;</li>
 <li><code>cancel</code> Function - a callback to run when the user decides to cancel selecting</li>
 <li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
-<li><code>select</code> Map of selectables configuration</li>
 <li><code>barAlign</code> String - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
+<li><code>select</code> Map of selectables configuration</li>
 </ul>
 <pre><code class="lang-javascript">select: {
   folder: true, //should folders be selectable
   file: true,   //should files be selectable (files are hidden when not selectable)
   multiple: true   //should allow multiselection
+}</code></pre>
+<ul>
+<li><code>texts</code> Map of labels in the filepicker to replace with given replacements, optional</li>
+</ul>
+<pre><code class="lang-javascript">texts: {
+  &quot;Ok&quot;: &quot;...&quot;,
+  &quot;Cancel&quot;: &quot;...&quot;,
+  &quot;Loading&quot;: &quot;...&quot;,
+  &quot;This folder is empty&quot;: &quot;...&quot;
 }</code></pre>
 <p><em>Example</em></p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
@@ -85,20 +94,24 @@
         },
     select: {
         multiple: false //single selection
+        },
+    texts: {
+        &quot;Ok&quot;: &quot;Continue&quot;,
+        &quot;This folder is empty&quot;: &quot;Nothing here, sorry&quot;
         }
     });</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
 <h2 id="close-file-picker">Close file picker</h2>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
 <pre><code class="lang-javascript">    picker.close();</code></pre>
-<h1 id="file-picker-remote">File picker remote</h1>
+<h1 id="remote-file-picker">Remote file picker</h1>
 <p>If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.</p>
 <p>To use the remote file picker call <code>filePickerRemote</code> instead of <code>filePicker</code> with the same options</p>
 <pre><code class="lang-javascript">    //simplified init
     var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;);
 
     var picker = egnyte.filePicker(containerNode,options);</code></pre>
-<p>The <code>select</code> option is not available in remote file picker.</p>
+<p>The <code>select</code> and <code>texts</code> options are not available in remote file picker.</p>
 
 
     </div>
