@@ -123,18 +123,16 @@ describe("API Filepicker", function () {
         });
     });
 
-
     it('can forbid selection', function (done) {
 
-        var picker = eg.filePicker(node, {
-            selection: function (elements) {
-                expect(elements.length).toEqual(0);
-                done();
-            },
+        var picker = eg.filePicker(node, {            
             ready: function () {
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
-                node.querySelectorAll(".eg-filepicker-ok")[0].click();
+                setTimeout(function () {
+                    expect(node.querySelectorAll("input:checked").length).toEqual(0);
+                    done();
+                }, 0);
             },
             select: {
                 folder: false,
