@@ -35,6 +35,7 @@
             fpView = new View({
                 el: node,
                 model: fpModel,
+                barAlign: setup.barAlign,
                 handlers: {
                     ready: setup.ready,
                     selection: function (item) {

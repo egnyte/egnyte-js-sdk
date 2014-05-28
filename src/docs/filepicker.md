@@ -20,6 +20,7 @@ The options are:
  - `cancel` Function - a callback to run when the user decides to cancel selecting
  - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
  - `select` Map of selectables configuration
+ - `barAlign` String - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
  
 ```javascript
 select: {

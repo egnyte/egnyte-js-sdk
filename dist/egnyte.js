@@ -849,6 +849,7 @@ module.exports = function (apihelper, opts) {
             fpView = new View({
                 el: node,
                 model: fpModel,
+                barAlign: setup.barAlign,
                 handlers: {
                     ready: setup.ready,
                     selection: function (item) {
@@ -1145,6 +1146,8 @@ function View(opts) {
     this.el = opts.el;
     this.els = {};
 
+    this.bottomBarClass = (opts.barAlign === "left") ? "" : ".eg-bar-right";
+
     this.handlers = helpers.extend({
         selection: helpers.noop,
         close: helpers.noop
@@ -1176,22 +1179,15 @@ function View(opts) {
     }
 
     //create reusable view elements
-    var back = jungle([["span",
-        {
-            "class": "eg-filepicker-back eg-btn"
-        }, "<"]]);
+    var back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]);
     this.els.back = back.childNodes[0];
-    var close = jungle([["span",
+    var close = jungle([["span.eg-filepicker-close.eg-btn",
         {
-            "class": "eg-filepicker-close eg-btn",
             "disabled": ""
         }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
-    var ok = jungle([["span",
-        {
-            "class": "eg-filepicker-ok eg-btn"
-        }, "Ok"]]);
+    var ok = jungle([["span.eg-filepicker-ok.eg-btn", "Ok"]]);
     this.els.ok = ok.childNodes[0];
 
 
@@ -1221,7 +1217,7 @@ View.prototype.render = function () {
             ["span.eg-filepicker-path", this.model.path]
         ],
         this.els.list,
-        ["div.eg-filepicker-bar",
+        ["div.eg-filepicker-bar" + this.bottomBarClass,
             this.els.ok,
             this.els.close
         ]
@@ -1310,7 +1306,7 @@ View.prototype.destroy = function () {
 
 module.exports = View;
 },{"../../vendor/zenjungle":20,"../reusables/dom":17,"../reusables/helpers":18,"./view.less":15}],15:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;padding:4px;background:#f1f1f1}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:8px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em;cursor:pointer}.eg-filepicker-name:hover{text-decoration:underline}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;padding:4px;background:#f1f1f1;overflow:hidden}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:8px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em;cursor:pointer}.eg-filepicker-name:hover{text-decoration:underline}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],16:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
@@ -1524,9 +1520,9 @@ var zenjungle = (function () {
                         'id': match[1]
                     };
                 },
-                '\\.([a-zA-Z][a-zA-Z0-9\\-_]*)': function (match) {
+                '(\\.[a-zA-Z][a-zA-Z0-9\\-_]*)+': function (match) {
                     return {
-                        'class': match[1]
+                        'class': match[0].split(".").join(" ")
                     };
                 }
             },
@@ -1539,6 +1535,7 @@ var zenjungle = (function () {
 
             while (regex.test(string)) {
                 match = regex.exec(string);
+                console.log(match);
                 string = string.replace(match[0], '');
 
                 props = merge(props, parser(match));

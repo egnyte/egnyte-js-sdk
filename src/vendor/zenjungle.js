@@ -53,9 +53,9 @@ var zenjungle = (function () {
                         'id': match[1]
                     };
                 },
-                '\\.([a-zA-Z][a-zA-Z0-9\\-_]*)': function (match) {
+                '(\\.[a-zA-Z][a-zA-Z0-9\\-_]*)+': function (match) {
                     return {
-                        'class': match[1]
+                        'class': match[0].split(".").join(" ")
                     };
                 }
             },
@@ -68,6 +68,7 @@ var zenjungle = (function () {
 
             while (regex.test(string)) {
                 match = regex.exec(string);
+                console.log(match);
                 string = string.replace(match[0], '');
 
                 props = merge(props, parser(match));

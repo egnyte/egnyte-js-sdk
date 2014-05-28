@@ -16,6 +16,8 @@ function View(opts) {
     this.el = opts.el;
     this.els = {};
 
+    this.bottomBarClass = (opts.barAlign === "left") ? "" : ".eg-bar-right";
+
     this.handlers = helpers.extend({
         selection: helpers.noop,
         close: helpers.noop
@@ -47,22 +49,15 @@ function View(opts) {
     }
 
     //create reusable view elements
-    var back = jungle([["span",
-        {
-            "class": "eg-filepicker-back eg-btn"
-        }, "<"]]);
+    var back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]);
     this.els.back = back.childNodes[0];
-    var close = jungle([["span",
+    var close = jungle([["span.eg-filepicker-close.eg-btn",
         {
-            "class": "eg-filepicker-close eg-btn",
             "disabled": ""
         }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
-    var ok = jungle([["span",
-        {
-            "class": "eg-filepicker-ok eg-btn"
-        }, "Ok"]]);
+    var ok = jungle([["span.eg-filepicker-ok.eg-btn", "Ok"]]);
     this.els.ok = ok.childNodes[0];
 
 
@@ -92,7 +87,7 @@ View.prototype.render = function () {
             ["span.eg-filepicker-path", this.model.path]
         ],
         this.els.list,
-        ["div.eg-filepicker-bar",
+        ["div.eg-filepicker-bar" + this.bottomBarClass,
             this.els.ok,
             this.els.close
         ]
