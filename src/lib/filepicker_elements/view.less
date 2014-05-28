@@ -173,10 +173,14 @@
     to { transform: rotate(360deg); }
 }
 
-.eg-spinner {
+.eg-placeholder {
     margin: 40%;
     margin: ~"calc(50% - 42px)";
+    text-align: center;
     &>div{
+        margin:0 auto;
+    }
+    &>.eg-spinner{
         content: "";
         -webkit-animation: egspin 1s infinite linear;
         animation: egspin 1s infinite linear;
@@ -185,7 +189,6 @@
         border: solid 7px;
         border-radius: 50%;
         border-color: transparent transparent @framecl;
-        //transform: rotate(0deg);
     }
 }
 

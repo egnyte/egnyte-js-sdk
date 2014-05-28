@@ -93,6 +93,8 @@ Model.prototype.set = function (m) {
             self.items.push(new Item(f, self));
         });
     }
+    
+    this.isEmpty = (this.items.length === 0);
 
     this.onupdate();
     this.onchange();

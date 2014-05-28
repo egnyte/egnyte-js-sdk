@@ -55,7 +55,7 @@ function View(opts) {
     var close = jungle([["span",
         {
             "class": "eg-filepicker-close eg-btn",
-            "disabled":""
+            "disabled": ""
         }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
@@ -101,9 +101,15 @@ View.prototype.render = function () {
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
 
-    helpers.each(this.model.items, function (item) {
-        self.renderItem(item);
-    });
+
+
+    if (this.model.isEmpty) {
+        this.empty();
+    } else {
+        helpers.each(this.model.items, function (item) {
+            self.renderItem(item);
+        });
+    }
 
 
 }
@@ -149,10 +155,15 @@ View.prototype.renderItem = function (itemModel) {
 
 
 View.prototype.loading = function () {
-    var that = this;
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-spinner", ["div"], "loading"]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], "loading"]]));
+    }
+}
+View.prototype.empty = function () {
+    if (this.els.list) {
+        this.els.list.innerHTML = "";
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-ico-folder"], "This folder is empty"]]));
     }
 }
 
