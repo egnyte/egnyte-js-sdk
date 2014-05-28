@@ -57,13 +57,13 @@
         key: YOURAPIKEY,
         mobile: true      //optional, changes login prompt to mobile friendly
     });</code></pre>
-<p>Run authentication to get an access token</p>
+<p>Request an access token</p>
 <pre><code class="lang-javascript">egnyte.API.auth.requestToken(function() {
         var accessToken = egnyte.API.auth.getToken();
     });</code></pre>
-<p><strong>Warning</strong>: <code>API.auth.requestToken</code> will cause a page reload to let the user </p>
+<p><strong>Warning</strong>: <code>API.auth.requestToken</code> will cause a page reload to let the user authorize the application to use the API.</p>
 <h3 id="initialize-with-token">Initialize with token</h3>
-<p>If the token is stored securely and there is no need to request it, it can be passed as initial configuration.</p>
+<p>If the token is already stored securely and there is no need to request it, it can be passed as initial configuration.</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
         token: YOURAPITOKEN
     });</code></pre>

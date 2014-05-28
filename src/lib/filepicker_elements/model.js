@@ -33,14 +33,15 @@ Item.prototype.defaultAction = function () {
 };
 
 Item.prototype.toggleSelect = function () {
-    if (!this.parent.opts.select.multiple) {
-        this.parent.deselect();
-    }
     if (this.isSelectable) {
+        if (!this.parent.opts.select.multiple) {
+            this.parent.deselect();
+        }
         this.selected = !this.selected;
         this.onchange();
+        this.parent.onchange();
     }
-    
+
     // Waiting for requirements
     //    else {
     //        //when folders arent selectable, default to opening too
@@ -94,6 +95,7 @@ Model.prototype.set = function (m) {
     }
 
     this.onupdate();
+    this.onchange();
 };
 
 Model.prototype.fetch = function (path) {
@@ -112,7 +114,7 @@ Model.prototype.fetch = function (path) {
 
 Model.prototype.goUp = function () {
     var path = this.path.replace(/\/[^\/]+\/?$/i, "") || "/";
-    
+
     if (path !== this.path) {
         this.fetch(path);
     }
@@ -130,7 +132,7 @@ Model.prototype.getSelected = function () {
 
 Model.prototype.deselect = function () {
     helpers.each(this.items, function (item) {
-        if(item.selected){
+        if (item.selected) {
             item.selected = false;
             item.onchange();
         }

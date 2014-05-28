@@ -11,7 +11,7 @@ var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
     });
 ```
 
-Run authentication to get an access token
+Request an access token
 
 ```javascript
 egnyte.API.auth.requestToken(function() {
@@ -19,11 +19,11 @@ egnyte.API.auth.requestToken(function() {
     });
 ```
 
-__Warning__: `API.auth.requestToken` will cause a page reload to let the user 
+__Warning__: `API.auth.requestToken` will cause a page reload to let the user authorize the application to use the API.
 
 ### Initialize with token
 
-If the token is stored securely and there is no need to request it, it can be passed as initial configuration.
+If the token is already stored securely and there is no need to request it, it can be passed as initial configuration.
 
 ```javascript
 var egnyte = Egnyte.init("http://mydomain.egnyte.com", {

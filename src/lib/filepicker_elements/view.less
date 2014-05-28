@@ -56,6 +56,9 @@
     background-color: @btclA;
     border-color: @btframeclA;
     color: @fontclA;
+    &[disabled]{
+        opacity: 0.3;
+    }
 }
 .eg-filepicker-back{
     padding: @spacing @size/4;
@@ -115,6 +118,7 @@
         width: @size*0.8;
         background: rgba(0,0,0,0.15);
         color: #fff;
+        cursor:default;
     }
 }
 

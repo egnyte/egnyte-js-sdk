@@ -38,6 +38,14 @@ function View(opts) {
         //handle error messaging
     }
 
+    this.model.onchange = function () {
+        if (self.model.getSelected().length > 0) {
+            self.els.ok.removeAttribute("disabled");
+        } else {
+            self.els.ok.setAttribute("disabled", "");
+        }
+    }
+
     //create reusable view elements
     var back = jungle([["span",
         {
@@ -46,7 +54,8 @@ function View(opts) {
     this.els.back = back.childNodes[0];
     var close = jungle([["span",
         {
-            "class": "eg-filepicker-close eg-btn"
+            "class": "eg-filepicker-close eg-btn",
+            "disabled":""
         }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
@@ -56,16 +65,18 @@ function View(opts) {
         }, "Ok"]]);
     this.els.ok = ok.childNodes[0];
 
-    var that = this;
 
     dom.addListener(this.els.back, "click", function (e) {
-        that.model.goUp();
+        self.model.goUp();
     });
     dom.addListener(this.els.close, "click", function (e) {
-        that.handlers.close.call(that, e);
+        self.handlers.close.call(self, e);
     });
     dom.addListener(this.els.ok, "click", function (e) {
-        that.handlers.selection.call(that, that.model.getSelected());
+        var selected = self.model.getSelected();
+        if (selected && selected.length) {
+            self.handlers.selection.call(self, self.model.getSelected());
+        }
     });
 
 }
@@ -86,7 +97,6 @@ View.prototype.render = function () {
             this.els.close
         ]
     ]]);
-    
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
@@ -122,7 +132,7 @@ View.prototype.renderItem = function (itemModel) {
     var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
-        if(e.stopPropagation) {
+        if (e.stopPropagation) {
             e.stopPropagation();
         }
         itemModel.defaultAction();

@@ -5,13 +5,13 @@ Egnyte SDK
 
 This package contains:
 
- - a JavaScript wrapper on Egnyte Public API with methods for working with File System API and Link API. 
+ - a JavaScript wrapper on Egnyte Public API with methods for working with File System API and Link API 
  - a file picker implementation working on top of the File System API
  - a file picker helper to pick files from Egnyte without using the Public API
  
 `dist/` contains two builds:
- - `dist/egnyte.js` is the complete functionality
- - `dist/slim.js` is only the API wrapper
+ - `dist/egnyte.js` (21KB) is the complete functionality
+ - `dist/slim.js` (10KB)is only the API wrapper
 
 ## Usage
 

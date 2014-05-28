@@ -1017,14 +1017,15 @@ Item.prototype.defaultAction = function () {
 };
 
 Item.prototype.toggleSelect = function () {
-    if (!this.parent.opts.select.multiple) {
-        this.parent.deselect();
-    }
     if (this.isSelectable) {
+        if (!this.parent.opts.select.multiple) {
+            this.parent.deselect();
+        }
         this.selected = !this.selected;
         this.onchange();
+        this.parent.onchange();
     }
-    
+
     // Waiting for requirements
     //    else {
     //        //when folders arent selectable, default to opening too
@@ -1078,6 +1079,7 @@ Model.prototype.set = function (m) {
     }
 
     this.onupdate();
+    this.onchange();
 };
 
 Model.prototype.fetch = function (path) {
@@ -1096,7 +1098,7 @@ Model.prototype.fetch = function (path) {
 
 Model.prototype.goUp = function () {
     var path = this.path.replace(/\/[^\/]+\/?$/i, "") || "/";
-    
+
     if (path !== this.path) {
         this.fetch(path);
     }
@@ -1114,7 +1116,7 @@ Model.prototype.getSelected = function () {
 
 Model.prototype.deselect = function () {
     helpers.each(this.items, function (item) {
-        if(item.selected){
+        if (item.selected) {
             item.selected = false;
             item.onchange();
         }
@@ -1163,6 +1165,14 @@ function View(opts) {
         //handle error messaging
     }
 
+    this.model.onchange = function () {
+        if (self.model.getSelected().length > 0) {
+            self.els.ok.removeAttribute("disabled");
+        } else {
+            self.els.ok.setAttribute("disabled", "");
+        }
+    }
+
     //create reusable view elements
     var back = jungle([["span",
         {
@@ -1171,7 +1181,8 @@ function View(opts) {
     this.els.back = back.childNodes[0];
     var close = jungle([["span",
         {
-            "class": "eg-filepicker-close eg-btn"
+            "class": "eg-filepicker-close eg-btn",
+            "disabled":""
         }, "Cancel"]]);
     this.els.close = close.childNodes[0];
 
@@ -1181,16 +1192,18 @@ function View(opts) {
         }, "Ok"]]);
     this.els.ok = ok.childNodes[0];
 
-    var that = this;
 
     dom.addListener(this.els.back, "click", function (e) {
-        that.model.goUp();
+        self.model.goUp();
     });
     dom.addListener(this.els.close, "click", function (e) {
-        that.handlers.close.call(that, e);
+        self.handlers.close.call(self, e);
     });
     dom.addListener(this.els.ok, "click", function (e) {
-        that.handlers.selection.call(that, that.model.getSelected());
+        var selected = self.model.getSelected();
+        if (selected && selected.length) {
+            self.handlers.selection.call(self, self.model.getSelected());
+        }
     });
 
 }
@@ -1211,7 +1224,6 @@ View.prototype.render = function () {
             this.els.close
         ]
     ]]);
-    
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
@@ -1247,7 +1259,7 @@ View.prototype.renderItem = function (itemModel) {
     var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {
-        if(e.stopPropagation) {
+        if (e.stopPropagation) {
             e.stopPropagation();
         }
         itemModel.defaultAction();
@@ -1285,7 +1297,7 @@ View.prototype.destroy = function () {
 
 module.exports = View;
 },{"../../vendor/zenjungle":20,"../reusables/dom":17,"../reusables/helpers":18,"./view.less":15}],15:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;padding:4px;background:#f1f1f1}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:8px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em;cursor:pointer}.eg-filepicker-name:hover{text-decoration:underline}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;padding:4px;background:#f1f1f1}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker-item input{margin:8px}.eg-filepicker-item input.eg-not{visibility:hidden}.eg-filepicker-name{margin-left:.3em;cursor:pointer}.eg-filepicker-name:hover{text-decoration:underline}.eg-filepicker-ico-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-ico-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-ico-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-ico-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-ico-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-ico-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-spinner{margin:40%;margin:calc(50% - 42px)}.eg-spinner>div{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],16:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
