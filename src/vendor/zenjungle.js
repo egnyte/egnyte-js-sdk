@@ -68,7 +68,6 @@ var zenjungle = (function () {
 
             while (regex.test(string)) {
                 match = regex.exec(string);
-                console.log(match);
                 string = string.replace(match[0], '');
 
                 props = merge(props, parser(match));

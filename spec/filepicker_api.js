@@ -28,7 +28,7 @@ describe("API Filepicker", function () {
 
         node = document.createElement('div');
         document.body.appendChild(node);
-        
+
     });
 
     afterEach(function () {
@@ -36,7 +36,6 @@ describe("API Filepicker", function () {
     });
 
     it('should initialize a view', function (done) {
-        var callback = function () {};
 
         var picker = eg.filePicker(node, {
             ready: function () {
@@ -51,8 +50,24 @@ describe("API Filepicker", function () {
 
     });
 
+    it('should accept text replacements', function (done) {
+        var text = "Set my hair on fire";
+
+        var picker = eg.filePicker(node, {
+            ready: function () {
+                expect(node.querySelectorAll(".eg-filepicker-ok")[0].innerText.trim()).toEqual(text);
+                expect(node.querySelectorAll(".eg-filepicker-close")[0].innerText.trim()).toEqual("Cancel");
+                done();
+            },
+            texts: {
+                "Ok": text
+            }
+        });
+
+
+    });
+
     it('should handle cancel on manual close', function (done) {
-        var callback = function () {};
 
         var picker = eg.filePicker(node, {
             cancel: function () {
@@ -61,7 +76,7 @@ describe("API Filepicker", function () {
                     expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
                     done();
                 }, 1);
-                    
+
             },
             ready: function () {
                 var close = node.querySelectorAll(".eg-filepicker-close")[0];
@@ -73,7 +88,6 @@ describe("API Filepicker", function () {
 
 
     it('should handle selection', function (done) {
-        var callback = function () {};
 
         var picker = eg.filePicker(node, {
             selection: function (elements) {
@@ -91,7 +105,6 @@ describe("API Filepicker", function () {
 
 
     it('should handle single selection', function (done) {
-        var callback = function () {};
 
         var picker = eg.filePicker(node, {
             selection: function (elements) {
@@ -109,10 +122,9 @@ describe("API Filepicker", function () {
             }
         });
     });
-    
-    
+
+
     it('can forbid selection', function (done) {
-        var callback = function () {};
 
         var picker = eg.filePicker(node, {
             selection: function (elements) {
@@ -125,8 +137,8 @@ describe("API Filepicker", function () {
                 node.querySelectorAll(".eg-filepicker-ok")[0].click();
             },
             select: {
-                folder:false,
-                file:false,
+                folder: false,
+                file: false,
                 multiple: false
             }
         });

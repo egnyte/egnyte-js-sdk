@@ -47,7 +47,7 @@
                         close();
                     }
                 }
-            });
+            },setup.texts);
 
             fpModel.fetch(setup.path || "/");
 

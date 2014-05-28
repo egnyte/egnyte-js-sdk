@@ -3,6 +3,7 @@
 //template engine based upon JsonML
 var dom = require("../reusables/dom");
 var helpers = require("../reusables/helpers");
+var texts = require("../reusables/texts");
 var jungle = require("../../vendor/zenjungle");
 
 require("./view.less");
@@ -10,11 +11,12 @@ require("./view.less");
 var moduleClass = "eg-filepicker";
 
 
-
-function View(opts) {
+function View(opts,txtOverride) {
     var self = this;
     this.el = opts.el;
     this.els = {};
+    
+    this.txt = texts(txtOverride);
 
     this.bottomBarClass = (opts.barAlign === "left") ? "" : ".eg-bar-right";
 
@@ -51,13 +53,9 @@ function View(opts) {
     //create reusable view elements
     var back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]);
     this.els.back = back.childNodes[0];
-    var close = jungle([["span.eg-filepicker-close.eg-btn",
-        {
-            "disabled": ""
-        }, "Cancel"]]);
+    var close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]);
     this.els.close = close.childNodes[0];
-
-    var ok = jungle([["span.eg-filepicker-ok.eg-btn", "Ok"]]);
+    var ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]);
     this.els.ok = ok.childNodes[0];
 
 
@@ -152,13 +150,13 @@ View.prototype.renderItem = function (itemModel) {
 View.prototype.loading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], "loading"]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]]));
     }
 }
 View.prototype.empty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-ico-folder"], "This folder is empty"]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-ico-folder"], this.txt("This folder is empty")]]));
     }
 }
 

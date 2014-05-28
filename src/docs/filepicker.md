@@ -67,4 +67,5 @@ To use the remote file picker call `filePickerRemote` instead of `filePicker` wi
     
     var picker = egnyte.filePicker(containerNode,options);
 ```
+
 The `select` option is not available in remote file picker.
