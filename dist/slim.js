@@ -294,8 +294,13 @@ function createXHR(options, callback) {
         }
 
         if (status === 0 || (status >= 400 && status < 600)) {
-            var message = xhr.responseText ||
-                messages[String(xhr.status).charAt(0)]
+            var message;
+            try{
+            message = xhr.responseText;
+            }catch(e){
+                // accessing xhr.responseText can throw errors when xhr.responseType is changed
+            }
+            message = message || messages[String(xhr.status).charAt(0)];
             error = new Error(message)
 
             error.statusCode = xhr.status
@@ -650,14 +655,20 @@ function get(pathFromRoot) {
     });
 }
 
-function download(pathFromRoot) {
+function download(pathFromRoot, isBinary) {
     return promises.start(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        var opts = {
             method: "GET",
             url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-        });
+        }
+
+        if (isBinary) {
+            opts.responseType = "arraybuffer";
+        }
+
+        return api.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.response;
     });
@@ -851,7 +862,7 @@ module.exports = {
         }
         var name2 = [];
         each(name.split("/"), function (e) {
-            name2.push(e.replace(/[^a-z0-9 ]*/gi, ""));
+            name2.push(e.replace(/[?*&#%<>]*/gi, ""));
         });
         name2 = name2.join("/").replace(/^\/\//, "/");
 

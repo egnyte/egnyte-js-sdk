@@ -1,6 +1,20 @@
 # Egnyte Public API wrapper
 
+|Sections|
+| --- |
+|[Init and Authorize](#initialize-and-connect-to-api)|
+|[FileSystem API](#file-system-api-helpers)|
+|[Link API](#link-api-helpers)|
+
+## Disclaimer
+
+Egnyte SDK contains methods helping the developer with authorization, FileSystem API and Link API.
+
 For more details on the API behind this JavaScript wrapper, visit [Public API documentation](https://developers.egnyte.com/docs)
+
+Need API key? [Get API access here!](https://developers.egnyte.com/member/register)
+
+
 
 ## Initialize and connect to API
 
@@ -116,7 +130,7 @@ Method | Arguments | Description
 --- | --- | ---
 API.storage.exists | `path` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404
 API.storage.get | `path` | Resolves to file or folder definition object
-API.storage.download | `path` | Resolves to XHR response for the download file content query, from which body can be extracted and interpreted as needed
+API.storage.download | `path`, `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`)
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"<the given path>"` 
 API.storage.storeFile | `path`, `Blob_object` | Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob)
 API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`

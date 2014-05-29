@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>filepicker widget</title>
+    <script src="../dist/egnyte.js"></script>
+    <script src="../spec/conf/apiaccess.js"></script>
+    <style>
+        #there {
+            width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <p>This example demonstrates usage of the API based file picker and APIs</p>
+    <p>spec/conf/apiaccess.js must be configured for this example to work with API</p>
+
+    <p>choose an PNG file</p>
+    <div id="there">
+
+
+    </div>
+    <div id="andback">
+
+
+    </div>
+
+    <button onclick="openPicker()">open picker</button>
+    <script>
+        var node = document.getElementById("there");
+        var node2 = document.getElementById("andback");
+
+        eg = Egnyte.init(egnyteDomain, {
+            token: APIToken
+        });
+
+        function openPicker() {
+
+            eg.filePicker(node, {
+                selection: function (list) {
+                    workWithImage(list[0]);
+                },
+                cancel: function () {
+                    console.warn("cancelled");
+                },
+                select: {
+                    folder: false,
+                    file: true,
+                    multiple: false
+                }
+            });
+
+        }
+
+
+        function workWithImage(fileData) {
+
+            console.log(fileData);
+
+            node2.innerHTML = '';
+
+            //create a link for anybody to access the file
+            eg.API.link.createLink({
+                path: fileData.path,
+                type: "file",
+                accessibility: "password"
+            }).then(function (newLink) {
+                var linkBox = document.createElement("div");
+                linkBox.innerHTML += ' Share: <a href="' + newLink.links[0].url + '">' + newLink.links[0].url + '</a>' + '<p>password: ' + newLink.password + '</p>';
+
+                node2.appendChild(linkBox);
+            });
+
+            // download and use the file
+            // in modern browsers you can even work with binary data
+            eg.API.storage.download(fileData.path, true /*binary*/ ).then(function (xhr) {
+
+                var arrayBuffer = xhr.response; // Note: not oReq.responseText
+                var binaryString = '';
+                var img = document.createElement("img");
+
+                if (arrayBuffer) {
+
+                    var byteArray = new Uint8Array(arrayBuffer);
+
+                    for (var i = 0; i < byteArray.byteLength; i++) {
+
+                        binaryString += String.fromCharCode(byteArray[i]); //extracting the bytes
+
+                    }
+
+                    var base64 = window.btoa(binaryString); //creating base64 string
+
+
+                    img.src = "data:image/png;base64," + base64; //creating a base64 uri
+                    node2.appendChild(img);
+
+                    //you can also create a new Image object to load the content in it and transfer to canvas
+
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

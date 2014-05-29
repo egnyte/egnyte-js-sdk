@@ -21,6 +21,8 @@
                 var domain = prompt("Your Egnyte domain address", "https://acme.egnyte.com");
                 var key = prompt("Your Public API key");
             }else{
+                //if a hash is set, it contains the token and domain/key pair is not needed anymore
+                //prompting for them would just annoy you as you use the example :)
                 var domain = "irrelevant";
                 var key = "irrelevant";
             }

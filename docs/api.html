@@ -52,7 +52,28 @@
     <div class="doc">
 
         <h1 id="egnyte-public-api-wrapper">Egnyte Public API wrapper</h1>
+<table>
+<thead>
+<tr>
+<th>Sections</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#initialize-and-connect-to-api">Init and Authorize</a></td>
+</tr>
+<tr>
+<td><a href="#file-system-api-helpers">FileSystem API</a></td>
+</tr>
+<tr>
+<td><a href="#link-api-helpers">Link API</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>Egnyte SDK contains methods helping the developer with authorization, FileSystem API and Link API.</p>
 <p>For more details on the API behind this JavaScript wrapper, visit <a href="https://developers.egnyte.com/docs">Public API documentation</a></p>
+<p>Need API key? <a href="https://developers.egnyte.com/member/register">Get API access here!</a></p>
 <h2 id="initialize-and-connect-to-api">Initialize and connect to API</h2>
 <p>Initialize Egnyte SDK to use API with your key</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
@@ -240,8 +261,8 @@
 </tr>
 <tr>
 <td>API.storage.download</td>
-<td><code>path</code></td>
-<td>Resolves to XHR response for the download file content query, from which body can be extracted and interpreted as needed</td>
+<td><code>path</code>, <code>isBinary</code></td>
+<td>Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. <code>xhr.responseType</code> is set to <code>arraybuffer</code> if <code>isBinary</code> is true (to get the gist of what this method can do take a look at <code>examples/filepicker_usecase.html</code>)</td>
 </tr>
 <tr>
 <td>API.storage.createFolder</td>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Egnyte SDK docs</title>
+
+    <style>
+        body>.doc {
+            font-family: sans-serif;
+            padding: 10px 10%;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 400;
+            border-bottom: 1px dashed #eee;
+            border-left: .5em solid #eee;
+            padding-left: 10px;
+            margin-left: -.5em;
+            margin-top: 2em;
+        }
+        code {
+            margin: 0px;
+            padding: 0 2px;
+            border: 1px solid #DDD;
+            background-color: #F8F8F8;
+            border-radius: 3px;
+        }
+        pre code {
+            display: block;
+            padding: 0.8em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+        th,
+        td {
+            border: 1px solid #DDD;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="doc">
+
+        <h1 id="installation">Installation</h1>
+<p><code>dist/</code> contains two builds:</p>
+<ul>
+<li><code>dist/egnyte.js</code> (21KB minified) is the complete functionality</li>
+<li><code>dist/slim.js</code> (10KB minified) is only the API wrapper</li>
+</ul>
+<p>both of them available in minified versions (recommended)</p>
+<p>To use the SDK, just add the script to your app&#39;s HTML document.</p>
+<pre><code class="lang-html">&lt;script src=&quot;egnyte.min.js&quot;&gt;&lt;/script&gt;</code></pre>
+<p>After that, all SDK functionalities are available via global <code>Egnyte</code> constructor.</p>
+<h1 id="building-and-dependencies">Building and dependencies</h1>
+<p>To build the project and run tests <code>nodeJS</code> is required in your system.</p>
+<p>Install grunt comandline tools:</p>
+<pre><code>npm install -g grunt-cli</code></pre>
+<p>Install all dependencies:</p>
+<pre><code>npm install .</code></pre>
+<p>Run build and tests (for integration tests setup see below)</p>
+<pre><code>grunt</code></pre>
+<p>Run localhost server at <a href="https://127.0.0.1:9999/">https://127.0.0.1:9999/</a></p>
+<pre><code>grunt serve</code></pre>
+<h2 id="tests-setup">Tests setup</h2>
+<p>To run tests for the API you need to have access to the Public API first.
+Create a file <code>spec/conf/apiaccess.js</code> with the following content:</p>
+<pre><code>egnyteDomain = &quot;https://YOURDOMAIN.egnyte.com&quot;;
+APIToken = &quot;YOURACCESSTOKEN&quot;;</code></pre>
+<p><code>YOURACCESSTOKEN</code> is not the API key. </p>
+<p>You need to obtain the access token using your key and <code>requestToken</code> method or as described in authentication section of <a href="http://developers.egnyte.com/docs">Egnyte Public API docs</a>. </p>
+<p>But the easiest way at first is to run <code>grunt serve</code> and open <a href="https://127.0.0.1:9999/examples/request_token.html">https://127.0.0.1:9999/examples/request_token.html</a> and go through the flow in the example to get a token.</p>
+
+
+    </div>
+</body>
+
+</html>

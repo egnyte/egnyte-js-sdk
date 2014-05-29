@@ -57,24 +57,6 @@ function Model(API, opts) {
     this.API = API;
 }
 
-var mock = {
-    path: "/Mock/folder",
-    name: "folder",
-    folders: [
-        {
-            path: "/Mock/folder/foo",
-            name: "foo",
-            is_folder: true
-        }
-    ],
-    files: [
-        {
-            path: "/Mock/folder/bar",
-            name: "bar.png",
-            is_folder: false
-        }
-    ]
-};
 
 Model.prototype.onloading = helpers.noop;
 Model.prototype.onupdate = helpers.noop;

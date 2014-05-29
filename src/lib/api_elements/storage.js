@@ -44,14 +44,20 @@ function get(pathFromRoot) {
     });
 }
 
-function download(pathFromRoot) {
+function download(pathFromRoot, isBinary) {
     return promises.start(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        var opts = {
             method: "GET",
             url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-        });
+        }
+
+        if (isBinary) {
+            opts.responseType = "arraybuffer";
+        }
+
+        return api.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.response;
     });

@@ -40,7 +40,7 @@ module.exports = {
         }
         var name2 = [];
         each(name.split("/"), function (e) {
-            name2.push(e.replace(/[^a-z0-9 ]*/gi, ""));
+            name2.push(e.replace(/[?*&#%<>]*/gi, ""));
         });
         name2 = name2.join("/").replace(/^\/\//, "/");
 

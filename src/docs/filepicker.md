@@ -1,14 +1,21 @@
 # File picker
 
-## Initialize Egnyte SDK to use API
+|Sections|
+| --- |
+|[File picker on API](#file-picker-on-file-system-api)|
+|[Remote file picker](#remote-file-picker-no-api-)|
+
+## File picker on File System API
+
+### Initialize Egnyte SDK to use API
 ```javascript
 var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
         ...
     });
 ```
-See [ API docs ](api.html)
+(See API docs)
 
-## Open file picker:
+### Open file picker:
 ```javascript
     //find a DOM node to put the picker iframe in:
     var containerNode = document.getElementById("myPickerContainer");
@@ -63,14 +70,42 @@ var picker = egnyte.filePicker(containerNode,{
 
 File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px
 
-## Close file picker 
+The `list` returned to the selection callback is an array of objects matching the followng signatures:
+
+_File_
+
+```javascript
+{
+    checksum: "6459fa7c904...6e9b84318b",
+    entry_id: "f78ee5e7-afbd-4b18-89db-4526e32ae271",
+    is_folder: false,
+    last_modified: "Tue, 20 May 2014 09:35:15 GMT",
+    name: "foo.png",
+    path: "/Private/jsmith/foo.png",
+    size: 1818,
+    uploaded_by: "jsmith"
+}
+```
+
+_Folder_
+
+```javascript
+{
+    folder_id: "e76e6737-99cd-4ba9-bece-25e4d366241b",
+    is_folder: true,
+    name: "foo",
+    path: "/Private/jsmith/foo"
+}
+```
+
+### Close file picker 
 
 File picker can be closed without the user clicking "cancel":
 ```javascript
     picker.close();
 ```
 
-# Remote file picker
+## Remote file picker (no API)
 
 If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.
 
@@ -83,3 +118,8 @@ To use the remote file picker call `filePickerRemote` instead of `filePicker` wi
 ```
 
 The `select` and `texts` options are not available in remote file picker.
+
+The data returned by the remote filepicker is limited to:
+ - `name` - name of the file
+ - `path` - path of the folder containing the file
+ - `url` - URL where the file can be downloaded by a logged-in Egnyte user

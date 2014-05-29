@@ -52,12 +52,28 @@
     <div class="doc">
 
         <h1 id="file-picker">File picker</h1>
-<h2 id="initialize-egnyte-sdk-to-use-api">Initialize Egnyte SDK to use API</h2>
+<table>
+<thead>
+<tr>
+<th>Sections</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#file-picker-on-file-system-api">File picker on API</a></td>
+</tr>
+<tr>
+<td><a href="#remote-file-picker-no-api-">Remote file picker</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="file-picker-on-file-system-api">File picker on File System API</h2>
+<h3 id="initialize-egnyte-sdk-to-use-api">Initialize Egnyte SDK to use API</h3>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
         ...
     });</code></pre>
-<p>See <a href="api.html"> API docs </a></p>
-<h2 id="open-file-picker-">Open file picker:</h2>
+<p>(See API docs)</p>
+<h3 id="open-file-picker-">Open file picker:</h3>
 <pre><code class="lang-javascript">    //find a DOM node to put the picker iframe in:
     var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
     //open file picker
@@ -102,10 +118,29 @@
         }
     });</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
-<h2 id="close-file-picker">Close file picker</h2>
+<p>The <code>list</code> returned to the selection callback is an array of objects matching the followng signatures:</p>
+<p><em>File</em></p>
+<pre><code class="lang-javascript">{
+    checksum: &quot;6459fa7c904...6e9b84318b&quot;,
+    entry_id: &quot;f78ee5e7-afbd-4b18-89db-4526e32ae271&quot;,
+    is_folder: false,
+    last_modified: &quot;Tue, 20 May 2014 09:35:15 GMT&quot;,
+    name: &quot;foo.png&quot;,
+    path: &quot;/Private/jsmith/foo.png&quot;,
+    size: 1818,
+    uploaded_by: &quot;jsmith&quot;
+}</code></pre>
+<p><em>Folder</em></p>
+<pre><code class="lang-javascript">{
+    folder_id: &quot;e76e6737-99cd-4ba9-bece-25e4d366241b&quot;,
+    is_folder: true,
+    name: &quot;foo&quot;,
+    path: &quot;/Private/jsmith/foo&quot;
+}</code></pre>
+<h3 id="close-file-picker">Close file picker</h3>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
 <pre><code class="lang-javascript">    picker.close();</code></pre>
-<h1 id="remote-file-picker">Remote file picker</h1>
+<h2 id="remote-file-picker-no-api-">Remote file picker (no API)</h2>
 <p>If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.</p>
 <p>To use the remote file picker call <code>filePickerRemote</code> instead of <code>filePicker</code> with the same options</p>
 <pre><code class="lang-javascript">    //simplified init
@@ -113,6 +148,12 @@
 
     var picker = egnyte.filePicker(containerNode,options);</code></pre>
 <p>The <code>select</code> and <code>texts</code> options are not available in remote file picker.</p>
+<p>The data returned by the remote filepicker is limited to:</p>
+<ul>
+<li><code>name</code> - name of the file</li>
+<li><code>path</code> - path of the folder containing the file</li>
+<li><code>url</code> - URL where the file can be downloaded by a logged-in Egnyte user</li>
+</ul>
 
 
     </div>

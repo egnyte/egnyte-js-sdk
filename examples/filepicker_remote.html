@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>filepicker widget</title>
     <script src="../dist/egnyte.js"></script>
+    <script src="../spec/conf/apiaccess.js"></script>
     <style>
         #there {
             width: 400px;
@@ -13,6 +14,8 @@
 </head>
 
 <body>
+
+    <p>This example demonstrates the remote file picker (working without API access). By default it opens a mock of the file picker view. Toggle comments to get ti to connect to your configured Egnyte instance.</p>
 
     <div id="there">
 
@@ -24,22 +27,23 @@
     <script>
         var node = document.getElementById("there");
 
-         //proper usage:
-         //var eg = Egnyte.init("http://mydomain.egnyte.com");
 
          //this line will use mock instead of real egnyte domain
          //doesn't work with file:// protocol
         var eg = Egnyte.init(window.location.origin, {
-            filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock_filepicker.html"
+            filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock/mock_filepicker.html"
         });
+
+         //proper usage:
+         //var eg = Egnyte.init(egnyteDomain);
 
         function openPicker() {
 
             eg.filePickerRemote(node, {
-                selection: function(fileData) {
+                selection: function (fileData) {
                     console.info(fileData);
                 },
-                cancel: function() {
+                cancel: function () {
                     console.warn("cancelled");
                 }
             });
