@@ -11,11 +11,11 @@ require("./view.less");
 var moduleClass = "eg-filepicker";
 
 
-function View(opts,txtOverride) {
+function View(opts, txtOverride) {
     var self = this;
     this.el = opts.el;
     this.els = {};
-    
+
     this.txt = texts(txtOverride);
 
     this.bottomBarClass = (opts.barAlign === "left") ? "" : ".eg-bar-right";
@@ -82,7 +82,7 @@ View.prototype.render = function () {
     var layoutFragm = jungle([["div.eg-filepicker",
         ["div.eg-filepicker-bar",
             this.els.back,
-            ["span.eg-filepicker-path", this.model.path]
+            this.breadcrumbify(this.model.path)
         ],
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
@@ -110,7 +110,7 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["span.eg-filepicker-name", itemModel.data.name]]).childNodes[0];
+    var itemName = jungle([["a.eg-filepicker-name", itemModel.data.name]]).childNodes[0];
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -143,6 +143,40 @@ View.prototype.renderItem = function (itemModel) {
     });
 
     this.els.list.appendChild(itemFragm);
+}
+
+
+View.prototype.breadcrumbify = function (path) {
+    var self = this;
+    var list = path.split("/");
+    var crumbItems = [];
+    var currentPath = "";
+    helpers.each(list, function (folder, num) {
+        currentPath += "/" + folder;
+        if (folder) {
+            crumbItems.push(["a", {
+                    "data-path": currentPath
+                },
+                folder + " /"])
+        } else {
+            if (num === 0) {
+                crumbItems.push(["a", {
+                    "data-path": currentPath
+                }, "/"]);
+            }
+        }
+    });
+
+    var crumb = jungle([["span.eg-filepicker-path", crumbItems]]);
+
+    dom.addListener(crumb.childNodes[0], "click", function (e) {
+        var path = e.target.getAttribute("data-path");
+        if (path) {
+            self.model.fetch(path);
+        }
+    });
+
+    return crumb;
 }
 
 
