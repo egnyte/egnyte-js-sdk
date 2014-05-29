@@ -91,7 +91,7 @@ Model.prototype.fetch = function (path) {
     self.API.storage.get(this.path).then(function (m) {
         self.set(m);
     }).error(function (e) {
-        this.onerror();
+        self.onerror(e.error || e);
     });
 }
 

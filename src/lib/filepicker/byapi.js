@@ -45,7 +45,8 @@
                     close: function () {
                         setup.cancel();
                         close();
-                    }
+                    },
+                    error: setup.error
                 }
             },setup.texts);
 

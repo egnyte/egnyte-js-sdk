@@ -26,6 +26,7 @@ The options are:
  - `path` String - a path to open the filepicker at, default: "/"
  - `cancel` Function - a callback to run when the user decides to cancel selecting
  - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
+ - `error` Function - a callback to call when an error occurs. First argument is an error object.
  - `barAlign` String - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
  - `select` Map of selectables configuration
  

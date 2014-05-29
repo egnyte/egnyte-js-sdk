@@ -870,7 +870,8 @@ module.exports = function (apihelper, opts) {
                     close: function () {
                         setup.cancel();
                         close();
-                    }
+                    },
+                    error: setup.error
                 }
             },setup.texts);
 
@@ -1087,7 +1088,7 @@ Model.prototype.fetch = function (path) {
     self.API.storage.get(this.path).then(function (m) {
         self.set(m);
     }).error(function (e) {
-        this.onerror();
+        self.onerror(e.error || e);
     });
 }
 
@@ -1145,7 +1146,8 @@ function View(opts, txtOverride) {
 
     this.handlers = helpers.extend({
         selection: helpers.noop,
-        close: helpers.noop
+        close: helpers.noop,
+        error: helpers.noop
     }, opts.handlers);
     this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
@@ -1161,8 +1163,8 @@ function View(opts, txtOverride) {
             setTimeout(runReady, 0);
         }
     }
-    this.model.onerror = function () {
-        //handle error messaging
+    this.model.onerror = function (e) {
+        self.handlers.error(e);
     }
 
     this.model.onchange = function () {
@@ -1180,6 +1182,9 @@ function View(opts, txtOverride) {
     this.els.close = close.childNodes[0];
     var ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]);
     this.els.ok = ok.childNodes[0];
+    var crumb = jungle([["span.eg-filepicker-path"]]);
+    this.els.crumb = crumb.childNodes[0];
+
 
 
     dom.addListener(this.els.back, "click", function (e) {
@@ -1194,6 +1199,12 @@ function View(opts, txtOverride) {
             self.handlers.selection.call(self, self.model.getSelected());
         }
     });
+    dom.addListener(this.els.crumb, "click", function (e) {
+        var path = e.target.getAttribute("data-path");
+        if (path) {
+            self.model.fetch(path);
+        }
+    });
 
 }
 
@@ -1205,7 +1216,7 @@ View.prototype.render = function () {
     var layoutFragm = jungle([["div.eg-filepicker",
         ["div.eg-filepicker-bar",
             this.els.back,
-            this.breadcrumbify(this.model.path)
+            this.els.crumb
         ],
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
@@ -1217,7 +1228,7 @@ View.prototype.render = function () {
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
 
-
+    this.breadcrumbify(this.model.path);
 
     if (this.model.isEmpty) {
         this.empty();
@@ -1270,7 +1281,6 @@ View.prototype.renderItem = function (itemModel) {
 
 
 View.prototype.breadcrumbify = function (path) {
-    var self = this;
     var list = path.split("/");
     var crumbItems = [];
     var currentPath = "";
@@ -1289,17 +1299,9 @@ View.prototype.breadcrumbify = function (path) {
             }
         }
     });
+    this.els.crumb.innerHTML = "";
+    this.els.crumb.appendChild(jungle([crumbItems]));
 
-    var crumb = jungle([["span.eg-filepicker-path", crumbItems]]);
-
-    dom.addListener(crumb.childNodes[0], "click", function (e) {
-        var path = e.target.getAttribute("data-path");
-        if (path) {
-            self.model.fetch(path);
-        }
-    });
-
-    return crumb;
 }
 
 
