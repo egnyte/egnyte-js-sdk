@@ -1147,7 +1147,9 @@ function View(opts, txtOverride) {
     this.handlers = helpers.extend({
         selection: helpers.noop,
         close: helpers.noop,
-        error: helpers.noop
+        error: function (e) {
+            self.defaultError(e);
+        }
     }, opts.handlers);
     this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
@@ -1312,6 +1314,12 @@ View.prototype.loading = function () {
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]]));
     }
 }
+View.prototype.defaultError = function (e) {
+    if (this.els.list) {
+        this.els.list.innerHTML = "";
+        this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
+    }
+}
 View.prototype.empty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
@@ -1422,7 +1430,7 @@ module.exports = {
         for (i = 1; i < arguments.length; i++) {
             if (arguments[i]) {
                 for (k in arguments[i]) {
-                    if (arguments[i].hasOwnProperty(k)) {
+                    if (arguments[i].hasOwnProperty(k) && arguments[i][k]) {
                         target[k] = arguments[i][k];
                     }
                 }
