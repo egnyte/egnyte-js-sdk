@@ -36,6 +36,13 @@
         -ms-user-select: none;
         user-select: none;
     }
+    & input{
+        vertical-align: middle;
+        margin: @spacing*2;
+        &.eg-not{
+            visibility: hidden;
+        }
+    }
 }
 
 .eg-filepicker ul{
@@ -90,12 +97,6 @@
         vertical-align: middle;
         display:inline-block;
 
-    }
-    & input{
-        margin: @spacing*2;
-        &.eg-not{
-            visibility: hidden;
-        }
     }
 }
 

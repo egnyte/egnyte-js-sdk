@@ -75,8 +75,9 @@ Model.prototype.set = function (m) {
             self.items.push(new Item(f, self));
         });
     }
-    
+
     this.isEmpty = (this.items.length === 0);
+    this.isMultiselectable = (this.opts.select.multiple);
 
     this.onupdate();
     this.onchange();
@@ -121,6 +122,13 @@ Model.prototype.deselect = function () {
             item.onchange();
         }
     });
+}
+Model.prototype.setAllSelection = function (selected) {
+    helpers.each(this.items, function (item) {
+        item.selected = selected;
+    });
+    this.onupdate();
+    this.onchange();
 }
 
 module.exports = Model;

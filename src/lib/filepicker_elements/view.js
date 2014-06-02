@@ -54,14 +54,11 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    var back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]);
-    this.els.back = back.childNodes[0];
-    var close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]);
-    this.els.close = close.childNodes[0];
-    var ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]);
-    this.els.ok = ok.childNodes[0];
-    var crumb = jungle([["span.eg-filepicker-path"]]);
-    this.els.crumb = crumb.childNodes[0];
+    this.els.back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]).childNodes[0];
+    this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
+    this.els.selectAll = jungle([["input[type=checkbox]",{title:this.txt("Select all")}]]).childNodes[0];
 
 
 
@@ -83,6 +80,9 @@ function View(opts, txtOverride) {
             self.model.fetch(path);
         }
     });
+    dom.addListener(this.els.selectAll, "click", function (e) {
+        self.model.setAllSelection(!!e.target.checked);
+    });
 
 }
 
@@ -90,12 +90,16 @@ View.prototype.render = function () {
     var self = this;
 
     this.els.list = document.createElement("ul");
+    
+    var topbar = ["div.eg-filepicker-bar"];
+    if(this.model.isMultiselectable){
+        topbar.push(this.els.selectAll);
+    }
+    topbar.push( this.els.back);
+    topbar.push( this.els.crumb);
 
     var layoutFragm = jungle([["div.eg-filepicker",
-        ["div.eg-filepicker-bar",
-            this.els.back,
-            this.els.crumb
-        ],
+        topbar,
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
             this.els.ok,
