@@ -21,7 +21,7 @@ module.exports = {
         for (i = 1; i < arguments.length; i++) {
             if (arguments[i]) {
                 for (k in arguments[i]) {
-                    if (arguments[i].hasOwnProperty(k) && arguments[i][k]) {
+                    if (arguments[i].hasOwnProperty(k) && (typeof arguments[i][k] !== "undefined")) {
                         target[k] = arguments[i][k];
                     }
                 }

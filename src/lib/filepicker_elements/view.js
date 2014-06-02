@@ -137,13 +137,11 @@ View.prototype.renderItem = function (itemModel) {
         itemCheckbox.checked = itemModel.selected;
     };
 
-    var itemFragm = jungle([["li.eg-filepicker-item",
+    var itemNode = jungle([["li.eg-filepicker-item",
         itemCheckbox,
         itemName
-    ]]);
+    ]]).childNodes[0];
     
-    var itemNode = itemFragm.childNodes[0];
-
     dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
             e.stopPropagation();
@@ -156,7 +154,7 @@ View.prototype.renderItem = function (itemModel) {
         itemModel.toggleSelect();
     });
 
-    this.els.list.appendChild(itemFragm);
+    this.els.list.appendChild(itemNode);
 }
 
 
