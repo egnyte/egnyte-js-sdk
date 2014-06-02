@@ -25,6 +25,11 @@
     cursor: pointer;
 }
 .eg-filepicker {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    height: 100%;
+    padding: @size 0;
     border: 1px solid @framecl;
     color: @fontcl;
     font-family: sans-serif;
@@ -48,16 +53,20 @@
 .eg-filepicker ul{
     padding: 0;
     margin:0;
-    height: 400px;
+    height: 100%;
     overflow-y: scroll;
 
 }
 
 .eg-filepicker-bar{
     outline: 1px solid @framecl;
+    height: @size - 2 * @spacing;
     padding: @spacing;
     background: @bodycl;
     overflow: hidden;
+    &:nth-child(1){
+    margin-top: -@size;
+    }
 }
 .eg-bar-right>*{
     float: right;
@@ -106,6 +115,35 @@
         text-decoration: underline;
     }
 }
+
+@-webkit-keyframes egspin {
+    to { transform: rotate(360deg); }
+}
+@keyframes egspin {
+    to { transform: rotate(360deg); }
+}
+
+.eg-placeholder {
+    margin: 40%;
+    margin: ~"calc(50% - 42px)";
+    margin-bottom: 0;
+    text-align: center;
+    &>div{
+        margin:0 auto;
+    }
+    &>.eg-spinner{
+        content: "";
+        -webkit-animation: egspin 1s infinite linear;
+        animation: egspin 1s infinite linear;
+        width: 30px;
+        height: 30px;
+        border: solid 7px;
+        border-radius: 50%;
+        border-color: transparent transparent @framecl;
+    }
+}
+
+
 
 .eg-ico {
     margin-right: @spacing;
@@ -173,32 +211,6 @@
     }
 }
 
-
-@-webkit-keyframes egspin {
-    to { transform: rotate(360deg); }
-}
-@keyframes egspin {
-    to { transform: rotate(360deg); }
-}
-
-.eg-placeholder {
-    margin: 40%;
-    margin: ~"calc(50% - 42px)";
-    text-align: center;
-    &>div{
-        margin:0 auto;
-    }
-    &>.eg-spinner{
-        content: "";
-        -webkit-animation: egspin 1s infinite linear;
-        animation: egspin 1s infinite linear;
-        width: 30px;
-        height: 30px;
-        border: solid 7px;
-        border-radius: 50%;
-        border-color: transparent transparent @framecl;
-    }
-}
 
 
 

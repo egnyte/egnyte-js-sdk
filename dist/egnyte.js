@@ -1123,8 +1123,8 @@ Model.prototype.deselect = function () {
 Model.prototype.setAllSelection = function (selected) {
     helpers.each(this.items, function (item) {
         item.selected = selected;
+        item.onchange();
     });
-    this.onupdate();
     this.onchange();
 }
 
@@ -1190,7 +1190,9 @@ function View(opts, txtOverride) {
     this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
     this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
-    this.els.selectAll = jungle([["input[type=checkbox]",{title:this.txt("Select all")}]]).childNodes[0];
+    this.els.selectAll = jungle([["input[type=checkbox]", {
+        title: this.txt("Select all")
+    }]]).childNodes[0];
 
 
 
@@ -1222,13 +1224,14 @@ View.prototype.render = function () {
     var self = this;
 
     this.els.list = document.createElement("ul");
-    
+
     var topbar = ["div.eg-filepicker-bar"];
-    if(this.model.isMultiselectable){
+    if (this.model.isMultiselectable) {
+        this.els.selectAll.checked = false;
         topbar.push(this.els.selectAll);
     }
-    topbar.push( this.els.back);
-    topbar.push( this.els.crumb);
+    topbar.push(this.els.back);
+    topbar.push(this.els.crumb);
 
     var layoutFragm = jungle([["div.eg-filepicker",
         topbar,
@@ -1258,14 +1261,14 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name", 
+    var itemName = jungle([["a.eg-filepicker-name",
         ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file"),
             {
                 "data-ext": itemModel.ext
             },
             ["span", itemModel.ext]
-        ],itemModel.data.name]]).childNodes[0];
-    
+        ], itemModel.data.name]]).childNodes[0];
+
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -1277,7 +1280,7 @@ View.prototype.renderItem = function (itemModel) {
         itemCheckbox,
         itemName
     ]]).childNodes[0];
-    
+
     dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
             e.stopPropagation();
@@ -1353,7 +1356,7 @@ View.prototype.destroy = function () {
 
 module.exports = View;
 },{"../../vendor/zenjungle":21,"../reusables/dom":17,"../reusables/helpers":18,"../reusables/texts":20,"./view.less":15}],15:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker input.eg-not{visibility:hidden}.eg-filepicker ul{padding:0;margin:0;height:400px;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;padding:4px;background:#f1f1f1;overflow:hidden}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}.eg-ico{margin-right:4px}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker input.eg-not{visibility:hidden}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],16:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
@@ -1534,115 +1537,115 @@ module.exports = function (overrides) {
  */
 
 var zenjungle = (function () {
-  // helpers
-  var is_object = function (object) {
-      return (!!object && '[object Object]' == Object.prototype.toString.call(object) && !object.nodeType);
-    },
-    is_array = function (object) {
-      return '[object Array]' == Object.prototype.toString.call(object);
-    },
-    each = function (object, callback) {
-      var key;
-      if (object) {
-        if (object.length) {
-          for (key = 0; key < object.length; key++) {
-            callback(object[key], key);
-          }
-        } else {
-          for (key in object) {
-            object.hasOwnProperty(key) && callback(object[key], key);
-          }
+    // helpers
+    var is_object = function (object) {
+            return (!!object && '[object Object]' == Object.prototype.toString.call(object) && !object.nodeType);
+        },
+        is_array = function (object) {
+            return '[object Array]' == Object.prototype.toString.call(object);
+        },
+        each = function (object, callback) {
+            var key;
+            if (object) {
+                if (object.length) {
+                    for (key = 0; key < object.length; key++) {
+                        callback(object[key], key);
+                    }
+                } else {
+                    for (key in object) {
+                        object.hasOwnProperty(key) && callback(object[key], key);
+                    }
+                }
+            }
+        },
+        merge = function () {
+            var merged = {}
+
+            each(arguments, function (arg) {
+                each(arg, function (value, key) {
+                    merged[key] = value;
+                })
+            });
+
+            return merged;
         }
-      }
-    },
-    merge = function () {
-      var merged = {}
 
-      each(arguments, function (arg) {
-        each(arg, function (value, key) {
-          merged[key] = value;
-        })
-      });
+    // converts some patterns to properties
+    var zen = function (string) {
+        var replace = {
+                '\\[([a-z\\-]+)=([^\\]]+)\\]': function (match) {
+                    var prop = {};
+                    prop[match[1]] = match[2].replace(/^["']/, '').replace(/["']$/, '');
 
-      return merged;
+                    return prop;
+                },
+                '#([a-zA-Z][a-zA-Z0-9\\-_]*)': function (match) {
+                    return {
+                        'id': match[1]
+                    };
+                },
+                '(\\.[a-zA-Z][a-zA-Z0-9\\-_]*)+': function (match) {
+                    return {
+                        'class': match[0].substr(1).split(".").join(" ")
+                    };
+                }
+            },
+            props = {};
+
+        each(replace, function (parser, regex) {
+            var match;
+
+            regex = new RegExp(regex);
+
+            while (regex.test(string)) {
+                match = regex.exec(string);
+                string = string.replace(match[0], '');
+
+                props = merge(props, parser(match));
+            }
+        });
+
+        return [string, props];
     }
 
-  // converts some patterns to properties
-  var zen = function (string) {
-    var replace = {
-        '\\[([a-z\\-]+)=([^\\]]+)\\]': function (match) {
-          var prop = {};
-          prop[match[1]] = match[2].replace(/^["']/, '').replace(/["']$/, '');
+    var monkeys = function (what, where) {
+        where = where || document.createDocumentFragment();
 
-          return prop;
-        },
-        '#([a-zA-Z][a-zA-Z0-9\\-_]*)': function (match) {
-          return {
-            'id': match[1]
-          };
-        },
-        '(\\.[a-zA-Z][a-zA-Z0-9\\-_]*)+': function (match) {
-          return {
-            'class': match[0].split(".").join(" ")
-          };
-        }
-      },
-      props = {};
+        each(what, function (element) {
+            var zenned,
+                props,
+                new_el;
 
-    each(replace, function (parser, regex) {
-      var match;
+            if (is_array(element)) {
 
-      regex = new RegExp(regex);
+                if ('string' === typeof element[0]) {
+                    zenned = zen(element.shift());
+                    props = is_object(element[0]) ? element.shift() : {};
+                    new_el = document.createElement(zenned[0]);
 
-      while (regex.test(string)) {
-        match = regex.exec(string);
-        string = string.replace(match[0], '');
+                    each(merge(zenned[1], props), function (value, key) {
+                        new_el.setAttribute(key, value);
+                    });
 
-        props = merge(props, parser(match));
-      }
-    });
+                    where.appendChild(new_el);
+                    monkeys(element, new_el);
+                } else {
+                    monkeys(element, where);
+                }
+            } else if (element.nodeType) {
+                where.appendChild(element);
+            } else if ('string' === typeof (element) || 'number' === typeof (element)) {
+                where.appendChild(document.createTextNode(element));
+            }
+        });
 
-    return [string, props];
-  }
+        return where;
+    }
 
-  var monkeys = function (what, where) {
-    where = where || document.createDocumentFragment();
-
-    each(what, function (element) {
-      var zenned,
-        props,
-        new_el;
-
-      if (is_array(element)) {
-
-        if ('string' === typeof element[0]) {
-          zenned = zen(element.shift());
-          props = is_object(element[0]) ? element.shift() : {};
-          new_el = document.createElement(zenned[0]);
-
-          each(merge(zenned[1], props), function (value, key) {
-            new_el.setAttribute(key, value);
-          });
-
-          where.appendChild(new_el);
-          monkeys(element, new_el);
-        } else {
-          monkeys(element, where);
-        }
-      } else if (element.nodeType) {
-        where.appendChild(element);
-      } else if ('string' === typeof (element) || 'number' === typeof (element)) {
-        where.appendChild(document.createTextNode(element));
-      }
-    });
-
-    return where;
-  }
-
-  return monkeys;
+    return monkeys;
 })();
 
 if (typeof module !== "undefined") {
-  module.exports = zenjungle;
+    module.exports = zenjungle;
 }
 },{}]},{},[6])

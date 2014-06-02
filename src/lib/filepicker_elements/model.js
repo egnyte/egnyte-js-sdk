@@ -126,8 +126,8 @@ Model.prototype.deselect = function () {
 Model.prototype.setAllSelection = function (selected) {
     helpers.each(this.items, function (item) {
         item.selected = selected;
+        item.onchange();
     });
-    this.onupdate();
     this.onchange();
 }
 

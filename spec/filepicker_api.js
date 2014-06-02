@@ -112,6 +112,7 @@ describe("API Filepicker", function () {
                 done();
             },
             ready: function () {
+                expect(node.querySelectorAll(".eg-filepicker-bar input").length).toEqual(0);
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
                 list[1].click();
@@ -119,6 +120,23 @@ describe("API Filepicker", function () {
             },
             select: {
                 multiple: false
+            }
+        });
+    });
+    
+    it('should handle select all', function (done) {
+
+        var picker = eg.filePicker(node, {
+            selection: function (elements) {
+                expect(elements.length).toBeGreaterThan(1);
+                done();
+            },
+            ready: function () {
+                node.querySelectorAll(".eg-filepicker-bar input")[0].click();
+                node.querySelectorAll(".eg-filepicker-ok")[0].click();
+            },
+            select: {
+                multiple: true
             }
         });
     });

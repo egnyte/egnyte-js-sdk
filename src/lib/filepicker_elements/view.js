@@ -58,7 +58,9 @@ function View(opts, txtOverride) {
     this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
     this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
-    this.els.selectAll = jungle([["input[type=checkbox]",{title:this.txt("Select all")}]]).childNodes[0];
+    this.els.selectAll = jungle([["input[type=checkbox]", {
+        title: this.txt("Select all")
+    }]]).childNodes[0];
 
 
 
@@ -90,13 +92,14 @@ View.prototype.render = function () {
     var self = this;
 
     this.els.list = document.createElement("ul");
-    
+
     var topbar = ["div.eg-filepicker-bar"];
-    if(this.model.isMultiselectable){
+    if (this.model.isMultiselectable) {
+        this.els.selectAll.checked = false;
         topbar.push(this.els.selectAll);
     }
-    topbar.push( this.els.back);
-    topbar.push( this.els.crumb);
+    topbar.push(this.els.back);
+    topbar.push(this.els.crumb);
 
     var layoutFragm = jungle([["div.eg-filepicker",
         topbar,
@@ -126,14 +129,14 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name", 
+    var itemName = jungle([["a.eg-filepicker-name",
         ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file"),
             {
                 "data-ext": itemModel.ext
             },
             ["span", itemModel.ext]
-        ],itemModel.data.name]]).childNodes[0];
-    
+        ], itemModel.data.name]]).childNodes[0];
+
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -145,7 +148,7 @@ View.prototype.renderItem = function (itemModel) {
         itemCheckbox,
         itemName
     ]]).childNodes[0];
-    
+
     dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
             e.stopPropagation();
