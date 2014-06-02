@@ -122,7 +122,14 @@ View.prototype.render = function () {
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name", itemModel.data.name]]).childNodes[0];
+    var itemName = jungle([["a.eg-filepicker-name", 
+        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file"),
+            {
+                "data-ext": itemModel.ext
+            },
+            ["span", itemModel.ext]
+        ],itemModel.data.name]]).childNodes[0];
+    
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -132,14 +139,9 @@ View.prototype.renderItem = function (itemModel) {
 
     var itemFragm = jungle([["li.eg-filepicker-item",
         itemCheckbox,
-        ["span.eg-filepicker-ico-" + ((itemModel.data.is_folder) ? "folder" : "file"),
-            {
-                "data-ext": itemModel.ext
-            },
-            ["span", itemModel.ext]
-        ],
         itemName
     ]]);
+    
     var itemNode = itemFragm.childNodes[0];
 
     dom.addListener(itemName, "click", function (e) {

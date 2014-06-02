@@ -100,14 +100,17 @@
 }
 
 .eg-filepicker a{
-    margin-left: .3em;
     cursor:pointer;
     &:hover{
         text-decoration: underline;
     }
 }
 
-.eg-filepicker-ico-file {
+.eg-ico {
+    margin-right: @spacing;
+}
+
+.eg-filepicker-file {
     width: @size;
     height: @size;
     background: @filecl;
@@ -126,7 +129,7 @@
     }
 }
 
-.eg-filepicker-ico-folder {
+.eg-filepicker-folder {
     background-color: #e1e1ba;
     border: #d4d8bd .1em solid;
     border-radius: .1em;
