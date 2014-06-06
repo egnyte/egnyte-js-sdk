@@ -39,11 +39,11 @@
                 handlers: {
                     ready: setup.ready,
                     selection: function (item) {
-                        setup.selection(item);
+                        setup.selection && setup.selection(item);
                         close();
                     },
                     close: function () {
-                        setup.cancel();
+                        setup.cancel && setup.cancel();
                         close();
                     },
                     error: setup.error

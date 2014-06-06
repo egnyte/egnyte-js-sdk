@@ -57,6 +57,9 @@ describe("API Filepicker", function () {
             ready: function () {
                 expect(node.querySelectorAll(".eg-filepicker-ok")[0].innerText.trim()).toEqual(text);
                 expect(node.querySelectorAll(".eg-filepicker-close")[0].innerText.trim()).toEqual("Cancel");
+
+                picker.close();
+
                 done();
             },
             texts: {
@@ -123,7 +126,7 @@ describe("API Filepicker", function () {
             }
         });
     });
-    
+
     it('should handle select all', function (done) {
 
         var picker = eg.filePicker(node, {
@@ -143,7 +146,7 @@ describe("API Filepicker", function () {
 
     it('can forbid selection', function (done) {
 
-        var picker = eg.filePicker(node, {            
+        var picker = eg.filePicker(node, {
             ready: function () {
                 var list = node.querySelectorAll(".eg-filepicker ul li");
                 list[0].click();
@@ -156,6 +159,53 @@ describe("API Filepicker", function () {
                 folder: false,
                 file: false,
                 multiple: false
+            }
+        });
+    });
+
+    it('should handle keyboard selection', function (done) {
+
+        var picker = eg.filePicker(node, {
+            ready: function () {
+                //pretend some keyboard
+                keyvent.up('down');
+                keyvent.up('space');
+                keyvent.up('down');
+                keyvent.up('space');
+                keyvent.up('enter');
+            },
+            selection: function (elements) {
+                expect(elements.length).toEqual(2);
+                done();
+            }
+        });
+    });
+
+
+    it('should handle keyboard on focused picker', function (done) {
+        
+        var node2 = document.createElement('div');
+        document.body.appendChild(node2);
+
+
+        var picker = eg.filePicker(node, {
+            ready: function () {
+                var picker2 = eg.filePicker(node2, {
+                    ready: function () {
+                        node.click();
+                        //pretend some keyboard
+                        keyvent.up('down');
+                        keyvent.up('space');
+                        keyvent.up('enter');
+                    },
+                    selection: function (elements) {
+                        expect(this).toAutoFail("wrong picker");
+                    }
+                });
+            },
+            selection: function (elements) {
+                expect(elements).toBeTruthy();
+                done();
             }
         });
     });

@@ -12,11 +12,11 @@
 
     function listen(channel, callback) {
         channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
-        dom.addListener(window, "message", channel.handler);
+        channel._evListener = dom.addListener(window, "message", channel.handler);
     }
 
     function destroy(channel, iframe) {
-        dom.removeListener(window, "message", channel.handler);
+        channel._evListener.destroy();
         if (iframe.parentNode) {
             iframe.parentNode.removeChild(iframe);
         }

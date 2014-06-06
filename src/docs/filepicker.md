@@ -26,7 +26,7 @@ The options are:
  - `path` String - a path to open the filepicker at, default: "/"
  - `cancel` Function - a callback to run when the user decides to cancel selecting
  - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
- - `error` Function - a callback to call when an error occurs. First argument is an error object.
+ - `error` Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, this is only useful if you want to handle errors yourself. When picker instance is not useful after error, remember to close it.
  - `barAlign` String - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
  - `select` Map of selectables configuration
  
@@ -47,6 +47,23 @@ texts: {
   "This folder is empty": "..."
 }
 ```
+
+ - `keys` Map to override default keybinding
+ 
+```javascript
+keys: {
+    "up": "<up>",
+    "down": "<down>",
+    "select": "<space>",
+    "explore": "<right>",
+    "back": "<left>",
+    "confirm": "<enter>",
+    "close": "<escape>"
+}
+```
+All keys handled by https://github.com/chrisdickinson/vkey are available.
+
+----
 
 _Example_
 

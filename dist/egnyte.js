@@ -196,6 +196,144 @@ process.chdir = function (dir) {
 
 }).call(this,require("FWaASH"))
 },{"FWaASH":1}],3:[function(require,module,exports){
+var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
+  , isOSX = /OS X/.test(ua)
+  , isOpera = /Opera/.test(ua)
+  , maybeFirefox = !/like Gecko/.test(ua) && !isOpera
+
+var i, output = module.exports = {
+  0:  isOSX ? '<menu>' : '<UNK>'
+, 1:  '<mouse 1>'
+, 2:  '<mouse 2>'
+, 3:  '<break>'
+, 4:  '<mouse 3>'
+, 5:  '<mouse 4>'
+, 6:  '<mouse 5>'
+, 8:  '<backspace>'
+, 9:  '<tab>'
+, 12: '<clear>'
+, 13: '<enter>'
+, 16: '<shift>'
+, 17: '<control>'
+, 18: '<alt>'
+, 19: '<pause>'
+, 20: '<caps-lock>'
+, 21: '<ime-hangul>'
+, 23: '<ime-junja>'
+, 24: '<ime-final>'
+, 25: '<ime-kanji>'
+, 27: '<escape>'
+, 28: '<ime-convert>'
+, 29: '<ime-nonconvert>'
+, 30: '<ime-accept>'
+, 31: '<ime-mode-change>'
+, 27: '<escape>'
+, 32: '<space>'
+, 33: '<page-up>'
+, 34: '<page-down>'
+, 35: '<end>'
+, 36: '<home>'
+, 37: '<left>'
+, 38: '<up>'
+, 39: '<right>'
+, 40: '<down>'
+, 41: '<select>'
+, 42: '<print>'
+, 43: '<execute>'
+, 44: '<snapshot>'
+, 45: '<insert>'
+, 46: '<delete>'
+, 47: '<help>'
+, 91: '<meta>'  // meta-left -- no one handles left and right properly, so we coerce into one.
+, 92: '<meta>'  // meta-right
+, 93: isOSX ? '<meta>' : '<menu>'      // chrome,opera,safari all report this for meta-right (osx mbp).
+, 95: '<sleep>'
+, 106: '<num-*>'
+, 107: '<num-+>'
+, 108: '<num-enter>'
+, 109: '<num-->'
+, 110: '<num-.>'
+, 111: '<num-/>'
+, 144: '<num-lock>'
+, 145: '<scroll-lock>'
+, 160: '<shift-left>'
+, 161: '<shift-right>'
+, 162: '<control-left>'
+, 163: '<control-right>'
+, 164: '<alt-left>'
+, 165: '<alt-right>'
+, 166: '<browser-back>'
+, 167: '<browser-forward>'
+, 168: '<browser-refresh>'
+, 169: '<browser-stop>'
+, 170: '<browser-search>'
+, 171: '<browser-favorites>'
+, 172: '<browser-home>'
+
+  // ff/osx reports '<volume-mute>' for '-'
+, 173: isOSX && maybeFirefox ? '-' : '<volume-mute>'
+, 174: '<volume-down>'
+, 175: '<volume-up>'
+, 176: '<next-track>'
+, 177: '<prev-track>'
+, 178: '<stop>'
+, 179: '<play-pause>'
+, 180: '<launch-mail>'
+, 181: '<launch-media-select>'
+, 182: '<launch-app 1>'
+, 183: '<launch-app 2>'
+, 186: ';'
+, 187: '='
+, 188: ','
+, 189: '-'
+, 190: '.'
+, 191: '/'
+, 192: '`'
+, 219: '['
+, 220: '\\'
+, 221: ']'
+, 222: "'"
+, 223: '<meta>'
+, 224: '<meta>'       // firefox reports meta here.
+, 226: '<alt-gr>'
+, 229: '<ime-process>'
+, 231: isOpera ? '`' : '<unicode>'
+, 246: '<attention>'
+, 247: '<crsel>'
+, 248: '<exsel>'
+, 249: '<erase-eof>'
+, 250: '<play>'
+, 251: '<zoom>'
+, 252: '<no-name>'
+, 253: '<pa-1>'
+, 254: '<clear>'
+}
+
+for(i = 58; i < 65; ++i) {
+  output[i] = String.fromCharCode(i)
+}
+
+// 0-9
+for(i = 48; i < 58; ++i) {
+  output[i] = (i - 48)+''
+}
+
+// A-Z
+for(i = 65; i < 91; ++i) {
+  output[i] = String.fromCharCode(i)
+}
+
+// num0-9
+for(i = 96; i < 106; ++i) {
+  output[i] = '<num-'+(i - 96)+'>'
+}
+
+// F1-F24
+for(i = 112; i < 136; ++i) {
+  output[i] = 'F'+(i-111)
+}
+
+},{}],4:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -323,7 +461,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":4,"once":5}],4:[function(require,module,exports){
+},{"global/window":5,"once":6}],5:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window
@@ -334,7 +472,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -355,7 +493,7 @@ function once (fn) {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -382,7 +520,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":18}],7:[function(require,module,exports){
+},{"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":19}],8:[function(require,module,exports){
 var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -399,7 +537,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":8,"./api_elements/main":9,"./api_elements/storage":10}],8:[function(require,module,exports){
+},{"./api_elements/link":9,"./api_elements/main":10,"./api_elements/storage":11}],9:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -483,7 +621,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":16,"../reusables/helpers":18}],9:[function(require,module,exports){
+},{"../promises":17,"../reusables/helpers":19}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -635,7 +773,7 @@ module.exports = function (opts) {
         promiseRequest: promiseRequest
     };
 };
-},{"../promises":16,"xhr":3}],10:[function(require,module,exports){
+},{"../promises":17,"xhr":4}],11:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -822,7 +960,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":16,"../reusables/helpers":18}],11:[function(require,module,exports){
+},{"../promises":17,"../reusables/helpers":19}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require("../reusables/helpers");
@@ -864,11 +1002,11 @@ module.exports = function (apihelper, opts) {
                 handlers: {
                     ready: setup.ready,
                     selection: function (item) {
-                        setup.selection(item);
+                        setup.selection && setup.selection(item);
                         close();
                     },
                     close: function () {
-                        setup.cancel();
+                        setup.cancel && setup.cancel();
                         close();
                     },
                     error: setup.error
@@ -890,7 +1028,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/model":13,"../filepicker_elements/view":14,"../reusables/dom":17,"../reusables/helpers":18}],12:[function(require,module,exports){
+},{"../filepicker_elements/model":14,"../filepicker_elements/view":15,"../reusables/dom":18,"../reusables/helpers":19}],13:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
@@ -905,11 +1043,11 @@ module.exports = function (apihelper, opts) {
 
     function listen(channel, callback) {
         channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
-        dom.addListener(window, "message", channel.handler);
+        channel._evListener = dom.addListener(window, "message", channel.handler);
     }
 
     function destroy(channel, iframe) {
-        dom.removeListener(window, "message", channel.handler);
+        channel._evListener.destroy();
         if (iframe.parentNode) {
             iframe.parentNode.removeChild(iframe);
         }
@@ -994,7 +1132,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":17,"../reusables/helpers":18,"../reusables/messages":19}],13:[function(require,module,exports){
+},{"../reusables/dom":18,"../reusables/helpers":19,"../reusables/messages":20}],14:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
 
 
@@ -1019,6 +1157,7 @@ function Item(data, parent) {
     }
     this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder));
     this.parent = parent;
+    this.isCurrent = false;
 }
 
 Item.prototype.defaultAction = function () {
@@ -1063,6 +1202,8 @@ Model.prototype.set = function (m) {
     var self = this;
     this.path = m.path;
     this.items = [];
+    this.currentItem = -1;
+
     helpers.each(m.folders, function (f) {
         self.items.push(new Item(f, self));
     });
@@ -1128,8 +1269,24 @@ Model.prototype.setAllSelection = function (selected) {
     this.onchange();
 }
 
+Model.prototype.mvCurrent = function (offset) {
+    if (this.currentItem + offset < this.items.length && this.currentItem + offset >= 0) {
+        if (this.items[this.currentItem]) {
+            this.items[this.currentItem].isCurrent = false;
+            this.items[this.currentItem].onchange();
+        }
+        this.currentItem += offset;
+        this.items[this.currentItem].isCurrent = true;
+        this.items[this.currentItem].onchange();
+    }
+}
+
+Model.prototype.getCurrent = function () {
+    return this.items[this.currentItem];
+}
+
 module.exports = Model;
-},{"../reusables/helpers":18}],14:[function(require,module,exports){
+},{"../reusables/helpers":19}],15:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -1140,13 +1297,25 @@ var jungle = require("../../vendor/zenjungle");
 
 require("./view.less");
 
-var moduleClass = "eg-filepicker";
+var currentGlobalKeyboadrFocus = "no";
 
 
 function View(opts, txtOverride) {
     var self = this;
+    this.uid = Math.random();
+    currentGlobalKeyboadrFocus = this.uid;
     this.el = opts.el;
     this.els = {};
+    this.evs = [];
+    var keybinding = helpers.extend({
+        "up": "<up>",
+        "down": "<down>",
+        "select": "<space>",
+        "explore": "<right>",
+        "back": "<left>",
+        "confirm": "<enter>",
+        "close": "<escape>"
+    }, opts.keys);
 
     this.txt = texts(txtOverride);
 
@@ -1159,12 +1328,13 @@ function View(opts, txtOverride) {
             self.defaultError(e);
         }
     }, opts.handlers);
-    this.selection = helpers.extend(this.selection, opts.selection);
+
+    //action handlers
+    //this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
-    //bind to model changes
-    this.model.onloading = function () {
-        self.loading();
-    }
+
+    //bind to model events
+    this.model.onloading = helpers.bindThis(self, self.loading);
     this.model.onupdate = function () {
         self.render();
         if (self.handlers.ready) {
@@ -1173,9 +1343,7 @@ function View(opts, txtOverride) {
             setTimeout(runReady, 0);
         }
     }
-    this.model.onerror = function (e) {
-        self.handlers.error(e);
-    }
+    this.model.onerror = helpers.bindThis(self, self.handlers.error);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -1194,32 +1362,55 @@ function View(opts, txtOverride) {
         title: this.txt("Select all")
     }]]).childNodes[0];
 
-
-
-    dom.addListener(this.els.back, "click", function (e) {
-        self.model.goUp();
-    });
-    dom.addListener(this.els.close, "click", function (e) {
-        self.handlers.close.call(self, e);
-    });
-    dom.addListener(this.els.ok, "click", function (e) {
-        var selected = self.model.getSelected();
-        if (selected && selected.length) {
-            self.handlers.selection.call(self, self.model.getSelected());
-        }
-    });
-    dom.addListener(this.els.crumb, "click", function (e) {
+    //bind events and store references to unbind later
+    this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
+    this.handleClick(this.els.back, self.goUp);
+    this.handleClick(this.els.close, self.handlers.close);
+    this.handleClick(this.els.ok, self.confirmSelection);
+    this.handleClick(this.els.crumb, function (e) {
         var path = e.target.getAttribute("data-path");
         if (path) {
             self.model.fetch(path);
         }
     });
-    dom.addListener(this.els.selectAll, "click", function (e) {
+    this.handleClick(this.els.selectAll, function (e) {
         self.model.setAllSelection(!!e.target.checked);
     });
 
+    var keys = {};
+    keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
+    keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
+    keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
+    keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
+    keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
+    keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
+    keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
+
+    document.activeElement.blur();
+    this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
+
 }
 
+View.prototype.destroy = function () {
+    helpers.each(this.evs, function (ev) {
+        ev.destroy();
+    });
+    this.evs = null;
+    this.el.innerHTML = "";
+    this.el = null;
+    this.els = null;
+    this.model = null;
+    this.handlers = null;
+}
+
+View.prototype.handleClick = function(el,method){
+    this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
+}
+
+
+//================================================================= 
+// rendering
+//================================================================= 
 View.prototype.render = function () {
     var self = this;
 
@@ -1258,6 +1449,7 @@ View.prototype.render = function () {
 
 }
 
+
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
@@ -1272,9 +1464,7 @@ View.prototype.renderItem = function (itemModel) {
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
-    itemModel.onchange = function () {
-        itemCheckbox.checked = itemModel.selected;
-    };
+
 
     var itemNode = jungle([["li.eg-filepicker-item",
         itemCheckbox,
@@ -1292,6 +1482,11 @@ View.prototype.renderItem = function (itemModel) {
     dom.addListener(itemNode, "click", function (e) {
         itemModel.toggleSelect();
     });
+
+    itemModel.onchange = function () {
+        itemCheckbox.checked = itemModel.selected;
+        itemNode.setAttribute("aria-selected", itemModel.isCurrent);
+    };
 
     this.els.list.appendChild(itemNode);
 }
@@ -1333,6 +1528,8 @@ View.prototype.defaultError = function (e) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
+    } else {
+        this.handlers.close(e);
     }
 }
 View.prototype.empty = function () {
@@ -1342,22 +1539,57 @@ View.prototype.empty = function () {
     }
 }
 
-View.prototype.destroy = function () {
-    this.el.innerHTML = "";
-    this.el = null;
-    this.els = null;
-    this.model = null;
-    this.handlers = null;
+//================================================================= 
+// focus
+//================================================================= 
+
+View.prototype.hasFocus = function () {
+    return currentGlobalKeyboadrFocus === this.uid;
+}
+View.prototype.focused = function () {
+    currentGlobalKeyboadrFocus = this.uid;
+}
+//================================================================= 
+// navigation
+//================================================================= 
+
+View.prototype.goUp = function () {
+    this.model.goUp();
+}
+View.prototype.confirmSelection = function () {
+    var selected = this.model.getSelected();
+    if (selected && selected.length) {
+        this.handlers.selection.call(this, this.model.getSelected());
+    }
+}
+
+View.prototype.kbNav_up = function () {
+    this.model.mvCurrent(-1);
+}
+
+View.prototype.kbNav_down = function () {
+    this.model.mvCurrent(1);
+}
+View.prototype.kbNav_select = function () {
+    this.model.getCurrent().toggleSelect();
+}
+View.prototype.kbNav_confirm = function () {
+    this.model.getCurrent().toggleSelect();
+}
+
+View.prototype.kbNav_explore = function () {
+    var item = this.model.getCurrent();
+    if (item.data.is_folder) {
+        item.defaultAction();
+    }
 }
 
 
 
-
-
 module.exports = View;
-},{"../../vendor/zenjungle":21,"../reusables/dom":17,"../reusables/helpers":18,"../reusables/texts":20,"./view.less":15}],15:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker input.eg-not{visibility:hidden}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],16:[function(require,module,exports){
+},{"../../vendor/zenjungle":22,"../reusables/dom":18,"../reusables/helpers":19,"../reusables/texts":21,"./view.less":16}],16:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker input.eg-not{visibility:hidden}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],17:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1381,31 +1613,56 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":2}],17:[function(require,module,exports){
+},{"pinkyswear":2}],18:[function(require,module,exports){
+var vkey = require('vkey');
+
+
+function addListener(elem, type, callback) {
+    var handler;
+    if (elem.addEventListener) {
+        handler = callback;
+        elem.addEventListener(type, callback, false);
+
+    } else {
+        handler = function (e) {
+            e = e || window.event; // get window.event if argument is falsy (in IE)
+            e.target || (e.target = e.srcElement);
+            var res = callback.call(this, e);
+            if (res === false) {
+                e.cancelBubble = true;
+            }
+            return res;
+        };
+        elem.attachEvent("on" + type, handler);
+    }
+
+    return {
+        destroy: function () {
+            removeListener(elem, type, handler);
+        }
+    }
+}
+
+function removeListener(elem, type, handler) {
+    if (elem.removeEventListener) {
+        elem.removeEventListener(type, handler, false);
+    } else if (elem.detachEvent) {
+        elem.detachEvent(type, handler);
+    }
+}
+
+
+
 module.exports = {
 
-    addListener: function (elem, type, callback) {
-        if (elem.addEventListener) {
-            elem.addEventListener(type, callback, false);
-        } else {
-            elem.attachEvent("on" + type, function (e) {
-                e = e || window.event; // get window.event if argument is falsy (in IE)
-                e.target || (e.target = e.srcElement);
-                var res = callback.call(this, e);
-                if (res === false) {
-                    e.cancelBubble = true;
-                }
-                return res;
-            });
-        }
-    },
+    addListener: addListener,
 
-    removeListener: function (elem, type, callback) {
-        if (elem.removeEventListener) {
-            elem.removeEventListener(type, callback, false);
-        } else if (elem.detachEvent) {
-            //no can do
-        }
+    onKeys: function (elem, actions, hasFocus) {
+        return addListener(elem, "keyup", function (ev) {
+            if (hasFocus() && actions[vkey[ev.keyCode]]) {
+                actions[vkey[ev.keyCode]]();
+            }
+        });
     },
 
     createFrame: function (url) {
@@ -1421,7 +1678,7 @@ module.exports = {
     }
 
 }
-},{}],18:[function(require,module,exports){
+},{"vkey":3}],19:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1454,6 +1711,11 @@ module.exports = {
         return target;
     },
     noop: function () {},
+    bindThis: function(that,func){
+        return function(){
+            return func.apply(that,arguments);
+        }
+    },
     each: each,
     normalizeURL: function (url) {
         return (url).replace(/\/*$/, "");
@@ -1471,7 +1733,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1514,7 +1776,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":18}],20:[function(require,module,exports){
+},{"../reusables/helpers":19}],21:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -1528,7 +1790,7 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *
@@ -1648,4 +1910,4 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[6])
+},{}]},{},[7])

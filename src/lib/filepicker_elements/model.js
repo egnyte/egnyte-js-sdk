@@ -22,6 +22,7 @@ function Item(data, parent) {
     }
     this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder));
     this.parent = parent;
+    this.isCurrent = false;
 }
 
 Item.prototype.defaultAction = function () {
@@ -66,6 +67,8 @@ Model.prototype.set = function (m) {
     var self = this;
     this.path = m.path;
     this.items = [];
+    this.currentItem = -1;
+
     helpers.each(m.folders, function (f) {
         self.items.push(new Item(f, self));
     });
@@ -129,6 +132,22 @@ Model.prototype.setAllSelection = function (selected) {
         item.onchange();
     });
     this.onchange();
+}
+
+Model.prototype.mvCurrent = function (offset) {
+    if (this.currentItem + offset < this.items.length && this.currentItem + offset >= 0) {
+        if (this.items[this.currentItem]) {
+            this.items[this.currentItem].isCurrent = false;
+            this.items[this.currentItem].onchange();
+        }
+        this.currentItem += offset;
+        this.items[this.currentItem].isCurrent = true;
+        this.items[this.currentItem].onchange();
+    }
+}
+
+Model.prototype.getCurrent = function () {
+    return this.items[this.currentItem];
 }
 
 module.exports = Model;

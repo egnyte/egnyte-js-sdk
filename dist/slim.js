@@ -852,6 +852,11 @@ module.exports = {
         return target;
     },
     noop: function () {},
+    bindThis: function(that,func){
+        return function(){
+            return func.apply(that,arguments);
+        }
+    },
     each: each,
     normalizeURL: function (url) {
         return (url).replace(/\/*$/, "");

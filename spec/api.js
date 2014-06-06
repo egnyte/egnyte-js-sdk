@@ -25,18 +25,6 @@ describe("API to JS (integration test)", function () {
 
     beforeEach(function () {
         jasmine.getEnv().defaultTimeoutInterval = 5000; //QA API can be laggy
-        jasmine.addMatchers({
-            toAutoFail: function () {
-                return {
-                    compare: function (actual, expected) {
-                        return {
-                            pass: false,
-                            message: 'this not to happen. ' + expected
-                        };
-                    }
-                };
-            }
-        });
 
         eg = Egnyte.init(egnyteDomain, {
             token: APIToken

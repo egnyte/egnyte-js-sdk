@@ -35,7 +35,7 @@ module.exports = function (grunt) {
                 src: ["dist/egnyte.js", "spec/conf/apiaccess.js", "src/vendor/zenjungle.js"],
                 options: {
                     keepRunner: true,
-                    helpers: ["spec/helpers/clickablenodes.js"],
+                    helpers: ["spec/helpers/*.js"],
                     specs: 'spec/*.js',
                     '--web-security': false,
                     '--local-to-remote-url-access': true,

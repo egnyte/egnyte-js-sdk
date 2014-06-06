@@ -1,0 +1,12 @@
+
+.eg-btn{
+    background-color: @btcl;
+    border:1px solid @btframecl;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.eg-filepicker {
+    border-color: @framecl;
+    color: @fontcl;
+    font-family: sans-serif;
+}

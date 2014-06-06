@@ -8,13 +8,25 @@ var jungle = require("../../vendor/zenjungle");
 
 require("./view.less");
 
-var moduleClass = "eg-filepicker";
+var currentGlobalKeyboadrFocus = "no";
 
 
 function View(opts, txtOverride) {
     var self = this;
+    this.uid = Math.random();
+    currentGlobalKeyboadrFocus = this.uid;
     this.el = opts.el;
     this.els = {};
+    this.evs = [];
+    var keybinding = helpers.extend({
+        "up": "<up>",
+        "down": "<down>",
+        "select": "<space>",
+        "explore": "<right>",
+        "back": "<left>",
+        "confirm": "<enter>",
+        "close": "<escape>"
+    }, opts.keys);
 
     this.txt = texts(txtOverride);
 
@@ -27,12 +39,13 @@ function View(opts, txtOverride) {
             self.defaultError(e);
         }
     }, opts.handlers);
-    this.selection = helpers.extend(this.selection, opts.selection);
+
+    //action handlers
+    //this.selection = helpers.extend(this.selection, opts.selection);
     this.model = opts.model;
-    //bind to model changes
-    this.model.onloading = function () {
-        self.loading();
-    }
+
+    //bind to model events
+    this.model.onloading = helpers.bindThis(self, self.loading);
     this.model.onupdate = function () {
         self.render();
         if (self.handlers.ready) {
@@ -41,9 +54,7 @@ function View(opts, txtOverride) {
             setTimeout(runReady, 0);
         }
     }
-    this.model.onerror = function (e) {
-        self.handlers.error(e);
-    }
+    this.model.onerror = helpers.bindThis(self, self.handlers.error);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -62,32 +73,55 @@ function View(opts, txtOverride) {
         title: this.txt("Select all")
     }]]).childNodes[0];
 
-
-
-    dom.addListener(this.els.back, "click", function (e) {
-        self.model.goUp();
-    });
-    dom.addListener(this.els.close, "click", function (e) {
-        self.handlers.close.call(self, e);
-    });
-    dom.addListener(this.els.ok, "click", function (e) {
-        var selected = self.model.getSelected();
-        if (selected && selected.length) {
-            self.handlers.selection.call(self, self.model.getSelected());
-        }
-    });
-    dom.addListener(this.els.crumb, "click", function (e) {
+    //bind events and store references to unbind later
+    this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
+    this.handleClick(this.els.back, self.goUp);
+    this.handleClick(this.els.close, self.handlers.close);
+    this.handleClick(this.els.ok, self.confirmSelection);
+    this.handleClick(this.els.crumb, function (e) {
         var path = e.target.getAttribute("data-path");
         if (path) {
             self.model.fetch(path);
         }
     });
-    dom.addListener(this.els.selectAll, "click", function (e) {
+    this.handleClick(this.els.selectAll, function (e) {
         self.model.setAllSelection(!!e.target.checked);
     });
 
+    var keys = {};
+    keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
+    keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
+    keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
+    keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
+    keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
+    keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
+    keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
+
+    document.activeElement.blur();
+    this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
+
 }
 
+View.prototype.destroy = function () {
+    helpers.each(this.evs, function (ev) {
+        ev.destroy();
+    });
+    this.evs = null;
+    this.el.innerHTML = "";
+    this.el = null;
+    this.els = null;
+    this.model = null;
+    this.handlers = null;
+}
+
+View.prototype.handleClick = function(el,method){
+    this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
+}
+
+
+//================================================================= 
+// rendering
+//================================================================= 
 View.prototype.render = function () {
     var self = this;
 
@@ -126,6 +160,7 @@ View.prototype.render = function () {
 
 }
 
+
 View.prototype.renderItem = function (itemModel) {
     var self = this;
 
@@ -140,9 +175,7 @@ View.prototype.renderItem = function (itemModel) {
     var itemCheckbox = jungle([["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
-    itemModel.onchange = function () {
-        itemCheckbox.checked = itemModel.selected;
-    };
+
 
     var itemNode = jungle([["li.eg-filepicker-item",
         itemCheckbox,
@@ -160,6 +193,11 @@ View.prototype.renderItem = function (itemModel) {
     dom.addListener(itemNode, "click", function (e) {
         itemModel.toggleSelect();
     });
+
+    itemModel.onchange = function () {
+        itemCheckbox.checked = itemModel.selected;
+        itemNode.setAttribute("aria-selected", itemModel.isCurrent);
+    };
 
     this.els.list.appendChild(itemNode);
 }
@@ -201,6 +239,8 @@ View.prototype.defaultError = function (e) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
+    } else {
+        this.handlers.close(e);
     }
 }
 View.prototype.empty = function () {
@@ -210,15 +250,50 @@ View.prototype.empty = function () {
     }
 }
 
-View.prototype.destroy = function () {
-    this.el.innerHTML = "";
-    this.el = null;
-    this.els = null;
-    this.model = null;
-    this.handlers = null;
+//================================================================= 
+// focus
+//================================================================= 
+
+View.prototype.hasFocus = function () {
+    return currentGlobalKeyboadrFocus === this.uid;
+}
+View.prototype.focused = function () {
+    currentGlobalKeyboadrFocus = this.uid;
+}
+//================================================================= 
+// navigation
+//================================================================= 
+
+View.prototype.goUp = function () {
+    this.model.goUp();
+}
+View.prototype.confirmSelection = function () {
+    var selected = this.model.getSelected();
+    if (selected && selected.length) {
+        this.handlers.selection.call(this, this.model.getSelected());
+    }
 }
 
+View.prototype.kbNav_up = function () {
+    this.model.mvCurrent(-1);
+}
 
+View.prototype.kbNav_down = function () {
+    this.model.mvCurrent(1);
+}
+View.prototype.kbNav_select = function () {
+    this.model.getCurrent().toggleSelect();
+}
+View.prototype.kbNav_confirm = function () {
+    this.model.getCurrent().toggleSelect();
+}
+
+View.prototype.kbNav_explore = function () {
+    var item = this.model.getCurrent();
+    if (item.data.is_folder) {
+        item.defaultAction();
+    }
+}
 
 
 

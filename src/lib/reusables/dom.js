@@ -1,27 +1,52 @@
+var vkey = require('vkey');
+
+
+function addListener(elem, type, callback) {
+    var handler;
+    if (elem.addEventListener) {
+        handler = callback;
+        elem.addEventListener(type, callback, false);
+
+    } else {
+        handler = function (e) {
+            e = e || window.event; // get window.event if argument is falsy (in IE)
+            e.target || (e.target = e.srcElement);
+            var res = callback.call(this, e);
+            if (res === false) {
+                e.cancelBubble = true;
+            }
+            return res;
+        };
+        elem.attachEvent("on" + type, handler);
+    }
+
+    return {
+        destroy: function () {
+            removeListener(elem, type, handler);
+        }
+    }
+}
+
+function removeListener(elem, type, handler) {
+    if (elem.removeEventListener) {
+        elem.removeEventListener(type, handler, false);
+    } else if (elem.detachEvent) {
+        elem.detachEvent(type, handler);
+    }
+}
+
+
+
 module.exports = {
 
-    addListener: function (elem, type, callback) {
-        if (elem.addEventListener) {
-            elem.addEventListener(type, callback, false);
-        } else {
-            elem.attachEvent("on" + type, function (e) {
-                e = e || window.event; // get window.event if argument is falsy (in IE)
-                e.target || (e.target = e.srcElement);
-                var res = callback.call(this, e);
-                if (res === false) {
-                    e.cancelBubble = true;
-                }
-                return res;
-            });
-        }
-    },
+    addListener: addListener,
 
-    removeListener: function (elem, type, callback) {
-        if (elem.removeEventListener) {
-            elem.removeEventListener(type, callback, false);
-        } else if (elem.detachEvent) {
-            //no can do
-        }
+    onKeys: function (elem, actions, hasFocus) {
+        return addListener(elem, "keyup", function (ev) {
+            if (hasFocus() && actions[vkey[ev.keyCode]]) {
+                actions[vkey[ev.keyCode]]();
+            }
+        });
     },
 
     createFrame: function (url) {

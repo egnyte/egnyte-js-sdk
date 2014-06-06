@@ -102,6 +102,9 @@
         background-color: @itemhover;
         outline: 1px solid @framecl;
     }
+    &[aria-selected="true"] {
+        background-color: saturate(darken(@itemhover,5%),15%);
+    }
     & *{
         vertical-align: middle;
         display:inline-block;
