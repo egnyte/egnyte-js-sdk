@@ -100,7 +100,7 @@ function View(opts, txtOverride) {
     keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
     keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
 
-    document.activeElement.blur();
+    document.activeElement && document.activeElement.blur();
     this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
 
 }
