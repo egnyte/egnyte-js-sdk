@@ -520,7 +520,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":19}],8:[function(require,module,exports){
+},{"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":20}],8:[function(require,module,exports){
 var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -621,7 +621,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":17,"../reusables/helpers":19}],10:[function(require,module,exports){
+},{"../promises":18,"../reusables/helpers":20}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -773,7 +773,7 @@ module.exports = function (opts) {
         promiseRequest: promiseRequest
     };
 };
-},{"../promises":17,"xhr":4}],11:[function(require,module,exports){
+},{"../promises":18,"xhr":4}],11:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -960,7 +960,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":17,"../reusables/helpers":19}],12:[function(require,module,exports){
+},{"../promises":18,"../reusables/helpers":20}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require("../reusables/helpers");
@@ -1028,7 +1028,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/model":14,"../filepicker_elements/view":15,"../reusables/dom":18,"../reusables/helpers":19}],13:[function(require,module,exports){
+},{"../filepicker_elements/model":15,"../filepicker_elements/view":16,"../reusables/dom":19,"../reusables/helpers":20}],13:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
@@ -1132,9 +1132,27 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":18,"../reusables/helpers":19,"../reusables/messages":20}],14:[function(require,module,exports){
+},{"../reusables/dom":19,"../reusables/helpers":20,"../reusables/messages":21}],14:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
-
+var mapping = {};
+helpers.each({
+    "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
+    "video": ["wmv", "avi", "mpg", "mpeg", "mp4", "webm", "ogv", "flv", "mov"],
+    "pdf": ["pdf"],
+    "word_processing": ["doc", "dot", "docx", "dotx", "docm", "dotm", "odt ", "ott", "oth", "odm", "sxw", "stw", "sxg", "sdw", "sgl", "rtf", "hwp", "uot", "wpd", "wps","gdoc"],
+    "spreadsheet": ["123", "xls", "xlt", "xla", "xlsx", "xltx", "xlsm", "xltm", "xlam", "xlsb", "ods", "fods", "ots", "sxc", "stc", "sdc", "csv", "uos","gsheet"],
+    "presentation": ["ppt", "pot", "pps", "ppa", "pptx", "potx", "ppsx", "ppam", "pptm", "potm", "ppsm", "odp", "fodp", "otp", "sxi", "sti", "sdd", "sdp","gslides"],
+    "cad": ["dwg", "dwf", "dxf", "sldprt", "sldasm", "slddrw"],
+    "text": ["txt", "log"],
+    "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg","gdraw"],
+    "code": ["html", "htm", "sql", "xml", "java", "cpp", "c", "perl", "py", "rb", "php", "js", "css", "applescript", "as3", "as", "bash", "shell", "sh", "cfm", "cfml", "cs", "pas", "dcu", "diff", "patch", "ez", "erl", "groovy", "gvy", "gy", "gsh", "javafx", "jfx", "pl", "pm", "ps1", "ruby", "sass", "scss", "scala", "vb", "vbscript", "xhtml", "xslt"],
+    "archive": ["zip", "rar", "tar", "gz", "7z", "bz2", "z", "xz", "ace", "sit", "sitx", "tgz", "apk"],
+//    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
+}, function (list,mime) {
+    helpers.each(list, function (ex) {
+        mapping[ex] = mime;
+    });
+});
 
 var fileext = /.*\.([a-z0-9]*)$/i;
 
@@ -1146,14 +1164,28 @@ function getExt(name) {
     }
 }
 
+module.exports = {
+    getMime: function (name) {
+        return mapping[getExt(name)] || "unknown";
+    },
+    getExt: getExt
+}
+},{"../reusables/helpers":20}],15:[function(require,module,exports){
+var helpers = require("../reusables/helpers");
+var exts = require("./exts");
+
+
+
 
 //Item model
 function Item(data, parent) {
     this.data = data;
     if (!this.data.is_folder) {
-        this.ext = getExt(data.name);
+        this.ext = exts.getExt(data.name).substr(0,3);
+        this.mime = exts.getMime(data.name);
     } else {
         this.ext = "";
+        this.mime = "unknown"
     }
     this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder));
     this.parent = parent;
@@ -1177,20 +1209,17 @@ Item.prototype.toggleSelect = function () {
         this.onchange();
         this.parent.onchange();
     }
-
-    // Waiting for requirements
-    //    else {
-    //        //when folders arent selectable, default to opening too
-    //        if (this.data.is_folder) {
-    //            this.parent.fetch(this.data.path);
-    //        }
-    //    }
 };
 
 //Collection
 function Model(API, opts) {
     this.opts = opts;
     this.API = API;
+    this.page = 1;
+    this.pageSize = 200;
+    // no defaults needed
+    //    this.rawItems = [];
+    //    this.hasPages = false;
 }
 
 
@@ -1198,28 +1227,45 @@ Model.prototype.onloading = helpers.noop;
 Model.prototype.onupdate = helpers.noop;
 Model.prototype.onerror = helpers.noop;
 
-Model.prototype.set = function (m) {
+Model.prototype._set = function (m) {
     var self = this;
     this.path = m.path;
-    this.items = [];
-    this.currentItem = -1;
+    this.page = 1;
 
+    this.rawItems = [];
     helpers.each(m.folders, function (f) {
-        self.items.push(new Item(f, self));
+        self.rawItems.push(f);
     });
     //ignore files if they're not selectable
     if (this.opts.select.file) {
         helpers.each(m.files, function (f) {
-            self.items.push(new Item(f, self));
+            self.rawItems.push(f);
+        });
+    }
+    this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
+    this.isMultiselectable = (this.opts.select.multiple);
+    this._buildItems();
+
+};
+
+Model.prototype._buildItems = function () {
+    var self = this;
+    this.currentItem = -1;
+    this.items = [];
+    this.hasPages = (this.rawItems.length > this.pageSize);
+    if (this.rawItems.length === 0) {
+        this.isEmpty = true;
+    } else {
+        this.isEmpty = false;
+        var pageArr = this.rawItems.slice((this.page - 1) * this.pageSize, this.page * this.pageSize);
+        helpers.each(pageArr, function (item) {
+            self.items.push(new Item(item, self));
         });
     }
 
-    this.isEmpty = (this.items.length === 0);
-    this.isMultiselectable = (this.opts.select.multiple);
-
     this.onupdate();
     this.onchange();
-};
+}
 
 Model.prototype.fetch = function (path) {
     var self = this;
@@ -1228,10 +1274,18 @@ Model.prototype.fetch = function (path) {
     }
     self.onloading();
     self.API.storage.get(this.path).then(function (m) {
-        self.set(m);
+        self._set(m);
     }).error(function (e) {
         self.onerror(e.error || e);
     });
+}
+
+Model.prototype.switchPage = function (offset) {
+    var newPage = this.page + offset;
+    if (newPage <= this.totalPages && newPage > 0) {
+        this.page = newPage;
+        this._buildItems();
+    }
 }
 
 
@@ -1286,7 +1340,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"../reusables/helpers":19}],15:[function(require,module,exports){
+},{"../reusables/helpers":20,"./exts":14}],16:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -1357,6 +1411,8 @@ function View(opts, txtOverride) {
     this.els.back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]).childNodes[0];
     this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
+    this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
     this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
     this.els.selectAll = jungle([["input[type=checkbox]", {
         title: this.txt("Select all")
@@ -1367,14 +1423,15 @@ function View(opts, txtOverride) {
     this.handleClick(this.els.back, self.goUp);
     this.handleClick(this.els.close, self.handlers.close);
     this.handleClick(this.els.ok, self.confirmSelection);
-    this.handleClick(this.els.crumb, function (e) {
-        var path = e.target.getAttribute("data-path");
-        if (path) {
-            self.model.fetch(path);
-        }
-    });
+    this.handleClick(this.els.crumb, self.crumbNav);
     this.handleClick(this.els.selectAll, function (e) {
         self.model.setAllSelection(!!e.target.checked);
+    });
+    this.handleClick(this.els.pgup, function (e) {
+        self.model.switchPage(1);
+    });
+    this.handleClick(this.els.pgdown, function (e) {
+        self.model.switchPage(-1);
     });
 
     var keys = {};
@@ -1403,7 +1460,7 @@ View.prototype.destroy = function () {
     this.handlers = null;
 }
 
-View.prototype.handleClick = function(el,method){
+View.prototype.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
@@ -1429,7 +1486,12 @@ View.prototype.render = function () {
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
             this.els.ok,
-            this.els.close
+            this.els.close,
+            ["div.eg-filepicker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+                this.els.pgdown,
+                ["span", this.model.page + "/" + this.model.totalPages],
+                this.els.pgup
+            ]
         ]
     ]]);
 
@@ -1454,7 +1516,7 @@ View.prototype.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([["a.eg-filepicker-name",
-        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file"),
+        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-"+itemModel.mime),
             {
                 "data-ext": itemModel.ext
             },
@@ -1486,6 +1548,9 @@ View.prototype.renderItem = function (itemModel) {
     itemModel.onchange = function () {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
+        if(itemModel.isCurrent){
+            itemNode.scrollIntoView(false);
+        }
     };
 
     this.els.list.appendChild(itemNode);
@@ -1502,7 +1567,7 @@ View.prototype.breadcrumbify = function (path) {
             crumbItems.push(["a", {
                     "data-path": currentPath
                 },
-                folder + " /"])
+                folder + "/"])
         } else {
             if (num === 0) {
                 crumbItems.push(["a", {
@@ -1535,7 +1600,7 @@ View.prototype.defaultError = function (e) {
 View.prototype.empty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-ico-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
     }
 }
 
@@ -1563,6 +1628,13 @@ View.prototype.confirmSelection = function () {
     }
 }
 
+View.prototype.crumbNav = function (e) {
+    var path = e.target.getAttribute("data-path");
+    if (path) {
+        this.model.fetch(path);
+    }
+}
+
 View.prototype.kbNav_up = function () {
     this.model.mvCurrent(-1);
 }
@@ -1587,9 +1659,9 @@ View.prototype.kbNav_explore = function () {
 
 
 module.exports = View;
-},{"../../vendor/zenjungle":22,"../reusables/dom":18,"../reusables/helpers":19,"../reusables/texts":21,"./view.less":16}],16:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker input.eg-not{visibility:hidden}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*{float:right}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],17:[function(require,module,exports){
+},{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{width:calc(100% - 88px);display:inline-block;overflow:auto;vertical-align:middle}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-ico.eg-mime-audio{background-color:#94cbff}.eg-ico.eg-mime-video{background-color:#8f6bd1}.eg-ico.eg-mime-pdf{background-color:#e64e40}.eg-ico.eg-mime-word_processing{background-color:#4ca0e6}.eg-ico.eg-mime-spreadsheet{background-color:#6bd17f}.eg-ico.eg-mime-presentation{background-color:#fa8639}.eg-ico.eg-mime-cad{background-color:#f2d725}.eg-ico.eg-mime-text{background-color:#9e9e9e}.eg-ico.eg-mime-image{background-color:#d16bd0}.eg-ico.eg-mime-code{background-color:#a5d16b}.eg-ico.eg-mime-archive{background-color:#d19b6b}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],18:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1613,7 +1685,7 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":2}],18:[function(require,module,exports){
+},{"pinkyswear":2}],19:[function(require,module,exports){
 var vkey = require('vkey');
 
 
@@ -1659,9 +1731,11 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
+            ev.preventDefault && ev.preventDefault();
             if (hasFocus() && actions[vkey[ev.keyCode]]) {
                 actions[vkey[ev.keyCode]]();
             }
+            return false;
         });
     },
 
@@ -1678,7 +1752,7 @@ module.exports = {
     }
 
 }
-},{"vkey":3}],19:[function(require,module,exports){
+},{"vkey":3}],20:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1733,7 +1807,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1776,7 +1850,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":19}],21:[function(require,module,exports){
+},{"../reusables/helpers":20}],22:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -1790,7 +1864,7 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

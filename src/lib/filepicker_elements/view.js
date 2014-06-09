@@ -68,6 +68,8 @@ function View(opts, txtOverride) {
     this.els.back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]).childNodes[0];
     this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
+    this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
     this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
     this.els.selectAll = jungle([["input[type=checkbox]", {
         title: this.txt("Select all")
@@ -78,14 +80,15 @@ function View(opts, txtOverride) {
     this.handleClick(this.els.back, self.goUp);
     this.handleClick(this.els.close, self.handlers.close);
     this.handleClick(this.els.ok, self.confirmSelection);
-    this.handleClick(this.els.crumb, function (e) {
-        var path = e.target.getAttribute("data-path");
-        if (path) {
-            self.model.fetch(path);
-        }
-    });
+    this.handleClick(this.els.crumb, self.crumbNav);
     this.handleClick(this.els.selectAll, function (e) {
         self.model.setAllSelection(!!e.target.checked);
+    });
+    this.handleClick(this.els.pgup, function (e) {
+        self.model.switchPage(1);
+    });
+    this.handleClick(this.els.pgdown, function (e) {
+        self.model.switchPage(-1);
     });
 
     var keys = {};
@@ -114,7 +117,7 @@ View.prototype.destroy = function () {
     this.handlers = null;
 }
 
-View.prototype.handleClick = function(el,method){
+View.prototype.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
@@ -140,7 +143,12 @@ View.prototype.render = function () {
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
             this.els.ok,
-            this.els.close
+            this.els.close,
+            ["div.eg-filepicker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+                this.els.pgdown,
+                ["span", this.model.page + "/" + this.model.totalPages],
+                this.els.pgup
+            ]
         ]
     ]]);
 
@@ -165,7 +173,7 @@ View.prototype.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([["a.eg-filepicker-name",
-        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file"),
+        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-"+itemModel.mime),
             {
                 "data-ext": itemModel.ext
             },
@@ -197,6 +205,9 @@ View.prototype.renderItem = function (itemModel) {
     itemModel.onchange = function () {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
+        if(itemModel.isCurrent){
+            itemNode.scrollIntoView(false);
+        }
     };
 
     this.els.list.appendChild(itemNode);
@@ -213,7 +224,7 @@ View.prototype.breadcrumbify = function (path) {
             crumbItems.push(["a", {
                     "data-path": currentPath
                 },
-                folder + " /"])
+                folder + "/"])
         } else {
             if (num === 0) {
                 crumbItems.push(["a", {
@@ -246,7 +257,7 @@ View.prototype.defaultError = function (e) {
 View.prototype.empty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-ico-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
     }
 }
 
@@ -271,6 +282,13 @@ View.prototype.confirmSelection = function () {
     var selected = this.model.getSelected();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
+    }
+}
+
+View.prototype.crumbNav = function (e) {
+    var path = e.target.getAttribute("data-path");
+    if (path) {
+        this.model.fetch(path);
     }
 }
 

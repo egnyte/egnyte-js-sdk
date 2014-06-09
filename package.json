@@ -1,7 +1,7 @@
 {
-  "name": "egnyte-widget",
+  "name": "egnyte-sdk",
   "version": "0.1.1",
-  "description": "An embedable widget for Egnyte integrations",
+  "description": "An SDK for Egnyte integrations",
   "main": "egnyte.js",
   "keywords": [
     "egnyte",
@@ -9,7 +9,7 @@
     "file",
     "filepicker"
   ],
-  "author": "ztenerowicz",
+  "author": "ztenerowicz@egnyte.com",
   "license": "MIT",
   "dependencies": {
     "pinkyswear": "2.0.2",

@@ -43,9 +43,11 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
+            ev.preventDefault && ev.preventDefault();
             if (hasFocus() && actions[vkey[ev.keyCode]]) {
                 actions[vkey[ev.keyCode]]();
             }
+            return false;
         });
     },
 
