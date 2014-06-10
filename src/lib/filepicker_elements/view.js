@@ -222,14 +222,18 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 viewPrototypeMethods.breadcrumbify = function (path) {
     var list = path.split("/");
     var crumbItems = [];
-    var currentPath = "";
+    var currentPath = "/";
+    var maxSpace = ~~ (100 / list.length); //assigns maximum space for text
     helpers.each(list, function (folder, num) {
-        currentPath += "/" + folder;
         if (folder) {
+            currentPath += folder + "/";
             crumbItems.push(["a", {
-                    "data-path": currentPath
+                    "data-path": currentPath,
+                    "title": folder,
+                    "style": "max-width:" + maxSpace + "%"
                 },
-                folder + "/"])
+                folder]);
+            crumbItems.push(["a", "/"]);
         } else {
             if (num === 0) {
                 crumbItems.push(["a", {

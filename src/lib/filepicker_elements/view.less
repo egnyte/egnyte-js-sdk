@@ -1,4 +1,5 @@
 @size: 40px;
+@barheight: @size - 2 * @spacing;
 @fontsize: 13px;
 @fontcl: #5E5F60;
 @fontclA: #fff;
@@ -63,12 +64,15 @@
 
 .eg-filepicker-bar{
     outline: 1px solid @framecl;
-    height: @size - 2 * @spacing;
+    height: @barheight;
     padding: @spacing;
     background: @bodycl;
     overflow: hidden;
     &:nth-child(1){
         margin-top: -@size;
+    }
+    &>*{
+        float:left;
     }
 }
 .eg-bar-right>*{
@@ -105,10 +109,15 @@
 }
 
 .eg-filepicker-path{
+    min-width: 60%;
     width: ~"calc( 100% - 88px )";
-    display: inline-block;
-    overflow: auto;
     vertical-align: middle;
+    line-height: @barheight;
+    &>a{
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .eg-filepicker-item{
