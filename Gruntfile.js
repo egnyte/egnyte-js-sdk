@@ -9,15 +9,19 @@ module.exports = function (grunt) {
                     "dist/slim.js": ["src/slim.js"]
                 },
                 options: {
-                    transform: ['grunt-less-browserify']
+                    transform: ['grunt-less-browserify'],
+                    bundleOptions: {
+                        insertGlobals: false,
+                        detectGlobals: false
+                    }
                 }
             }
         },
         uglify: {
             options: {
                 banner: "// <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today('yyyy-mm-dd') %>) \n" +
-                "// license:<%= pkg.license %> \n" +
-                "// <%= pkg.author %> \n"
+                    "// license:<%= pkg.license %> \n" +
+                    "// <%= pkg.author %> \n"
             },
             dist: {
                 files: [{
@@ -58,7 +62,7 @@ module.exports = function (grunt) {
 
         watch: {
             files: ["src/**/*"],
-            tasks: ["dist","markdown:docs"]
+            tasks: ["dist", "markdown:docs"]
         },
 
         markdown: {

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>filepicker widget</title>
+    <script src="../dist/egnyte.js"></script>
+    <script src="../spec/conf/apiaccess_template.js"></script>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        #there {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <p>This example demonstrates how theming works. To see the example theme code open <code>examples/theme.css</code></p>
+
+    <div id="there">
+
+
+    </div>
+
+
+    <script>
+        var node = document.getElementById("there");
+
+        eg = Egnyte.init(egnyteDomain, {
+            token: APIToken
+        });
+
+
+        eg.filePicker(node, {
+            selection: function (fileData) {
+                console.info(fileData);
+            },
+            cancel: function () {
+                console.warn("cancelled");
+            },
+            barAlign: "left"
+            //defaults kick in
+        });
+    </script>
+</body>
+
+</html>

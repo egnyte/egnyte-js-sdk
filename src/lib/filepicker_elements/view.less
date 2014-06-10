@@ -23,6 +23,9 @@
     border:1px solid @btframecl;
     border-radius: 2px;
     cursor: pointer;
+    &[disabled]{
+        opacity: 0.3;
+    }
 }
 .eg-not{
     visibility: hidden;
@@ -86,9 +89,6 @@
     background-color: @btclA;
     border-color: @btframeclA;
     color: @fontclA;
-    &[disabled]{
-        opacity: 0.3;
-    }
 }
 .eg-filepicker-back{
     padding: @spacing @size/4;

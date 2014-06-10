@@ -1,0 +1,89 @@
+/**
+* Theme file for Egnyte SDK File-picker
+* (it is not recomended to add properties affecting layout here)
+*/
+
+.eg-theme.eg-filepicker {
+    border-color: #fff;
+    color: #15252d;
+    font-family: sans-serif;
+    background: #fdffdf;
+}
+/*top and bottom bar*/
+.eg-theme .eg-filepicker-bar{
+    outline: none;
+    background: #fff;
+}
+/*file or folder row*/
+.eg-theme .eg-filepicker-item{
+    font-weight: bold;
+}
+/*mouse hover*/
+.eg-theme .eg-filepicker-item:hover {
+    background-color: #f0ebbb;
+    outline: 1px solid #768766;
+}
+/*keyboard highlight*/
+.eg-theme .eg-filepicker-item[aria-selected="true"] {
+    background-color: #f0ebbb;
+}
+/*button style*/
+.eg-theme .eg-btn{
+    background-color: #d9ef8b;
+    border:1px solid transparent;
+    border-radius: 0px;
+    cursor: pointer;
+}
+.eg-theme .eg-btn:hover{
+    border: 1px solid #a6d96a;
+}
+.eg-theme .eg-btn[disabled]{
+    opacity: 0.3;
+}
+.eg-theme .eg-btn.eg-filepicker-ok{
+    background-color: #fee08b;
+    border: 1px solid #fdae61;
+    color: #15252d;
+}
+
+/*icons color*/
+.eg-theme .eg-ico.eg-mime-audio {
+    background-color: #b7db9e;
+}
+.eg-theme .eg-ico.eg-mime-video {
+    background-color: #addd8e;
+}
+.eg-theme .eg-ico.eg-mime-pdf {
+    background-color: #238443;
+}
+.eg-theme .eg-ico.eg-mime-word_processing {
+    background-color: #78c679;
+}
+.eg-theme .eg-ico.eg-mime-spreadsheet {
+    background-color: #006837;
+}
+.eg-theme .eg-ico.eg-mime-presentation {
+    background-color: #d9f0a3;
+}
+.eg-theme .eg-ico.eg-mime-cad {
+    background-color: #41ab5d;
+}
+.eg-theme .eg-ico.eg-mime-text {
+    background-color: #004529;
+}
+.eg-theme .eg-ico.eg-mime-image {
+    background-color: #99cc00;
+}
+.eg-theme .eg-ico.eg-mime-code {
+    background-color: #a5d16b;
+}
+.eg-theme .eg-ico.eg-mime-archive {
+    background-color: #4dea9e;
+}
+.eg-theme .eg-ico.eg-mime-unknown {
+    background-color: #ffffe5;
+}
+/* colors can be assigned to 3-char extensions too*/
+.eg-theme .eg-ico.eg-mime-unknown[data-ext="wei"] {
+    background-color: #222;
+}

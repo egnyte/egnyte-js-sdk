@@ -1,70 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-
-},{}],2:[function(require,module,exports){
-(function (process){
 /*
  * PinkySwear.js 2.0 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -194,8 +128,7 @@ process.chdir = function (dir) {
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 
 
-}).call(this,require("FWaASH"))
-},{"FWaASH":1}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -323,8 +256,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":4,"once":5}],4:[function(require,module,exports){
-(function (global){
+},{"global/window":3,"once":4}],3:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -333,8 +265,7 @@ if (typeof window !== "undefined") {
     module.exports = {}
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -355,7 +286,7 @@ function once (fn) {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -372,7 +303,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":7,"./api_elements/main":8,"./api_elements/storage":9}],7:[function(require,module,exports){
+},{"./api_elements/link":6,"./api_elements/main":7,"./api_elements/storage":8}],6:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -456,7 +387,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":10,"../reusables/helpers":11}],8:[function(require,module,exports){
+},{"../promises":9,"../reusables/helpers":10}],7:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -608,7 +539,7 @@ module.exports = function (opts) {
         promiseRequest: promiseRequest
     };
 };
-},{"../promises":10,"xhr":3}],9:[function(require,module,exports){
+},{"../promises":9,"xhr":2}],8:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -795,7 +726,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":10,"../reusables/helpers":11}],10:[function(require,module,exports){
+},{"../promises":9,"../reusables/helpers":10}],9:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -819,7 +750,7 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":2}],11:[function(require,module,exports){
+},{"pinkyswear":1}],10:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -874,7 +805,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -897,4 +828,4 @@ module.exports = {
     }
 
 })();
-},{"./lib/api":6,"./lib/reusables/helpers":11}]},{},[12])
+},{"./lib/api":5,"./lib/reusables/helpers":10}]},{},[11])

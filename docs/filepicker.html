@@ -102,7 +102,7 @@
   &quot;This folder is empty&quot;: &quot;...&quot;
 }</code></pre>
 <ul>
-<li><code>keys</code> Map to override default keybinding</li>
+<li><code>keys</code> Map to override default keybinding, set to false to disable all keyboard handling</li>
 </ul>
 <pre><code class="lang-javascript">keys: {
     &quot;up&quot;: &quot;&lt;up&gt;&quot;,
@@ -155,6 +155,8 @@
 <h3 id="close-file-picker">Close file picker</h3>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
 <pre><code class="lang-javascript">    picker.close();</code></pre>
+<h3 id="change-the-style">Change the style</h3>
+<p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
 <h2 id="remote-file-picker-no-api-">Remote file picker (no API)</h2>
 <p>If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.</p>
 <p>To use the remote file picker call <code>filePickerRemote</code> instead of <code>filePicker</code> with the same options</p>

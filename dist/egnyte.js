@@ -1,70 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-
-},{}],2:[function(require,module,exports){
-(function (process){
 /*
  * PinkySwear.js 2.0 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -194,8 +128,7 @@ process.chdir = function (dir) {
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 
 
-}).call(this,require("FWaASH"))
-},{"FWaASH":1}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
   , isOpera = /Opera/.test(ua)
@@ -333,7 +266,7 @@ for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var window = require("global/window")
 var once = require("once")
 
@@ -461,8 +394,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":5,"once":6}],5:[function(require,module,exports){
-(function (global){
+},{"global/window":4,"once":5}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -471,8 +403,7 @@ if (typeof window !== "undefined") {
     module.exports = {}
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -493,7 +424,7 @@ function once (fn) {
   }
 }
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -520,7 +451,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":20}],8:[function(require,module,exports){
+},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":19}],7:[function(require,module,exports){
 var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -537,7 +468,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":9,"./api_elements/main":10,"./api_elements/storage":11}],9:[function(require,module,exports){
+},{"./api_elements/link":8,"./api_elements/main":9,"./api_elements/storage":10}],8:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -621,7 +552,7 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":18,"../reusables/helpers":20}],10:[function(require,module,exports){
+},{"../promises":17,"../reusables/helpers":19}],9:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 
 var token;
@@ -773,7 +704,7 @@ module.exports = function (opts) {
         promiseRequest: promiseRequest
     };
 };
-},{"../promises":18,"xhr":4}],11:[function(require,module,exports){
+},{"../promises":17,"xhr":3}],10:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -960,7 +891,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":18,"../reusables/helpers":20}],12:[function(require,module,exports){
+},{"../promises":17,"../reusables/helpers":19}],11:[function(require,module,exports){
 (function () {
 
     var helpers = require("../reusables/helpers");
@@ -1028,7 +959,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/model":15,"../filepicker_elements/view":16,"../reusables/dom":19,"../reusables/helpers":20}],13:[function(require,module,exports){
+},{"../filepicker_elements/model":14,"../filepicker_elements/view":15,"../reusables/dom":18,"../reusables/helpers":19}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
@@ -1132,7 +1063,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":19,"../reusables/helpers":20,"../reusables/messages":21}],14:[function(require,module,exports){
+},{"../reusables/dom":18,"../reusables/helpers":19,"../reusables/messages":20}],13:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
 var mapping = {};
 helpers.each({
@@ -1170,7 +1101,7 @@ module.exports = {
     },
     getExt: getExt
 }
-},{"../reusables/helpers":20}],15:[function(require,module,exports){
+},{"../reusables/helpers":19}],14:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
 var exts = require("./exts");
 
@@ -1340,7 +1271,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"../reusables/helpers":20,"./exts":14}],16:[function(require,module,exports){
+},{"../reusables/helpers":19,"./exts":13}],15:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -1361,15 +1292,7 @@ function View(opts, txtOverride) {
     this.el = opts.el;
     this.els = {};
     this.evs = [];
-    var keybinding = helpers.extend({
-        "up": "<up>",
-        "down": "<down>",
-        "select": "<space>",
-        "explore": "<right>",
-        "back": "<left>",
-        "confirm": "<enter>",
-        "close": "<escape>"
-    }, opts.keys);
+
 
     this.txt = texts(txtOverride);
 
@@ -1434,21 +1357,34 @@ function View(opts, txtOverride) {
         self.model.switchPage(-1);
     });
 
-    var keys = {};
-    keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
-    keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
-    keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
-    keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
-    keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
-    keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
-    keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
+    if (opts.keys !== false) {
+        var keybinding = helpers.extend({
+            "up": "<up>",
+            "down": "<down>",
+            "select": "<space>",
+            "explore": "<right>",
+            "back": "<left>",
+            "confirm": "<enter>",
+            "close": "<escape>"
+        }, opts.keys);
+        var keys = {};
+        keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
+        keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
+        keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
+        keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
+        keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
+        keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
+        keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
 
-    document.activeElement && document.activeElement.blur();
-    this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
+        document.activeElement && document.activeElement.blur();
+        this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
+    }
 
 }
 
-View.prototype.destroy = function () {
+var viewPrototypeMethods = {};
+
+viewPrototypeMethods.destroy = function () {
     helpers.each(this.evs, function (ev) {
         ev.destroy();
     });
@@ -1460,7 +1396,7 @@ View.prototype.destroy = function () {
     this.handlers = null;
 }
 
-View.prototype.handleClick = function (el, method) {
+viewPrototypeMethods.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
@@ -1468,7 +1404,7 @@ View.prototype.handleClick = function (el, method) {
 //================================================================= 
 // rendering
 //================================================================= 
-View.prototype.render = function () {
+viewPrototypeMethods.render = function () {
     var self = this;
 
     this.els.list = document.createElement("ul");
@@ -1481,7 +1417,7 @@ View.prototype.render = function () {
     topbar.push(this.els.back);
     topbar.push(this.els.crumb);
 
-    var layoutFragm = jungle([["div.eg-filepicker",
+    var layoutFragm = jungle([["div.eg-theme.eg-filepicker",
         topbar,
         this.els.list,
         ["div.eg-filepicker-bar" + this.bottomBarClass,
@@ -1512,11 +1448,11 @@ View.prototype.render = function () {
 }
 
 
-View.prototype.renderItem = function (itemModel) {
+viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([["a.eg-filepicker-name",
-        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-"+itemModel.mime),
+        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-" + itemModel.mime),
             {
                 "data-ext": itemModel.ext
             },
@@ -1548,7 +1484,7 @@ View.prototype.renderItem = function (itemModel) {
     itemModel.onchange = function () {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
-        if(itemModel.isCurrent){
+        if (itemModel.isCurrent) {
             itemNode.scrollIntoView(false);
         }
     };
@@ -1557,7 +1493,7 @@ View.prototype.renderItem = function (itemModel) {
 }
 
 
-View.prototype.breadcrumbify = function (path) {
+viewPrototypeMethods.breadcrumbify = function (path) {
     var list = path.split("/");
     var crumbItems = [];
     var currentPath = "";
@@ -1583,13 +1519,13 @@ View.prototype.breadcrumbify = function (path) {
 
 
 
-View.prototype.loading = function () {
+viewPrototypeMethods.loading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]]));
     }
 }
-View.prototype.defaultError = function (e) {
+viewPrototypeMethods.defaultError = function (e) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
@@ -1597,7 +1533,7 @@ View.prototype.defaultError = function (e) {
         this.handlers.close(e);
     }
 }
-View.prototype.empty = function () {
+viewPrototypeMethods.empty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
@@ -1608,60 +1544,60 @@ View.prototype.empty = function () {
 // focus
 //================================================================= 
 
-View.prototype.hasFocus = function () {
+viewPrototypeMethods.hasFocus = function () {
     return currentGlobalKeyboadrFocus === this.uid;
 }
-View.prototype.focused = function () {
+viewPrototypeMethods.focused = function () {
     currentGlobalKeyboadrFocus = this.uid;
 }
 //================================================================= 
 // navigation
 //================================================================= 
 
-View.prototype.goUp = function () {
+viewPrototypeMethods.goUp = function () {
     this.model.goUp();
 }
-View.prototype.confirmSelection = function () {
+viewPrototypeMethods.confirmSelection = function () {
     var selected = this.model.getSelected();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
     }
 }
 
-View.prototype.crumbNav = function (e) {
+viewPrototypeMethods.crumbNav = function (e) {
     var path = e.target.getAttribute("data-path");
     if (path) {
         this.model.fetch(path);
     }
 }
 
-View.prototype.kbNav_up = function () {
+viewPrototypeMethods.kbNav_up = function () {
     this.model.mvCurrent(-1);
 }
 
-View.prototype.kbNav_down = function () {
+viewPrototypeMethods.kbNav_down = function () {
     this.model.mvCurrent(1);
 }
-View.prototype.kbNav_select = function () {
+viewPrototypeMethods.kbNav_select = function () {
     this.model.getCurrent().toggleSelect();
 }
-View.prototype.kbNav_confirm = function () {
+viewPrototypeMethods.kbNav_confirm = function () {
     this.model.getCurrent().toggleSelect();
 }
 
-View.prototype.kbNav_explore = function () {
+viewPrototypeMethods.kbNav_explore = function () {
     var item = this.model.getCurrent();
     if (item.data.is_folder) {
         item.defaultAction();
     }
 }
 
-
+View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-ok[disabled]{opacity:.3}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{width:calc(100% - 88px);display:inline-block;overflow:auto;vertical-align:middle}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-ico.eg-mime-audio{background-color:#94cbff}.eg-ico.eg-mime-video{background-color:#8f6bd1}.eg-ico.eg-mime-pdf{background-color:#e64e40}.eg-ico.eg-mime-word_processing{background-color:#4ca0e6}.eg-ico.eg-mime-spreadsheet{background-color:#6bd17f}.eg-ico.eg-mime-presentation{background-color:#fa8639}.eg-ico.eg-mime-cad{background-color:#f2d725}.eg-ico.eg-mime-text{background-color:#9e9e9e}.eg-ico.eg-mime-image{background-color:#d16bd0}.eg-ico.eg-mime-code{background-color:#a5d16b}.eg-ico.eg-mime-archive{background-color:#d19b6b}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],18:[function(require,module,exports){
+},{"../../vendor/zenjungle":22,"../reusables/dom":18,"../reusables/helpers":19,"../reusables/texts":21,"./view.less":16}],16:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-btn[disabled]{opacity:.3}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{width:calc(100% - 88px);display:inline-block;overflow:auto;vertical-align:middle}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-ico.eg-mime-audio{background-color:#94cbff}.eg-ico.eg-mime-video{background-color:#8f6bd1}.eg-ico.eg-mime-pdf{background-color:#e64e40}.eg-ico.eg-mime-word_processing{background-color:#4ca0e6}.eg-ico.eg-mime-spreadsheet{background-color:#6bd17f}.eg-ico.eg-mime-presentation{background-color:#fa8639}.eg-ico.eg-mime-cad{background-color:#f2d725}.eg-ico.eg-mime-text{background-color:#9e9e9e}.eg-ico.eg-mime-image{background-color:#d16bd0}.eg-ico.eg-mime-code{background-color:#a5d16b}.eg-ico.eg-mime-archive{background-color:#d19b6b}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],17:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1685,7 +1621,7 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":2}],19:[function(require,module,exports){
+},{"pinkyswear":1}],18:[function(require,module,exports){
 var vkey = require('vkey');
 
 
@@ -1752,7 +1688,7 @@ module.exports = {
     }
 
 }
-},{"vkey":3}],20:[function(require,module,exports){
+},{"vkey":2}],19:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1807,7 +1743,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1850,7 +1786,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":20}],22:[function(require,module,exports){
+},{"../reusables/helpers":19}],21:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -1864,7 +1800,7 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *
@@ -1984,4 +1920,4 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[7])
+},{}]},{},[6])

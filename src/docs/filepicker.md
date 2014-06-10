@@ -48,7 +48,7 @@ texts: {
 }
 ```
 
- - `keys` Map to override default keybinding
+ - `keys` Map to override default keybinding, set to false to disable all keyboard handling
  
 ```javascript
 keys: {
@@ -122,6 +122,10 @@ File picker can be closed without the user clicking "cancel":
 ```javascript
     picker.close();
 ```
+
+### Change the style
+
+File picker is easily stylable on its own. To ease the work of theming start with the `examples/theme.css` file and modify available properties. To see how the theme affects the filepicker see `examples/filepicker_theme.html`
 
 ## Remote file picker (no API)
 

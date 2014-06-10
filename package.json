@@ -12,7 +12,7 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "MIT",
   "dependencies": {
-    "pinkyswear": "2.0.2",
+    "pinkyswear": "^2.1",
     "vkey": "0.0.3",
     "xhr": "git://github.com/naugtur/xhr.git"
   },
