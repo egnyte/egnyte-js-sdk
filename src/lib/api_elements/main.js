@@ -7,7 +7,13 @@ var promises = require('../promises');
 var xhr = require("xhr");
 
 
-function requestTokenInplace(callback) {
+
+
+function reloadForToken() {
+    window.location.href = options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + window.location.href;
+}
+
+function checkTokenResponse(success, none) {
     if (!token) {
         var access = oauthRegex.exec(window.location.hash);
 
@@ -15,28 +21,36 @@ function requestTokenInplace(callback) {
             if (access.length > 1) {
 
                 token = access[1];
-                callback();
+                success && success();
 
             } else {
                 //what now?
             }
         } else {
-            window.location.href = options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + window.location.href;
+            none && none();
         }
     } else {
-        callback();
+        success && success();
     }
+}
+
+function requestTokenInplace(callback) {
+    checkTokenResponse(callback, reloadForToken);
+}
+
+function onTokenReady(callback) {
+    checkTokenResponse(callback, function () {});
 }
 
 //TODO: implement popup flow
 function requestTokenWindow(callback, pingbackURL) {
-    if (!token) {
-        var dialog = window.open(options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + pingbackURL);
-
-        //listen for a postmessage from window that gives you a token 
-    } else {
-        callback();
-    }
+    //    if (!token) {
+    //        var dialog = window.open(options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + pingbackURL);
+    //
+    //        //listen for a postmessage from window that gives you a token 
+    //    } else {
+    //        callback();
+    //    }
 
 }
 
@@ -81,6 +95,8 @@ function params(obj) {
     }
     return str.join("&");
 }
+
+
 
 function sendRequest(opts, callback) {
     if (isAuthorized()) {
@@ -140,6 +156,7 @@ module.exports = function (opts) {
         isAuthorized: isAuthorized,
         setToken: setToken,
         requestToken: requestTokenInplace,
+        onTokenReady: onTokenReady,
         authorizeXHR: authorizeXHR,
         getHeaders: getHeaders,
         getToken: getToken,

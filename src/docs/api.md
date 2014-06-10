@@ -54,7 +54,8 @@ Method | Arguments | Description
 --- | --- | ---
 API.auth.isAuthorized | | Returns `boolean` true if a token is present
 API.auth.setToken | `token` | Accepts a token string. New token overwrites the previous one
-API.auth.requestToken | `callback` | Performs authorization and calls the callback the moment the token is available
+API.auth.requestToken | `callback` | Performs authorization and calls the callback synchronously once the token is available after reload
+API.auth.onTokenReady | `callback` | Calls the callback synchronously if the token is available now, does nothing if not authorized 
 API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string

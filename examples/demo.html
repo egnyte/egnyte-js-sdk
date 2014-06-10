@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>filepicker widget</title>
+    <script src="../dist/egnyte.js"></script>
+    <style>
+        #there {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="setup">
+        <p>Egnyte domain</p>
+        <input type="text" id="fdomain" placeholder="domain.egnyte.com">
+        <p>Public API key</p>
+        <input type="text" id="fkey" placeholder="APIkey">
+        <br>
+        <button onclick="setup()">use this domain with API</button>
+    </div>
+    <div id="unsetup" style="display: none">
+        <button onclick="unSetup()">change domain or key</button>
+    </div>
+
+    <div id="there">
+
+
+    </div>
+
+
+    <script>
+        function setup() {
+            localStorage.egnyteDomain = "https://" + document.getElementById("fdomain").value;
+            localStorage.key = document.getElementById("fkey").value;
+
+            eg = Egnyte.init(localStorage.egnyteDomain, {
+                key: localStorage.key,
+                mobile: 1
+            });
+            eg.API.auth.requestToken();
+
+        }
+        
+        function unSetup(){
+            localStorage.removeItem("egnyteDomain");
+            localStorage.removeItem("key");
+            location.hash="";
+            location.reload();
+        }
+
+        //if the domain is selected, we can try setting up a listener on token
+        if (localStorage.egnyteDomain) {
+            var node = document.getElementById("there");
+            document.getElementById("setup").style.display="none";
+            document.getElementById("unsetup").style.display="block";
+            
+            eg = Egnyte.init(localStorage.egnyteDomain, {
+                key: localStorage.key,
+                mobile: 1
+            });
+            
+            //add a handler for token ready without trying requesting it if not present
+            eg.API.auth.onTokenReady(function () {
+                eg.filePicker(node, {
+                    selection: function (fileData) {
+                        node.innerHTML = JSON.stringify(fileData);
+                    },
+                    cancel: function () {
+                        console.warn("cancelled");
+                    }
+                    //defaults kick in
+                });
+            });
+
+        }
+    </script>
+</body>
+
+</html>

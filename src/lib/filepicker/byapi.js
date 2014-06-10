@@ -38,13 +38,13 @@
                 barAlign: setup.barAlign,
                 handlers: {
                     ready: setup.ready,
-                    selection: function (item) {
-                        setup.selection && setup.selection(item);
+                    selection: function (items) {
                         close();
+                        setup.selection && setup.selection(items);
                     },
-                    close: function () {
-                        setup.cancel && setup.cancel();
+                    close: function (e) {
                         close();
+                        setup.cancel && setup.cancel(e);
                     },
                     error: setup.error
                 }

@@ -113,7 +113,12 @@
 <tr>
 <td>API.auth.requestToken</td>
 <td><code>callback</code></td>
-<td>Performs authorization and calls the callback the moment the token is available</td>
+<td>Performs authorization and calls the callback synchronously once the token is available after reload</td>
+</tr>
+<tr>
+<td>API.auth.onTokenReady</td>
+<td><code>callback</code></td>
+<td>Calls the callback synchronously if the token is available now, does nothing if not authorized </td>
 </tr>
 <tr>
 <td>API.auth.authorizeXHR</td>

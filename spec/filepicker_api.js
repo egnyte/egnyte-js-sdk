@@ -74,11 +74,8 @@ describe("API Filepicker", function () {
 
         var picker = eg.filePicker(node, {
             cancel: function () {
-                expect(node.querySelectorAll(".eg-filepicker").length).toEqual(1);
-                setTimeout(function () {
-                    expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
-                    done();
-                }, 1);
+                expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
+                done();
 
             },
             ready: function () {
@@ -183,7 +180,7 @@ describe("API Filepicker", function () {
 
 
     it('should handle keyboard on focused picker', function (done) {
-        
+
         var node2 = document.createElement('div');
         document.body.appendChild(node2);
 
