@@ -1386,9 +1386,7 @@ function View(opts, txtOverride) {
     this.handlers = helpers.extend({
         selection: helpers.noop,
         close: helpers.noop,
-        error: function (e) {
-            self.defaultError(e);
-        }
+        error: null
     }, opts.handlers);
 
     //action handlers
@@ -1396,7 +1394,7 @@ function View(opts, txtOverride) {
     this.model = opts.model;
 
     //bind to model events
-    this.model.onloading = helpers.bindThis(self, self.loading);
+    this.model.onloading = helpers.bindThis(self, self.renderLoading);
     this.model.onupdate = function () {
         self.render();
         if (self.handlers.ready) {
@@ -1405,7 +1403,7 @@ function View(opts, txtOverride) {
             setTimeout(runReady, 0);
         }
     }
-    this.model.onerror = helpers.bindThis(self, self.handlers.error);
+    this.model.onerror = helpers.bindThis(this, this.errorHandler);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -1485,6 +1483,22 @@ viewPrototypeMethods.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
+viewPrototypeMethods.errorHandler = function (e) {
+    if (this.handlers.error) {
+        var message = this.handlers.error(e);
+        if (typeof message === "string") {
+            this.renderProblem(0,message);
+        } else {
+            if (message === false) {
+                return;
+            }
+            this.renderProblem(~~(e.statusCode),e.message);
+        }
+    } else {
+        this.renderProblem(~~(e.statusCode),e.message);
+    }
+}
+
 
 //================================================================= 
 // rendering
@@ -1522,7 +1536,7 @@ viewPrototypeMethods.render = function () {
     this.breadcrumbify(this.model.path);
 
     if (this.model.isEmpty) {
-        this.empty();
+        this.renderEmpty();
     } else {
         helpers.each(this.model.items, function (item) {
             self.renderItem(item);
@@ -1608,21 +1622,33 @@ viewPrototypeMethods.breadcrumbify = function (path) {
 
 
 
-viewPrototypeMethods.loading = function () {
+viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]]));
     }
 }
-viewPrototypeMethods.defaultError = function (e) {
+
+
+var msgs={
+    "404":"This item doesn't exist (404)",
+    "403":"Access denied (403)",
+    "409":"Forbidden location (409)",
+    "4XX":"Incorrect API request",
+    "5XX":"API server error, try again later",
+    "?":"Error. Would you mind trying again?"
+}
+
+viewPrototypeMethods.renderProblem = function (code,message) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
+        message = msgs[""+code] || msgs[~(code/100)+"XX"] || message || msgs["?"];
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-error"], message]]));
     } else {
-        this.handlers.close(e);
+        this.handlers.close();
     }
 }
-viewPrototypeMethods.empty = function () {
+viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
@@ -1685,7 +1711,7 @@ View.prototype = viewPrototypeMethods;
 
 module.exports = View;
 },{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-btn[disabled]{opacity:.3}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-filepicker-bar>*{float:left}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{min-width:60%;width:calc(100% - 88px);vertical-align:middle;line-height:32px}.eg-filepicker-path>a{white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-ico.eg-mime-audio{background-color:#94cbff}.eg-ico.eg-mime-video{background-color:#8f6bd1}.eg-ico.eg-mime-pdf{background-color:#e64e40}.eg-ico.eg-mime-word_processing{background-color:#4ca0e6}.eg-ico.eg-mime-spreadsheet{background-color:#6bd17f}.eg-ico.eg-mime-presentation{background-color:#fa8639}.eg-ico.eg-mime-cad{background-color:#f2d725}.eg-ico.eg-mime-text{background-color:#9e9e9e}.eg-ico.eg-mime-image{background-color:#d16bd0}.eg-ico.eg-mime-code{background-color:#a5d16b}.eg-ico.eg-mime-archive{background-color:#d19b6b}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-btn[disabled]{opacity:.3}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-filepicker-bar>*{float:left}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{min-width:60%;width:calc(100% - 88px);vertical-align:middle;line-height:32px}.eg-filepicker-path>a{white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 4px}.eg-ico{margin-right:4px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-unknown{background:#dbdbdb}.eg-filepicker-file{width:40px;height:40px;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-bottom:0;background:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;background:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],18:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');

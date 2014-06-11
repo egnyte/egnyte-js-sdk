@@ -26,7 +26,7 @@ The options are:
  - `path` String - a path to open the filepicker at, default: "/"
  - `cancel` Function - a callback to run when the user decides to cancel selecting
  - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
- - `error` Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, this is only useful if you want to handle errors yourself. When picker instance is not useful after error, remember to close it.
+ - `error` Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.
  - `barAlign` String - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
  - `select` Map of selectables configuration
  
@@ -65,7 +65,9 @@ All keys handled by https://github.com/chrisdickinson/vkey are available.
 
 ----
 
-_Example_
+_Examples_
+
+Open on `/Private` location, with single selection and changed labels for OK and empty folder
 
 ```javascript
 var picker = egnyte.filePicker(containerNode,{
@@ -82,6 +84,23 @@ var picker = egnyte.filePicker(containerNode,{
     texts: {
         "Ok": "Continue",
         "This folder is empty": "Nothing here, sorry"
+        }
+    });
+```
+
+Added a detailed error handler for 
+```javascript
+var picker = egnyte.filePicker(containerNode,{
+    selection: function(list){
+        //handle selection
+        },
+    cancel: function(){
+        //the user cancelled. containerNode will be emptied by the filepicker itself.
+        },
+    error: function(e){
+        if(e.statusCode == 503){
+            return "Server is tired of all this querying"
+            }
         }
     });
 ```

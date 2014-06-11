@@ -83,7 +83,7 @@
 <li><code>path</code> String - a path to open the filepicker at, default: &quot;/&quot;</li>
 <li><code>cancel</code> Function - a callback to run when the user decides to cancel selecting</li>
 <li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
-<li><code>error</code> Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, this is only useful if you want to handle errors yourself. When picker instance is not useful after error, remember to close it.</li>
+<li><code>error</code> Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.</li>
 <li><code>barAlign</code> String - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
 <li><code>select</code> Map of selectables configuration</li>
 </ul>
@@ -115,7 +115,8 @@
 }</code></pre>
 <p>All keys handled by <a href="https://github.com/chrisdickinson/vkey">https://github.com/chrisdickinson/vkey</a> are available.</p>
 <hr>
-<p><em>Example</em></p>
+<p><em>Examples</em></p>
+<p>Open on <code>/Private</code> location, with single selection and changed labels for OK and empty folder</p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
     path: &quot;/Private&quot;,
     selection: function(list){
@@ -130,6 +131,20 @@
     texts: {
         &quot;Ok&quot;: &quot;Continue&quot;,
         &quot;This folder is empty&quot;: &quot;Nothing here, sorry&quot;
+        }
+    });</code></pre>
+<p>Added a detailed error handler for </p>
+<pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
+    selection: function(list){
+        //handle selection
+        },
+    cancel: function(){
+        //the user cancelled. containerNode will be emptied by the filepicker itself.
+        },
+    error: function(e){
+        if(e.statusCode == 503){
+            return &quot;Server is tired of all this querying&quot;
+            }
         }
     });</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>

@@ -27,9 +27,7 @@ function View(opts, txtOverride) {
     this.handlers = helpers.extend({
         selection: helpers.noop,
         close: helpers.noop,
-        error: function (e) {
-            self.defaultError(e);
-        }
+        error: null
     }, opts.handlers);
 
     //action handlers
@@ -37,7 +35,7 @@ function View(opts, txtOverride) {
     this.model = opts.model;
 
     //bind to model events
-    this.model.onloading = helpers.bindThis(self, self.loading);
+    this.model.onloading = helpers.bindThis(self, self.renderLoading);
     this.model.onupdate = function () {
         self.render();
         if (self.handlers.ready) {
@@ -46,7 +44,7 @@ function View(opts, txtOverride) {
             setTimeout(runReady, 0);
         }
     }
-    this.model.onerror = helpers.bindThis(self, self.handlers.error);
+    this.model.onerror = helpers.bindThis(this, this.errorHandler);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -126,6 +124,22 @@ viewPrototypeMethods.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
+viewPrototypeMethods.errorHandler = function (e) {
+    if (this.handlers.error) {
+        var message = this.handlers.error(e);
+        if (typeof message === "string") {
+            this.renderProblem(0,message);
+        } else {
+            if (message === false) {
+                return;
+            }
+            this.renderProblem(~~(e.statusCode),e.message);
+        }
+    } else {
+        this.renderProblem(~~(e.statusCode),e.message);
+    }
+}
+
 
 //================================================================= 
 // rendering
@@ -163,7 +177,7 @@ viewPrototypeMethods.render = function () {
     this.breadcrumbify(this.model.path);
 
     if (this.model.isEmpty) {
-        this.empty();
+        this.renderEmpty();
     } else {
         helpers.each(this.model.items, function (item) {
             self.renderItem(item);
@@ -249,21 +263,33 @@ viewPrototypeMethods.breadcrumbify = function (path) {
 
 
 
-viewPrototypeMethods.loading = function () {
+viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]]));
     }
 }
-viewPrototypeMethods.defaultError = function (e) {
+
+
+var msgs={
+    "404":"This item doesn't exist (404)",
+    "403":"Access denied (403)",
+    "409":"Forbidden location (409)",
+    "4XX":"Incorrect API request",
+    "5XX":"API server error, try again later",
+    "?":"Error. Would you mind trying again?"
+}
+
+viewPrototypeMethods.renderProblem = function (code,message) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", e.message]]));
+        message = msgs[""+code] || msgs[~(code/100)+"XX"] || message || msgs["?"];
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-error"], message]]));
     } else {
-        this.handlers.close(e);
+        this.handlers.close();
     }
 }
-viewPrototypeMethods.empty = function () {
+viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
