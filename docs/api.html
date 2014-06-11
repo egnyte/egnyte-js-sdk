@@ -90,6 +90,17 @@
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
         token: YOURAPITOKEN
     });</code></pre>
+<h3 id="user-quota-queries-per-second-handling">User Quota (queries per second) handling</h3>
+<p>The API has limits for the number of queries a single user can make. If one of the users of your app performs too many actions, the API endpoint will return <code>HTTP403</code> with the &quot;Developer over QPS&quot; error.</p>
+<p>The SDK transparently handles user quota by default. All calls have a default retry policy - if the API responds with &quot;Developer over QPS&quot; error, a retry is scheduled to run after 1 second. A warning is logged to the browser&#39;s console to help spotting the problem.</p>
+<p><code>API.auth.promiseRequest</code> and all the <code>API.storage.*</code> and <code>API.link.*</code> methods have a built-in mechanizm to delay calls that are made too fast, to avoid getting &quot;Developer over QPS&quot; errors at all. The delays are based on a declared QPS value. Most API keys have a 2 queries per second limit on users.</p>
+<p>To set your query per second quota to something else than 2, initialize with <code>QPS</code> option</p>
+<pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
+        key: YOURAPIKEY,
+        mobile: true,
+        QPS: 2
+    });</code></pre>
+<p>To entirely disable the quota handling set <code>handleQuota</code> option to <code>false</code> </p>
 <h2 id="authorization-methods">Authorization methods</h2>
 <table>
 <thead>
@@ -148,12 +159,12 @@
 <tr>
 <td>API.auth.sendRequest</td>
 <td><code>options</code>,<code>callback</code></td>
-<td>Sends an authorized request and calls the callback when finished (see examples below)</td>
+<td>Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
 </tr>
 <tr>
 <td>API.auth.promiseRequest</td>
 <td><code>options</code></td>
-<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below)</td>
+<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
 </tr>
 </tbody>
 </table>

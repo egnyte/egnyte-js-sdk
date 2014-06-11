@@ -47,6 +47,27 @@ var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
     });
 ```
 
+### User Quota (queries per second) handling
+
+The API has limits for the number of queries a single user can make. If one of the users of your app performs too many actions, the API endpoint will return `HTTP403` with the "Developer over QPS" error.
+
+The SDK transparently handles user quota by default. All calls have a default retry policy - if the API responds with "Developer over QPS" error, a retry is scheduled to run after 1 second. A warning is logged to the browser's console to help spotting the problem.
+
+`API.auth.promiseRequest` and all the `API.storage.*` and `API.link.*` methods have a built-in mechanizm to delay calls that are made too fast, to avoid getting "Developer over QPS" errors at all. The delays are based on a declared QPS value. Most API keys have a 2 queries per second limit on users.
+
+To set your query per second quota to something else than 2, initialize with `QPS` option
+
+```javascript
+var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
+        key: YOURAPIKEY,
+        mobile: true,
+        QPS: 2
+    });
+```
+
+To entirely disable the quota handling set `handleQuota` option to `false` 
+
+
 ## Authorization methods
 
 
@@ -61,8 +82,8 @@ API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQue
 API.auth.getToken | | Returns the token string
 API.auth.dropToken | | Forgets the current token
 API.auth.getEndpoint | | Returns the public API endpoint root URL
-API.auth.sendRequest | `options`,`callback` | Sends an authorized request and calls the callback when finished (see examples below)
-API.auth.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below)
+API.auth.sendRequest | `options`,`callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
+API.auth.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
 
 ### Handling requests
 
