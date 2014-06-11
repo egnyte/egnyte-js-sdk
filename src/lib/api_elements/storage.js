@@ -23,7 +23,7 @@ function exists(pathFromRoot) {
             return false;
         }
     }, function (result) { //result.error result.response, result.body
-        if (result.response.statusCode == 404) {
+        if (result.response && result.response.statusCode == 404) {
             return false;
         } else {
             throw result.error;

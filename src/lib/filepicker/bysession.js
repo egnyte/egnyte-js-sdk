@@ -4,11 +4,6 @@
     var dom = require('../reusables/dom');
     var messages = require('../reusables/messages');
 
-    var defaults = {
-        filepickerViewAddress: "folderExplorer.html",
-        channelMarker: "'E"
-    };
-
 
     function listen(channel, callback) {
         channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, callback);
@@ -50,7 +45,6 @@
     function init(options) {
         var filePicker;
         var ready = false;
-        options = helpers.extend(defaults, options);
 
         filePicker = function (node, setup) {
             if (!setup) {

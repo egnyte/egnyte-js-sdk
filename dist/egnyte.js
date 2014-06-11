@@ -425,11 +425,19 @@ function once (fn) {
 }
 
 },{}],6:[function(require,module,exports){
+module.exports = {
+    handleQuota: true,
+    QPS: 2,
+    filepickerViewAddress: "folderExplorer.do",
+    channelMarker: "'E"
+    
+}
+},{}],7:[function(require,module,exports){
 (function () {
     "use strict";
 
-    var helpers = require('./lib/reusables/helpers');
-    var options = {};
+    var helpers = require("./lib/reusables/helpers");
+    var options = require("./defaults.js");
 
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
@@ -451,7 +459,7 @@ function once (fn) {
     }
 
 })();
-},{"./lib/api":7,"./lib/filepicker/byapi":11,"./lib/filepicker/bysession":12,"./lib/reusables/helpers":19}],7:[function(require,module,exports){
+},{"./defaults.js":6,"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":20}],8:[function(require,module,exports){
 var APIMain = require("./api_elements/main");
 var storageFacade = require("./api_elements/storage");
 var linkFacade = require("./api_elements/link");
@@ -468,7 +476,7 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":8,"./api_elements/main":9,"./api_elements/storage":10}],8:[function(require,module,exports){
+},{"./api_elements/link":9,"./api_elements/main":10,"./api_elements/storage":11}],9:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -552,32 +560,46 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":17,"../reusables/helpers":19}],9:[function(require,module,exports){
+},{"../promises":18,"../reusables/helpers":20}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
+var quotaRegex = /^<h1>Developer Over Qps/i;
 
-var token;
-var options;
 
 var promises = require('../promises');
+var helpers = require('../reusables/helpers');
 var xhr = require("xhr");
 
 
+function Engine(options) {
+    this.options = options;
+    this.quota = {
+        startOfTheSecond: 0,
+        calls: 0,
+        retrying: 0
+    }
+    this.queue = [];
 
+    if (this.options.token) {
+        this.token = this.options.token;
+    }
+    
+    this.queueHandler = helpers.bindThis(this, _rollQueue);
 
-function reloadForToken() {
-    window.location.href = options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + window.location.href;
 }
 
-function checkTokenResponse(success, none) {
-    if (!token) {
-        var access = oauthRegex.exec(window.location.hash);
+var enginePrototypeMethods = {};
 
+enginePrototypeMethods.reloadForToken = function () {
+    window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+}
+
+enginePrototypeMethods.checkTokenResponse = function (success, none) {
+    if (!this.token) {
+        var access = oauthRegex.exec(window.location.hash);
         if (access) {
             if (access.length > 1) {
-
-                token = access[1];
+                this.token = access[1];
                 success && success();
-
             } else {
                 //what now?
             }
@@ -589,18 +611,18 @@ function checkTokenResponse(success, none) {
     }
 }
 
-function requestTokenInplace(callback) {
-    checkTokenResponse(callback, reloadForToken);
+enginePrototypeMethods.requestToken = function (callback) {
+    this.checkTokenResponse(callback, this.reloadForToken);
 }
 
-function onTokenReady(callback) {
-    checkTokenResponse(callback, function () {});
+enginePrototypeMethods.onTokenReady = function (callback) {
+    this.checkTokenResponse(callback, function () {});
 }
 
 //TODO: implement popup flow
-function requestTokenWindow(callback, pingbackURL) {
-    //    if (!token) {
-    //        var dialog = window.open(options.egnyteDomainURL + "/puboauth/token?client_id=" + options.key + "&mobile=" + ~~(options.mobile) + "&redirect_uri=" + pingbackURL);
+enginePrototypeMethods.requestTokenWindow = function (callback, pingbackURL) {
+    //    if (!this.token) {
+    //        var dialog = window.open(this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + pingbackURL);
     //
     //        //listen for a postmessage from window that gives you a token 
     //    } else {
@@ -609,36 +631,36 @@ function requestTokenWindow(callback, pingbackURL) {
 
 }
 
-function authorizeXHR(xhr) {
+enginePrototypeMethods.authorizeXHR = function (xhr) {
     //assuming token_type was bearer, no use for XHR otherwise, right?
-    xhr.setRequestHeader("Authorization", "Bearer " + token);
+    xhr.setRequestHeader("Authorization", "Bearer " + this.token);
 }
 
-function getHeaders() {
+enginePrototypeMethods.getHeaders = function () {
     return {
-        "Authorization": "Bearer " + token
+        "Authorization": "Bearer " + this.token
     };
 }
 
-function getEndpoint() {
-    return options.egnyteDomainURL + "/pubapi/v1";
+enginePrototypeMethods.getEndpoint = function () {
+    return this.options.egnyteDomainURL + "/pubapi/v1";
 }
 
-function isAuthorized() {
-    return !!token;
+enginePrototypeMethods.isAuthorized = function () {
+    return !!this.token;
 }
 
-function getToken() {
-    return token;
+enginePrototypeMethods.getToken = function () {
+    return this.token;
 }
 
-function setToken(externalToken) {
-    token = externalToken;
+enginePrototypeMethods.setToken = function (externalToken) {
+    this.token = externalToken;
 }
 
 
-function dropToken(externalToken) {
-    token = null;
+enginePrototypeMethods.dropToken = function (externalToken) {
+    this.token = null;
 }
 
 function params(obj) {
@@ -653,19 +675,36 @@ function params(obj) {
 
 
 
-function sendRequest(opts, callback) {
-    if (isAuthorized()) {
+enginePrototypeMethods.sendRequest = function (opts, callback) {
+    var self = this;
+    var originalOpts = helpers.extend({}, opts);
+    if (this.isAuthorized()) {
         if (opts.params) {
             opts.url += "?" + params(opts.params);
         }
         opts.headers = opts.headers || {};
-        opts.headers["Authorization"] = "Bearer " + getToken();
+        opts.headers["Authorization"] = "Bearer " + this.getToken();
         return xhr(opts, function (error, response, body) {
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            callback.call(this, error, response, body);
+            if (
+                self.options.handleQuota &&
+                response.statusCode === 403 &&
+                response.getResponseHeader("Retry-After")
+            ) {
+                //retry
+                console && console.warn("develoer over QPS, retrying");
+                self.quota.retrying = 1000 * ~~(response.getResponseHeader("Retry-After"));
+                setTimeout(function () {
+                    self.quota.retrying = 0;
+                    self.sendRequest(originalOpts, callback);
+                }, self.quota.retrying);
+
+            } else {
+                callback.call(this, error, response, body);
+            }
         });
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -675,53 +714,90 @@ function sendRequest(opts, callback) {
 
 }
 
-function promiseRequest(opts) {
+enginePrototypeMethods.promiseRequest = function (opts) {
     var defer = promises.defer();
-    try {
-        sendRequest(opts, function (error, response, body) {
-            if (error) {
-                defer.reject({
-                    error: error,
-                    response: response,
-                    body: body
-                });
-            } else {
-                defer.resolve({
-                    response: response,
-                    body: body
-                });
-            }
-        });
-    } catch (error) {
-        defer.reject({
-            error: error
-        });
+    var self = this;
+    var performRequest = function () {
+        try {
+            self.sendRequest(opts, function (error, response, body) {
+                if (error) {
+                    defer.reject({
+                        error: error,
+                        response: response,
+                        body: body
+                    });
+                } else {
+                    defer.resolve({
+                        response: response,
+                        body: body
+                    });
+                }
+            });
+        } catch (error) {
+            defer.reject({
+                error: error
+            });
+        }
     }
+    this.addToQueue(performRequest);
     return defer.promise;
 }
 
-module.exports = function (opts) {
-    options = opts;
+enginePrototypeMethods.addToQueue = function (requestFunction) {
+    if (!this.options.handleQuota) {
+        requestFunction();
+    } else {
+        this.queue.push(requestFunction);
+        //stop previous queue processing if any
+        clearTimeout(this.quota.to);
+        //start queue processing
+        this.queueHandler();
+    }
+}
 
-    if (options.token) {
-        setToken(options.token);
+//gets bound to this in the constructor and saved as this.queueHandler
+function _rollQueue() {
+    if (this.queue.length) {
+        var currentWait = this.quotaWaitTime();
+        if (currentWait === 0) {
+            var requestFunction = this.queue.shift();
+            requestFunction();
+            this.quota.calls++;
+        }
+        this.quota.to = setTimeout(this.queueHandler, currentWait);
     }
 
-    return {
-        isAuthorized: isAuthorized,
-        setToken: setToken,
-        requestToken: requestTokenInplace,
-        onTokenReady: onTokenReady,
-        authorizeXHR: authorizeXHR,
-        getHeaders: getHeaders,
-        getToken: getToken,
-        dropToken: dropToken,
-        getEndpoint: getEndpoint,
-        sendRequest: sendRequest,
-        promiseRequest: promiseRequest
-    };
+}
+
+enginePrototypeMethods.quotaWaitTime = function () {
+    var now = +new Date();
+    var diff = now - this.quota.startOfTheSecond;
+    //in the middle of retrying a denied call
+    if (this.quota.retrying) {
+        this.quota.startOfTheSecond = now + this.quota.retrying;
+        return this.quota.retrying + 1;
+    }
+    //last call was over a second ago, can start
+    if (diff > 1000) {
+        this.quota.startOfTheSecond = now;
+        this.quota.calls = 0;
+        return 0;
+    }
+    //calls limit not reached
+    if (this.quota.calls < this.options.QPS) {
+        return 0;
+    }
+    //calls limit reached, delay to the next second
+    return 1001 - diff;
+}
+
+
+Engine.prototype = enginePrototypeMethods;
+
+module.exports = function (opts) {
+    return new Engine(opts);
 };
-},{"../promises":17,"xhr":3}],10:[function(require,module,exports){
+},{"../promises":18,"../reusables/helpers":20,"xhr":3}],11:[function(require,module,exports){
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
@@ -747,7 +823,7 @@ function exists(pathFromRoot) {
             return false;
         }
     }, function (result) { //result.error result.response, result.body
-        if (result.response.statusCode == 404) {
+        if (result.response && result.response.statusCode == 404) {
             return false;
         } else {
             throw result.error;
@@ -908,15 +984,13 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":17,"../reusables/helpers":19}],11:[function(require,module,exports){
+},{"../promises":18,"../reusables/helpers":20}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require("../reusables/helpers");
     var dom = require("../reusables/dom");
     var View = require("../filepicker_elements/view");
     var Model = require("../filepicker_elements/model");
-
-    var defaults = {};
 
     function init(API) {
         var filePicker;
@@ -976,17 +1050,12 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/model":14,"../filepicker_elements/view":15,"../reusables/dom":18,"../reusables/helpers":19}],12:[function(require,module,exports){
+},{"../filepicker_elements/model":15,"../filepicker_elements/view":16,"../reusables/dom":19,"../reusables/helpers":20}],13:[function(require,module,exports){
 (function () {
 
     var helpers = require('../reusables/helpers');
     var dom = require('../reusables/dom');
     var messages = require('../reusables/messages');
-
-    var defaults = {
-        filepickerViewAddress: "folderExplorer.html",
-        channelMarker: "'E"
-    };
 
 
     function listen(channel, callback) {
@@ -1029,7 +1098,6 @@ module.exports = function (apihelper, opts) {
     function init(options) {
         var filePicker;
         var ready = false;
-        options = helpers.extend(defaults, options);
 
         filePicker = function (node, setup) {
             if (!setup) {
@@ -1080,7 +1148,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":18,"../reusables/helpers":19,"../reusables/messages":20}],13:[function(require,module,exports){
+},{"../reusables/dom":19,"../reusables/helpers":20,"../reusables/messages":21}],14:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
 var mapping = {};
 helpers.each({
@@ -1118,7 +1186,7 @@ module.exports = {
     },
     getExt: getExt
 }
-},{"../reusables/helpers":19}],14:[function(require,module,exports){
+},{"../reusables/helpers":20}],15:[function(require,module,exports){
 var helpers = require("../reusables/helpers");
 var exts = require("./exts");
 
@@ -1288,7 +1356,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"../reusables/helpers":19,"./exts":13}],15:[function(require,module,exports){
+},{"../reusables/helpers":20,"./exts":14}],16:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -1616,9 +1684,9 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"../../vendor/zenjungle":22,"../reusables/dom":18,"../reusables/helpers":19,"../reusables/texts":21,"./view.less":16}],16:[function(require,module,exports){
+},{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background-color:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-btn[disabled]{opacity:.3}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-filepicker-bar>*{float:left}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background-color:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{min-width:60%;width:calc(100% - 88px);vertical-align:middle;line-height:32px}.eg-filepicker-path>a{white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background-color:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background-color:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-ico{margin-right:4px}.eg-ico.eg-mime-audio{background-color:#94cbff}.eg-ico.eg-mime-video{background-color:#8f6bd1}.eg-ico.eg-mime-pdf{background-color:#e64e40}.eg-ico.eg-mime-word_processing{background-color:#4ca0e6}.eg-ico.eg-mime-spreadsheet{background-color:#6bd17f}.eg-ico.eg-mime-presentation{background-color:#fa8639}.eg-ico.eg-mime-cad{background-color:#f2d725}.eg-ico.eg-mime-text{background-color:#9e9e9e}.eg-ico.eg-mime-image{background-color:#d16bd0}.eg-ico.eg-mime-code{background-color:#a5d16b}.eg-ico.eg-mime-archive{background-color:#d19b6b}.eg-filepicker-file{width:40px;height:40px;background:#dbdbdb;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background-color:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-radius:.2em;border-bottom:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background-color:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;border-top-left-radius:.3em;border-top-right-radius:.3em;background-color:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
@@ -1642,7 +1710,7 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":1}],18:[function(require,module,exports){
+},{"pinkyswear":1}],19:[function(require,module,exports){
 var vkey = require('vkey');
 
 
@@ -1709,7 +1777,7 @@ module.exports = {
     }
 
 }
-},{"vkey":2}],19:[function(require,module,exports){
+},{"vkey":2}],20:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1764,7 +1832,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var helpers = require('../reusables/helpers');
 
 
@@ -1807,7 +1875,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":19}],21:[function(require,module,exports){
+},{"../reusables/helpers":20}],22:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -1821,7 +1889,7 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *
@@ -1941,4 +2009,4 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[6])
+},{}]},{},[7])

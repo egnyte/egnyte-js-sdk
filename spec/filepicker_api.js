@@ -184,10 +184,10 @@ describe("API Filepicker", function () {
         var node2 = document.createElement('div');
         document.body.appendChild(node2);
 
-
+        var picker2;
         var picker = eg.filePicker(node, {
             ready: function () {
-                var picker2 = eg.filePicker(node2, {
+                picker2 = eg.filePicker(node2, {
                     ready: function () {
                         node.click();
                         //pretend some keyboard
@@ -202,6 +202,7 @@ describe("API Filepicker", function () {
             },
             selection: function (elements) {
                 expect(elements).toBeTruthy();
+                picker2.close();
                 done();
             }
         });

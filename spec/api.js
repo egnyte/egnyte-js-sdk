@@ -1,7 +1,12 @@
 describe("API to JS (integration test)", function () {
 
-    var eg;
-
+    //our main testsubject
+    var eg = Egnyte.init(egnyteDomain, {
+            token: APIToken,
+            QPS:2
+        });
+    
+    
     function getTestBlob(txt) {
         // JavaScript file-like object...
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
@@ -18,17 +23,19 @@ describe("API to JS (integration test)", function () {
         return blob;
     }
 
+    it('BTW. The test should have a working matcher for errors', function () {
+        //token was passed in beforeEach
+        expect(expect(this).toAutoFail).toBeDefined();
+    });
 
     if (!window.egnyteDomain || !window.APIToken) {
         throw new Error("spec/conf/apiaccess.js is missing");
     }
 
     beforeEach(function () {
-        jasmine.getEnv().defaultTimeoutInterval = 5000; //QA API can be laggy
-
-        eg = Egnyte.init(egnyteDomain, {
-            token: APIToken
-        });
+        jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
+       
     });
 
     it('should accept an existing token', function () {
@@ -36,9 +43,11 @@ describe("API to JS (integration test)", function () {
         expect(eg.API.auth.isAuthorized()).toBe(true);
     });
 
+
     var testpath;
     var testpath2;
     var testpath3;
+
 
     describe("Storage", function () {
 
@@ -48,7 +57,7 @@ describe("API to JS (integration test)", function () {
         it("Should claim that root exists", function (done) {
             eg.API.storage.exists("/Private").then(function (e) {
                 expect(e).toBe(true);
-                setTimeout(done, 400);
+                done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -57,7 +66,7 @@ describe("API to JS (integration test)", function () {
         it("Should claim that jiberish doesn't exists", function (done) {
             eg.API.storage.exists("/jiberish").then(function (e) {
                 expect(e).toBe(false);
-                setTimeout(done, 400);
+                done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -70,7 +79,7 @@ describe("API to JS (integration test)", function () {
                 testpath = e.folders[0].path + "/bacon" + ~~(10000 * Math.random());
                 testpath2 = e.folders[0].path + "/unicorn" + ~~(10000 * Math.random());
                 testpath3 = e.folders[0].path + "/candy" + ~~(10000 * Math.random());
-                setTimeout(done, 400);
+                done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -86,7 +95,7 @@ describe("API to JS (integration test)", function () {
                 })
                 .then(function (e) {
                     expect(e).toBe(true);
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -105,11 +114,11 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
 
-                    setTimeout(function () { //delay to stay in QPS
+                    setTimeout(function () {
                         eg.API.storage.exists(testpath2)
                             .then(function (e) {
                                 expect(e).toBe(true);
-                                setTimeout(done, 400); //delay to stay in QPS
+                                done();
                             });
                     }, 400);
                 }).error(function (e) {
@@ -124,7 +133,7 @@ describe("API to JS (integration test)", function () {
                 })
                 .then(function (e) {
                     expect(e).toBe(false);
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -151,7 +160,7 @@ describe("API to JS (integration test)", function () {
                     expect(e["size"] > 0).toBeTruthy();
 
                     recentFileObject = e;
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -174,7 +183,7 @@ describe("API to JS (integration test)", function () {
                     expect(e["versions"]).toBeTruthy();
 
                     recentFileObject = e;
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -191,7 +200,7 @@ describe("API to JS (integration test)", function () {
                     expect(e["versions"]).not.toBeDefined();
 
                     recentFileObject = e;
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -205,7 +214,7 @@ describe("API to JS (integration test)", function () {
                 })
                 .then(function (e) {
                     expect(e).toBe(false);
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -224,7 +233,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.storeFile(testpath3, blob)
                 .then(function (e) {
                     recentFile = e;
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });
@@ -248,7 +257,7 @@ describe("API to JS (integration test)", function () {
                 return eg.API.link.listLink(recentLink.links[0].id);
             }).then(function (e) {
                 expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
-                setTimeout(done, 400); //delay to stay in QPS
+                done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });
@@ -270,12 +279,12 @@ describe("API to JS (integration test)", function () {
                 if (other.length) {
                     eg.API.link.listLink(other[0]).then(function (e) {
                         expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
-                        setTimeout(done, 400); //delay to stay in QPS
+                        done();
                     }).error(function (e) {
                         throw new Error("Link from the list doesn't seem to exist at all");
                     });
                 } else {
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }
             }).error(function (e) {
                 expect(this).toAutoFail(e);
@@ -295,7 +304,7 @@ describe("API to JS (integration test)", function () {
             }, function (result) {
                 //I expect a 404 instead
                 expect(result.response.statusCode).toEqual(404);
-                setTimeout(done, 400); //delay to stay in QPS
+                done();
             });
 
         });
@@ -304,7 +313,7 @@ describe("API to JS (integration test)", function () {
         it("Needs to clean up the file", function (done) {
             eg.API.storage.remove(testpath3)
                 .then(function (e) {
-                    setTimeout(done, 400); //delay to stay in QPS
+                    done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                 });

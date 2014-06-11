@@ -5,8 +5,6 @@
     var View = require("../filepicker_elements/view");
     var Model = require("../filepicker_elements/model");
 
-    var defaults = {};
-
     function init(API) {
         var filePicker;
 
