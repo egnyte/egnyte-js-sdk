@@ -128,15 +128,15 @@ viewPrototypeMethods.errorHandler = function (e) {
     if (this.handlers.error) {
         var message = this.handlers.error(e);
         if (typeof message === "string") {
-            this.renderProblem(0,message);
+            this.renderProblem("*", message);
         } else {
             if (message === false) {
                 return;
             }
-            this.renderProblem(~~(e.statusCode),e.message);
+            this.renderProblem(~~(e.statusCode), e.message);
         }
     } else {
-        this.renderProblem(~~(e.statusCode),e.message);
+        this.renderProblem(~~(e.statusCode), e.message);
     }
 }
 
@@ -271,19 +271,20 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs={
-    "404":"This item doesn't exist (404)",
-    "403":"Access denied (403)",
-    "409":"Forbidden location (409)",
-    "4XX":"Incorrect API request",
-    "5XX":"API server error, try again later",
-    "?":"Error. Would you mind trying again?"
+var msgs = {
+    "404": "This item doesn't exist (404)",
+    "403": "Access denied (403)",
+    "409": "Forbidden location (409)",
+    "4XX": "Incorrect API request",
+    "5XX": "API server error, try again later",
+    "0": "Browser error. Would you mind trying again?",
+    "?": "Unknown error"
 }
 
-viewPrototypeMethods.renderProblem = function (code,message) {
+viewPrototypeMethods.renderProblem = function (code, message) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        message = msgs[""+code] || msgs[~(code/100)+"XX"] || message || msgs["?"];
+        message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-error"], message]]));
     } else {
         this.handlers.close();

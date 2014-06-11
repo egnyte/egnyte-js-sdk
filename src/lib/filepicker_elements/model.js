@@ -8,7 +8,7 @@ var exts = require("./exts");
 function Item(data, parent) {
     this.data = data;
     if (!this.data.is_folder) {
-        this.ext = exts.getExt(data.name).substr(0,3);
+        this.ext = exts.getExt(data.name).substr(0, 3);
         this.mime = exts.getMime(data.name);
     } else {
         this.ext = "";
