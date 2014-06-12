@@ -27,6 +27,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-less-browserify": "0.0.1",
     "grunt-markdown": "^0.6.1",
-    "node-lessify": "0.0.3"
+    "node-lessify": "0.0.3",
+    "unpathify": "^0.1.1"
   }
 }

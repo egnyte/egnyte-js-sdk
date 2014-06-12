@@ -18,7 +18,7 @@
 @spacing: 10px;
 @smallspacing: 4px;
 
-
+//buttons and links
 .eg-btn{
     display:inline-block;
     line-height: @size/2;
@@ -43,10 +43,15 @@ a.eg-btn{
     border:1px solid transparent;
 }
 
-.eg-not{
-    visibility: hidden;
+
+.eg-filepicker a{
+    cursor:pointer;
+    &:hover{
+        text-decoration: underline;
+    }
 }
 
+//big block elements
 .eg-filepicker, .eg-filepicker-bar {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -103,6 +108,12 @@ a.eg-btn{
     float: right;
 }
 
+//controls / ui elements
+
+.eg-not{
+    visibility: hidden;
+}
+
 .eg-filepicker-pager{
     float:right;
     margin: 0 @spacing;
@@ -116,24 +127,7 @@ a.eg-btn{
     border-color: @btframeclA;
     color: @fontclA;
 }
-.eg-btn.eg-filepicker-back{
-    padding: @smallspacing @size/4;
-    position:relative;
 
-    &::before {
-        content: "";
-        display:block;
-        left: @smallspacing;
-        border: 0 solid @fontclB;
-        border-width: 0 0 3px 3px;
-        transform: rotate(45deg);
-        width: 7px;
-        height: 7px;
-        position: absolute;
-        bottom: @spacing;
-    }
-
-}
 
 .eg-filepicker-path{
     min-width: 60%;
@@ -173,11 +167,25 @@ a.eg-btn{
     }
 }
 
-.eg-filepicker a{
-    cursor:pointer;
-    &:hover{
-        text-decoration: underline;
+//icons and shapes
+
+.eg-btn.eg-filepicker-back{
+    padding: @smallspacing @size/4;
+    position:relative;
+
+    &::before {
+        content: "";
+        display:block;
+        left: @smallspacing;
+        border: 0 solid @fontclB;
+        border-width: 0 0 3px 3px;
+        transform: rotate(45deg);
+        width: 7px;
+        height: 7px;
+        position: absolute;
+        bottom: @spacing;
     }
+
 }
 
 @-webkit-keyframes egspin {
@@ -249,6 +257,9 @@ a.eg-btn{
 }
 .eg-mime-archive {
     background: #d19b6b;
+}
+.eg-mime-goog {
+    background: #0266C8;
 }
 .eg-mime-unknown {
     background: #dbdbdb;

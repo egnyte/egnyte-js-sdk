@@ -1,47 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/*
- * PinkySwear.js 2.0 - Minimalistic implementation of the Promises/A+ spec
- * 
- * Public Domain. Use, modify and distribute it any way you like. No attribution required.
- *
- * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
- *
- * PinkySwear is a very small implementation of the Promises/A+ specification. After compilation with the
- * Google Closure Compiler and gzipping it weighs less than 500 bytes. It is based on the implementation for 
- * Minified.js and should be perfect for embedding. 
- *
- *
- * PinkySwear has just four functions.
- *
- * To create a new promise in pending state, call pinkySwear():
- *         var promise = pinkySwear();
- *
- * The returned object has a Promises/A+ compatible then() implementation:
- *          promise.then(function(value) { alert("Success!"); }, function(value) { alert("Failure!"); });
- *
- *
- * The promise returned by pinkySwear() is a function. To fulfill the promise, call the function with true as first argument and
- * an optional array of values to pass to the then() handler. By putting more than one value in the array, you can pass more than one
- * value to the then() handlers. Here an example to fulfill a promsise, this time with only one argument: 
- *         promise(true, [42]);
- *
- * When the promise has been rejected, call it with false. Again, there may be more than one argument for the then() handler:
- *         promise(true, [6, 6, 6]);
- *         
- * You can obtain the promise's current state by calling the function without arguments. It will be true if fulfilled,
- * false if rejected, and otherwise undefined.
- * 		   var state = promise();
- *
- * PinkySwear has two convenience functions. always(func) is the same as then(func, func) and thus will always be called, no matter what the
- * promises final state is:
- *          promise.always(function(value) { alert("Done!"); });
- *
- * error(func) is the same as then(0, func), and thus the handler will only be called on error:
- *          promise.error(function(value) { alert("Failure!"); });
- *          
- * 
- * https://github.com/timjansen/PinkySwear.js
- */
 (function(target) {
 	var undef;
 
@@ -126,8 +83,6 @@
 		return set;
 	};
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
-
-
 },{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
@@ -265,10 +220,9 @@ for(i = 96; i < 106; ++i) {
 for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
-
 },{}],3:[function(require,module,exports){
-var window = require("global/window")
-var once = require("once")
+var window = require(1)
+var once = require(2)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -393,8 +347,7 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-
-},{"global/window":4,"once":5}],4:[function(require,module,exports){
+},{"1":4,"2":5}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -402,7 +355,6 @@ if (typeof window !== "undefined") {
 } else {
     module.exports = {}
 }
-
 },{}],5:[function(require,module,exports){
 module.exports = once
 
@@ -423,7 +375,6 @@ function once (fn) {
     return fn.apply(this, arguments)
   }
 }
-
 },{}],6:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
@@ -432,23 +383,24 @@ module.exports = {
     channelMarker: "'E"
     
 }
+
 },{}],7:[function(require,module,exports){
 (function () {
     "use strict";
 
-    var helpers = require("./lib/reusables/helpers");
-    var options = require("./defaults.js");
+    var helpers = require(5);
+    var options = require(1);
 
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
-        var api = require("./lib/api")(options);
+        var api = require(2)(options);
 
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(api),
-            filePickerRemote: require("./lib/filepicker/bysession")(options),
+            filePicker: require(3)(api),
+            filePickerRemote: require(4)(options),
             API: api
         }
 
@@ -459,10 +411,10 @@ module.exports = {
     }
 
 })();
-},{"./defaults.js":6,"./lib/api":8,"./lib/filepicker/byapi":12,"./lib/filepicker/bysession":13,"./lib/reusables/helpers":20}],8:[function(require,module,exports){
-var APIMain = require("./api_elements/main");
-var storageFacade = require("./api_elements/storage");
-var linkFacade = require("./api_elements/link");
+},{"1":6,"2":8,"3":12,"4":13,"5":20}],8:[function(require,module,exports){
+var APIMain = require(2);
+var storageFacade = require(3);
+var linkFacade = require(1);
 
 
 module.exports = function (options) {
@@ -476,9 +428,9 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":9,"./api_elements/main":10,"./api_elements/storage":11}],9:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
+},{"1":9,"2":10,"3":11}],9:[function(require,module,exports){
+var promises = require(1);
+var helpers = require(2);
 
 
 var api;
@@ -560,14 +512,14 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":18,"../reusables/helpers":20}],10:[function(require,module,exports){
+},{"1":18,"2":20}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
-var xhr = require("xhr");
+var promises = require(1);
+var helpers = require(2);
+var xhr = require(3);
 
 
 function Engine(options) {
@@ -797,9 +749,9 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"../promises":18,"../reusables/helpers":20,"xhr":3}],11:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
+},{"1":18,"2":20,"3":3}],11:[function(require,module,exports){
+var promises = require(1);
+var helpers = require(2);
 
 var api;
 var options;
@@ -984,13 +936,13 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":18,"../reusables/helpers":20}],12:[function(require,module,exports){
+},{"1":18,"2":20}],12:[function(require,module,exports){
 (function () {
 
-    var helpers = require("../reusables/helpers");
-    var dom = require("../reusables/dom");
-    var View = require("../filepicker_elements/view");
-    var Model = require("../filepicker_elements/model");
+    var helpers = require(4);
+    var dom = require(3);
+    var View = require(2);
+    var Model = require(1);
 
     function init(API) {
         var filePicker;
@@ -1050,12 +1002,12 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../filepicker_elements/model":15,"../filepicker_elements/view":16,"../reusables/dom":19,"../reusables/helpers":20}],13:[function(require,module,exports){
+},{"1":15,"2":16,"3":19,"4":20}],13:[function(require,module,exports){
 (function () {
 
-    var helpers = require('../reusables/helpers');
-    var dom = require('../reusables/dom');
-    var messages = require('../reusables/messages');
+    var helpers = require(2);
+    var dom = require(1);
+    var messages = require(3);
 
 
     function listen(channel, callback) {
@@ -1148,21 +1100,22 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"../reusables/dom":19,"../reusables/helpers":20,"../reusables/messages":21}],14:[function(require,module,exports){
-var helpers = require("../reusables/helpers");
+},{"1":19,"2":20,"3":21}],14:[function(require,module,exports){
+var helpers = require(1);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
     "video": ["wmv", "avi", "mpg", "mpeg", "mp4", "webm", "ogv", "flv", "mov"],
     "pdf": ["pdf"],
-    "word_processing": ["doc", "dot", "docx", "dotx", "docm", "dotm", "odt ", "ott", "oth", "odm", "sxw", "stw", "sxg", "sdw", "sgl", "rtf", "hwp", "uot", "wpd", "wps","gdoc"],
-    "spreadsheet": ["123", "xls", "xlt", "xla", "xlsx", "xltx", "xlsm", "xltm", "xlam", "xlsb", "ods", "fods", "ots", "sxc", "stc", "sdc", "csv", "uos","gsheet"],
-    "presentation": ["ppt", "pot", "pps", "ppa", "pptx", "potx", "ppsx", "ppam", "pptm", "potm", "ppsm", "odp", "fodp", "otp", "sxi", "sti", "sdd", "sdp","gslides"],
+    "word_processing": ["doc", "dot", "docx", "dotx", "docm", "dotm", "odt ", "ott", "oth", "odm", "sxw", "stw", "sxg", "sdw", "sgl", "rtf", "hwp", "uot", "wpd", "wps"],
+    "spreadsheet": ["123", "xls", "xlt", "xla", "xlsx", "xltx", "xlsm", "xltm", "xlam", "xlsb", "ods", "fods", "ots", "sxc", "stc", "sdc", "csv", "uos"],
+    "presentation": ["ppt", "pot", "pps", "ppa", "pptx", "potx", "ppsx", "ppam", "pptm", "potm", "ppsm", "odp", "fodp", "otp", "sxi", "sti", "sdd", "sdp"],
     "cad": ["dwg", "dwf", "dxf", "sldprt", "sldasm", "slddrw"],
     "text": ["txt", "log"],
-    "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg","gdraw"],
+    "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg"],
     "code": ["html", "htm", "sql", "xml", "java", "cpp", "c", "perl", "py", "rb", "php", "js", "css", "applescript", "as3", "as", "bash", "shell", "sh", "cfm", "cfml", "cs", "pas", "dcu", "diff", "patch", "ez", "erl", "groovy", "gvy", "gy", "gsh", "javafx", "jfx", "pl", "pm", "ps1", "ruby", "sass", "scss", "scala", "vb", "vbscript", "xhtml", "xslt"],
     "archive": ["zip", "rar", "tar", "gz", "7z", "bz2", "z", "xz", "ace", "sit", "sitx", "tgz", "apk"],
+    "goog": ["gdoc","gsheet","gslides","gdraw"]
 //    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
 }, function (list,mime) {
     helpers.each(list, function (ex) {
@@ -1186,9 +1139,10 @@ module.exports = {
     },
     getExt: getExt
 }
-},{"../reusables/helpers":20}],15:[function(require,module,exports){
-var helpers = require("../reusables/helpers");
-var exts = require("./exts");
+
+},{"1":20}],15:[function(require,module,exports){
+var helpers = require(1);
+var exts = require(2);
 
 
 
@@ -1356,16 +1310,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"../reusables/helpers":20,"./exts":14}],16:[function(require,module,exports){
+},{"1":20,"2":14}],16:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require("../reusables/dom");
-var helpers = require("../reusables/helpers");
-var texts = require("../reusables/texts");
-var jungle = require("../../vendor/zenjungle");
+var dom = require(2);
+var helpers = require(3);
+var texts = require(4);
+var jungle = require(1);
 
-require("./view.less");
+require(5);
 
 var currentGlobalKeyboadrFocus = "no";
 
@@ -1713,11 +1667,11 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 4px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent}.eg-not{visibility:hidden}.eg-filepicker,.eg-filepicker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative}.eg-filepicker{background:#fff;border:1px solid #dbdbdb;height:100%;padding:50px 0;color:#5e5f60;font-family:\'Open Sans\',sans-serif;font-size:12px}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-filepicker input{margin:10px 20px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{z-index:1;height:50px;padding:10px 4px;background:#f1f1f1;outline:1px solid #dbdbdb;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-50px;padding-left:0;background:#fff}.eg-filepicker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-filepicker-pager{float:right;margin:0 10px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-btn.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-btn.eg-filepicker-back{padding:4px 10px;position:relative}.eg-btn.eg-filepicker-back::before{content:\"\";display:block;left:4px;border:0 solid #838383;border-width:0 0 3px 3px;transform:rotate(45deg);width:7px;height:7px;position:absolute;bottom:10px}.eg-filepicker-path{min-width:60%;width:calc(100% - 96px);line-height:30px}.eg-filepicker-path>a{color:#838383;font-size:14px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-unknown{background:#dbdbdb}.eg-filepicker-file{width:40px;height:40px;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-bottom:0;background:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;background:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{"1":23,"2":19,"3":20,"4":22,"5":17}],17:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 4px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}.eg-filepicker,.eg-filepicker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative}.eg-filepicker{background:#fff;border:1px solid #dbdbdb;height:100%;padding:50px 0;color:#5e5f60;font-family:\'Open Sans\',sans-serif;font-size:12px}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-filepicker input{margin:10px 20px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{z-index:1;height:50px;padding:10px 4px;background:#f1f1f1;outline:1px solid #dbdbdb;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-50px;padding-left:0;background:#fff}.eg-filepicker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-filepicker-pager{float:right;margin:0 10px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-btn.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-path{min-width:60%;width:calc(100% - 96px);line-height:30px}.eg-filepicker-path>a{color:#838383;font-size:14px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{display:inline-block}.eg-btn.eg-filepicker-back{padding:4px 10px;position:relative}.eg-btn.eg-filepicker-back::before{content:\"\";display:block;left:4px;border:0 solid #838383;border-width:0 0 3px 3px;transform:rotate(45deg);width:7px;height:7px;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-filepicker-file{width:40px;height:40px;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-bottom:0;background:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;background:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+
 },{}],18:[function(require,module,exports){
-//wrapper for any promises library
-var pinkySwear = require('pinkyswear');
+var pinkySwear = require(1);
 
 module.exports = {
     "defer": function () {
@@ -1739,8 +1693,9 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":1}],19:[function(require,module,exports){
-var vkey = require('vkey');
+
+},{"1":1}],19:[function(require,module,exports){
+var vkey = require(1);
 
 
 function addListener(elem, type, callback) {
@@ -1806,7 +1761,8 @@ module.exports = {
     }
 
 }
-},{"vkey":2}],20:[function(require,module,exports){
+
+},{"1":2}],20:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1862,7 +1818,7 @@ module.exports = {
     }
 };
 },{}],21:[function(require,module,exports){
-var helpers = require('../reusables/helpers');
+var helpers = require(1);
 
 
 //returns postMessage specific handler
@@ -1904,7 +1860,8 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"../reusables/helpers":20}],22:[function(require,module,exports){
+
+},{"1":20}],22:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -1917,15 +1874,7 @@ module.exports = function (overrides) {
         return txt;
     };
 };
-
 },{}],23:[function(require,module,exports){
-/**
- * zenjungle - HTML via JSON with elements of Zen Coding
- *
- * https://github.com/radmen/zenjungle
- * Copyright (c) 2012 Radoslaw Mejer <radmen@gmail.com>
- */
-
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {

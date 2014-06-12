@@ -1,47 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/*
- * PinkySwear.js 2.0 - Minimalistic implementation of the Promises/A+ spec
- * 
- * Public Domain. Use, modify and distribute it any way you like. No attribution required.
- *
- * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
- *
- * PinkySwear is a very small implementation of the Promises/A+ specification. After compilation with the
- * Google Closure Compiler and gzipping it weighs less than 500 bytes. It is based on the implementation for 
- * Minified.js and should be perfect for embedding. 
- *
- *
- * PinkySwear has just four functions.
- *
- * To create a new promise in pending state, call pinkySwear():
- *         var promise = pinkySwear();
- *
- * The returned object has a Promises/A+ compatible then() implementation:
- *          promise.then(function(value) { alert("Success!"); }, function(value) { alert("Failure!"); });
- *
- *
- * The promise returned by pinkySwear() is a function. To fulfill the promise, call the function with true as first argument and
- * an optional array of values to pass to the then() handler. By putting more than one value in the array, you can pass more than one
- * value to the then() handlers. Here an example to fulfill a promsise, this time with only one argument: 
- *         promise(true, [42]);
- *
- * When the promise has been rejected, call it with false. Again, there may be more than one argument for the then() handler:
- *         promise(true, [6, 6, 6]);
- *         
- * You can obtain the promise's current state by calling the function without arguments. It will be true if fulfilled,
- * false if rejected, and otherwise undefined.
- * 		   var state = promise();
- *
- * PinkySwear has two convenience functions. always(func) is the same as then(func, func) and thus will always be called, no matter what the
- * promises final state is:
- *          promise.always(function(value) { alert("Done!"); });
- *
- * error(func) is the same as then(0, func), and thus the handler will only be called on error:
- *          promise.error(function(value) { alert("Failure!"); });
- *          
- * 
- * https://github.com/timjansen/PinkySwear.js
- */
 (function(target) {
 	var undef;
 
@@ -126,11 +83,9 @@
 		return set;
 	};
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
-
-
 },{}],2:[function(require,module,exports){
-var window = require("global/window")
-var once = require("once")
+var window = require(1)
+var once = require(2)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -255,8 +210,7 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-
-},{"global/window":3,"once":4}],3:[function(require,module,exports){
+},{"1":3,"2":4}],3:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -264,7 +218,6 @@ if (typeof window !== "undefined") {
 } else {
     module.exports = {}
 }
-
 },{}],4:[function(require,module,exports){
 module.exports = once
 
@@ -285,7 +238,6 @@ function once (fn) {
     return fn.apply(this, arguments)
   }
 }
-
 },{}],5:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
@@ -294,10 +246,11 @@ module.exports = {
     channelMarker: "'E"
     
 }
+
 },{}],6:[function(require,module,exports){
-var APIMain = require("./api_elements/main");
-var storageFacade = require("./api_elements/storage");
-var linkFacade = require("./api_elements/link");
+var APIMain = require(2);
+var storageFacade = require(3);
+var linkFacade = require(1);
 
 
 module.exports = function (options) {
@@ -311,9 +264,9 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"./api_elements/link":7,"./api_elements/main":8,"./api_elements/storage":9}],7:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
+},{"1":7,"2":8,"3":9}],7:[function(require,module,exports){
+var promises = require(1);
+var helpers = require(2);
 
 
 var api;
@@ -395,14 +348,14 @@ module.exports = function (apihelper, opts) {
         listLinks: listLinks
     };
 };
-},{"../promises":10,"../reusables/helpers":11}],8:[function(require,module,exports){
+},{"1":10,"2":11}],8:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
-var xhr = require("xhr");
+var promises = require(1);
+var helpers = require(2);
+var xhr = require(3);
 
 
 function Engine(options) {
@@ -632,9 +585,9 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"../promises":10,"../reusables/helpers":11,"xhr":2}],9:[function(require,module,exports){
-var promises = require('../promises');
-var helpers = require('../reusables/helpers');
+},{"1":10,"2":11,"3":2}],9:[function(require,module,exports){
+var promises = require(1);
+var helpers = require(2);
 
 var api;
 var options;
@@ -819,9 +772,8 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"../promises":10,"../reusables/helpers":11}],10:[function(require,module,exports){
-//wrapper for any promises library
-var pinkySwear = require('pinkyswear');
+},{"1":10,"2":11}],10:[function(require,module,exports){
+var pinkySwear = require(1);
 
 module.exports = {
     "defer": function () {
@@ -843,7 +795,8 @@ module.exports = {
     }
 
 }
-},{"pinkyswear":1}],11:[function(require,module,exports){
+
+},{"1":1}],11:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -902,8 +855,8 @@ module.exports = {
 (function () {
     "use strict";
 
-    var helpers = require("./lib/reusables/helpers");
-    var options = require("./defaults.js");
+    var helpers = require(3);
+    var options = require(1);
 
     function init(egnyteDomainURL, opts) {
         options = helpers.extend(options, opts);
@@ -911,7 +864,7 @@ module.exports = {
 
         return {
             domain: options.egnyteDomainURL,
-            API:  require("./lib/api")(options)
+            API:  require(2)(options)
         }
 
     }
@@ -921,4 +874,4 @@ module.exports = {
     }
 
 })();
-},{"./defaults.js":5,"./lib/api":6,"./lib/reusables/helpers":11}]},{},[12])
+},{"1":5,"2":6,"3":11}]},{},[12])

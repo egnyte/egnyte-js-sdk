@@ -10,13 +10,22 @@ This package contains:
  - a file picker helper to pick files from Egnyte without using the Public API
  
 
-## Usage
+## Installation
 
 `dist/` contains two builds:
- - `dist/egnyte.js` (32KB minified) is the complete functionality
- - `dist/slim.js` (10KB minified) is only the API wrapper
+
+ - `dist/egnyte.js` is the complete functionality
+ - `dist/slim.js` is only the API wrapper
+
+_File sizes_
+```
+dist/egnyte.min.js minified: 31.2 kB gzipped: 7.16 kB
+dist/slim.min.js minified: 10.46 kB gzipped: 2.26 kB
+```
 
 To use the SDK, just add the script to your app's HTML document.
+
+## Usage
 
 See `docs/` or explore:
 

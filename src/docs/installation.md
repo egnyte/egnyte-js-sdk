@@ -1,8 +1,8 @@
 #Installation
 
 `dist/` contains two builds:
- - `dist/egnyte.js` (32KB minified) is the complete functionality
- - `dist/slim.js` (10KB minified) is only the API wrapper (no filepicker)
+ - `dist/egnyte.js` (~32KB minified) is the complete functionality
+ - `dist/slim.js` (~10KB minified) is only the API wrapper (no filepicker)
  
 both of them available in minified versions (recommended)
 

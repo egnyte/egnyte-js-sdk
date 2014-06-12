@@ -10,17 +10,22 @@ module.exports = function (grunt) {
                 },
                 options: {
                     transform: [
-                        'grunt-less-browserify',
+                        'grunt-less-browserify'
                     ],
                     bundleOptions: {
+                        fullPaths: false,
                         insertGlobals: false,
                         detectGlobals: false
                     }
                 }
             }
         },
+        unpathify: {
+            files: ["dist/egnyte.js","dist/slim.js"]
+        },
         uglify: {
             options: {
+                report: 'gzip',
                 banner: "// <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today('yyyy-mm-dd') %>) \n" +
                     "// license:<%= pkg.license %> \n" +
                     "// <%= pkg.author %> \n"
@@ -85,6 +90,7 @@ module.exports = function (grunt) {
         }
     })
     grunt.loadNpmTasks("grunt-browserify");
+    grunt.loadNpmTasks('unpathify');
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-clean");
@@ -94,7 +100,7 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test", ["dist", "jasmine:all"]);
-    grunt.registerTask("dist", ["clean", "browserify", "uglify"]);
+    grunt.registerTask("dist", ["clean", "browserify", "unpathify", "uglify"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
 
     grunt.registerTask("default", ["test"]);
