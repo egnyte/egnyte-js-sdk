@@ -57,7 +57,7 @@ keys: {
     "select": "<space>",
     "explore": "<right>",
     "back": "<left>",
-    "confirm": "<enter>",
+    "confirm": "none",
     "close": "<escape>"
 }
 ```

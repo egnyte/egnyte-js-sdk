@@ -13,7 +13,7 @@ This package contains:
 ## Usage
 
 `dist/` contains two builds:
- - `dist/egnyte.js` (31KB minified) is the complete functionality
+ - `dist/egnyte.js` (32KB minified) is the complete functionality
  - `dist/slim.js` (10KB minified) is only the API wrapper
 
 To use the SDK, just add the script to your app's HTML document.

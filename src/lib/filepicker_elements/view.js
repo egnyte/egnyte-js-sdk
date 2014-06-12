@@ -55,8 +55,8 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]).childNodes[0];
-    this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    this.els.back = jungle([["a.eg-filepicker-back.eg-btn"]]).childNodes[0];
+    this.els.close = jungle([["a.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
     this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
     this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
@@ -88,7 +88,7 @@ function View(opts, txtOverride) {
             "select": "<space>",
             "explore": "<right>",
             "back": "<left>",
-            "confirm": "<enter>",
+            "confirm": "none",
             "close": "<escape>"
         }, opts.keys);
         var keys = {};
@@ -225,7 +225,8 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
-            itemNode.scrollIntoView(false);
+            self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
+            //itemNode.scrollIntoView(false);
         }
     };
 
@@ -241,13 +242,14 @@ viewPrototypeMethods.breadcrumbify = function (path) {
     helpers.each(list, function (folder, num) {
         if (folder) {
             currentPath += folder + "/";
+            num > 1 && (crumbItems.push(["a", "/"]));
             crumbItems.push(["a", {
                     "data-path": currentPath,
                     "title": folder,
                     "style": "max-width:" + maxSpace + "%"
                 },
                 folder]);
-            crumbItems.push(["a", "/"]);
+
         } else {
             if (num === 0) {
                 crumbItems.push(["a", {
@@ -277,7 +279,7 @@ var msgs = {
     "409": "Forbidden location (409)",
     "4XX": "Incorrect API request",
     "5XX": "API server error, try again later",
-    "0": "Browser error. Would you mind trying again?",
+    "0": "Browser error, try again",
     "?": "Unknown error"
 }
 

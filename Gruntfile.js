@@ -9,7 +9,9 @@ module.exports = function (grunt) {
                     "dist/slim.js": ["src/slim.js"]
                 },
                 options: {
-                    transform: ['grunt-less-browserify'],
+                    transform: [
+                        'grunt-less-browserify',
+                    ],
                     bundleOptions: {
                         insertGlobals: false,
                         detectGlobals: false

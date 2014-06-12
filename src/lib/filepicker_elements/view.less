@@ -1,55 +1,77 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
+
 @size: 40px;
-@barheight: @size - 2 * @spacing;
-@fontsize: 13px;
+@barheight: 50px;
+@fontsize: 12px;
 @fontcl: #5E5F60;
 @fontclA: #fff;
+@fontclB: #838383;
 @framecl: #dbdbdb;
-@bodycl: #f1f1f1;
+@frameclA: #F2F3F3;
+@bodycl: #fff;
+@barcl: #f1f1f1;
 @btcl: #fafafa;
 @btclA: #3191f2;
 @btframecl: #ccc;
 @btframeclA: #2b82d9;
 @itemhover: #f1f5f8;
-@spacing: 4px;
+@spacing: 10px;
+@smallspacing: 4px;
 
 
 .eg-btn{
     display:inline-block;
     line-height: @size/2;
-    padding: @spacing 18px;
+    height: @size/2;
     text-align:center;
-    margin-right: @spacing*2;
+    margin: 0 @smallspacing;
+    cursor: pointer;
+}
+
+span.eg-btn{
+    padding: @smallspacing 15px;
     background: @btcl;
     border:1px solid @btframecl;
     border-radius: 2px;
-    cursor: pointer;
     &[disabled]{
         opacity: 0.3;
     }
 }
+a.eg-btn{
+    font-weight:600;
+    padding: @smallspacing;
+    border:1px solid transparent;
+}
+
 .eg-not{
     visibility: hidden;
 }
-.eg-filepicker {
+
+.eg-filepicker, .eg-filepicker-bar {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    height: 100%;
-    padding: @size 0;
+    position: relative;
+    
+}
+
+.eg-filepicker {
+    background: @bodycl;
     border: 1px solid @framecl;
+    height: 100%;
+    padding: @barheight 0;
     color: @fontcl;
-    font-family: sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: @fontsize;
-    position:relative;
-    *{
+    & *{
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        vertical-align: middle;
     }
     & input{
-        vertical-align: middle;
-        margin: @spacing*2;
+        margin: @spacing 2*@spacing;
     }
 }
 
@@ -62,13 +84,16 @@
 }
 
 .eg-filepicker-bar{
-    outline: 1px solid @framecl;
+    z-index: 1;
     height: @barheight;
-    padding: @spacing;
-    background: @bodycl;
+    padding: @spacing @smallspacing;
+    background: @barcl;
+    outline: 1px solid @framecl;
     overflow: hidden;
     &:nth-child(1){
-        margin-top: -@size;
+        margin-top: -@barheight;
+        padding-left:0;
+        background: @bodycl;
     }
     &>*{
         float:left;
@@ -80,50 +105,60 @@
 
 .eg-filepicker-pager{
     float:right;
-    &>span {
-        margin-right: @spacing*2;
-    }
+    margin: 0 @spacing;
 }
 .eg-bar-right>.eg-filepicker-pager{
     float:left;
 }
 
-.eg-filepicker-ok{
+.eg-btn.eg-filepicker-ok{
     background: @btclA;
     border-color: @btframeclA;
     color: @fontclA;
 }
-.eg-filepicker-back{
-    padding: @spacing @size/4;
+.eg-btn.eg-filepicker-back{
+    padding: @smallspacing @size/4;
     position:relative;
 
     &::before {
-        bottom: @spacing;
-        right: @size/4+2;
-        position: absolute;
-        border:  @size/4 solid transparent;
-        border-right: @size/4 solid @fontcl;
         content: "";
+        display:block;
+        left: @smallspacing;
+        border: 0 solid @fontclB;
+        border-width: 0 0 3px 3px;
+        transform: rotate(45deg);
+        width: 7px;
+        height: 7px;
+        position: absolute;
+        bottom: @spacing;
     }
+
 }
 
 .eg-filepicker-path{
     min-width: 60%;
-    width: ~"calc( 100% - 88px )";
-    vertical-align: middle;
-    line-height: @barheight;
+    width: ~"calc( 100% - 96px )";
+    //vertical-align: middle;
+    line-height: @barheight - 2 * @spacing;
     &>a{
+        color:@fontclB;
+        font-size: @fontsize+2;
         white-space: nowrap;
         display: inline-block;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    &>a:last-child{
+        color:@fontcl;
+        font-size: @fontsize+4;
     }
 }
 
 .eg-filepicker-item{
     line-height: 1.2em;
     list-style: none;
-    padding: @spacing 0;
+    padding: @smallspacing 0;
+    border-bottom: 1px solid @frameclA;
     &:hover {
         background: @itemhover;
         outline: 1px solid @framecl;
@@ -132,7 +167,7 @@
         background: saturate(darken(@itemhover,5%),15%);
     }
     & *{
-        vertical-align: middle;
+        //vertical-align: middle;
         display:inline-block;
 
     }
@@ -153,8 +188,8 @@
 }
 
 .eg-placeholder {
-    margin: 40%;
-    margin: ~"calc(50% - 42px)";
+    margin: 33%;
+    margin: ~"calc(50% - 88px)";
     margin-bottom: 0;
     text-align: center;
     &>div{
@@ -226,8 +261,8 @@
     text-align: right;
     &>span{
         text-align:center;
-        font-size: @size/2.8;
-        line-height: @size/2;
+        font-size: @size/3;
+        line-height: @size/2 - 2;
         font-weight: 300;
         margin: @size/4 0;
         height: @size/2;

@@ -1414,8 +1414,8 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["span.eg-filepicker-back.eg-btn", "<"]]).childNodes[0];
-    this.els.close = jungle([["span.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    this.els.back = jungle([["a.eg-filepicker-back.eg-btn"]]).childNodes[0];
+    this.els.close = jungle([["a.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
     this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
     this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
@@ -1447,7 +1447,7 @@ function View(opts, txtOverride) {
             "select": "<space>",
             "explore": "<right>",
             "back": "<left>",
-            "confirm": "<enter>",
+            "confirm": "none",
             "close": "<escape>"
         }, opts.keys);
         var keys = {};
@@ -1584,7 +1584,8 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
-            itemNode.scrollIntoView(false);
+            self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
+            //itemNode.scrollIntoView(false);
         }
     };
 
@@ -1600,13 +1601,14 @@ viewPrototypeMethods.breadcrumbify = function (path) {
     helpers.each(list, function (folder, num) {
         if (folder) {
             currentPath += folder + "/";
+            num > 1 && (crumbItems.push(["a", "/"]));
             crumbItems.push(["a", {
                     "data-path": currentPath,
                     "title": folder,
                     "style": "max-width:" + maxSpace + "%"
                 },
                 folder]);
-            crumbItems.push(["a", "/"]);
+
         } else {
             if (num === 0) {
                 crumbItems.push(["a", {
@@ -1636,7 +1638,7 @@ var msgs = {
     "409": "Forbidden location (409)",
     "4XX": "Incorrect API request",
     "5XX": "API server error, try again later",
-    "0": "Browser error. Would you mind trying again?",
+    "0": "Browser error, try again",
     "?": "Unknown error"
 }
 
@@ -1712,7 +1714,7 @@ View.prototype = viewPrototypeMethods;
 
 module.exports = View;
 },{"../../vendor/zenjungle":23,"../reusables/dom":19,"../reusables/helpers":20,"../reusables/texts":22,"./view.less":17}],17:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;padding:4px 18px;text-align:center;margin-right:8px;background:#fafafa;border:1px solid #ccc;border-radius:2px;cursor:pointer}.eg-btn[disabled]{opacity:.3}.eg-not{visibility:hidden}.eg-filepicker{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;height:100%;padding:40px 0;border:1px solid #dbdbdb;color:#5e5f60;font-family:sans-serif;font-size:13px;position:relative}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.eg-filepicker input{vertical-align:middle;margin:8px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{outline:1px solid #dbdbdb;height:32px;padding:4px;background:#f1f1f1;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-40px}.eg-filepicker-bar>*{float:left}.eg-bar-right>*,.eg-filepicker-pager{float:right}.eg-filepicker-pager>span{margin-right:8px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-back{padding:4px 10px;position:relative}.eg-filepicker-back::before{bottom:4px;right:12px;position:absolute;border:10px solid transparent;border-right:10px solid #5e5f60;content:\"\"}.eg-filepicker-path{min-width:60%;width:calc(100% - 88px);vertical-align:middle;line-height:32px}.eg-filepicker-path>a{white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{vertical-align:middle;display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:40%;margin:calc(50% - 42px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 4px}.eg-ico{margin-right:4px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-unknown{background:#dbdbdb}.eg-filepicker-file{width:40px;height:40px;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:14.28571429px;line-height:20px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-bottom:0;background:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;background:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 4px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent}.eg-not{visibility:hidden}.eg-filepicker,.eg-filepicker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative}.eg-filepicker{background:#fff;border:1px solid #dbdbdb;height:100%;padding:50px 0;color:#5e5f60;font-family:\'Open Sans\',sans-serif;font-size:12px}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-filepicker input{margin:10px 20px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{z-index:1;height:50px;padding:10px 4px;background:#f1f1f1;outline:1px solid #dbdbdb;overflow:hidden}.eg-filepicker-bar:nth-child(1){margin-top:-50px;padding-left:0;background:#fff}.eg-filepicker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-filepicker-pager{float:right;margin:0 10px}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-btn.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-btn.eg-filepicker-back{padding:4px 10px;position:relative}.eg-btn.eg-filepicker-back::before{content:\"\";display:block;left:4px;border:0 solid #838383;border-width:0 0 3px 3px;transform:rotate(45deg);width:7px;height:7px;position:absolute;bottom:10px}.eg-filepicker-path{min-width:60%;width:calc(100% - 96px);line-height:30px}.eg-filepicker-path>a{color:#838383;font-size:14px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{display:inline-block}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}@-webkit-keyframes egspin{to{transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-unknown{background:#dbdbdb}.eg-filepicker-file{width:40px;height:40px;text-align:right}.eg-filepicker-file>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff;cursor:default}.eg-filepicker-folder{background:#e1e1ba;border:#d4d8bd .1em solid;border-radius:.1em;border-top-left-radius:0;font-size:10px;margin-top:.75em;height:2.8em;overflow:visible;width:4em;position:relative}.eg-filepicker-folder:before{display:block;position:absolute;top:-.5em;left:-.1em;border:#d1dabc .1em solid;border-bottom:0;background:#dfe4b9;content:\" \";width:60%;height:.5em}.eg-filepicker-folder:after{display:block;position:absolute;top:.3em;height:2.4em;left:0;width:100%;background:#f3f7d3;content:\" \"}.eg-filepicker-folder>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],18:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');

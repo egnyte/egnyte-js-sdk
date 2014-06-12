@@ -28,18 +28,24 @@
     background-color: #f0ebbb;
 }
 /*button style*/
-.eg-theme .eg-btn{
+.eg-theme span.eg-btn{
     background-color: #d9ef8b;
     border:1px solid transparent;
     border-radius: 0px;
     cursor: pointer;
 }
-.eg-theme .eg-btn:hover{
+.eg-theme span.eg-btn:hover{
     border: 1px solid #a6d96a;
+}
+/*link-button style*/
+.eg-theme a.eg-btn:hover{
+    background-color: rgba(0,255,0,0.1);
 }
 .eg-theme .eg-btn[disabled]{
     opacity: 0.3;
 }
+
+/*override default button style*/
 .eg-theme .eg-btn.eg-filepicker-ok{
     background-color: #fee08b;
     border: 1px solid #fdae61;
