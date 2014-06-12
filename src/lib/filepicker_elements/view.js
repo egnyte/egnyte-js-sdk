@@ -192,9 +192,12 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([["a.eg-filepicker-name",
+        {
+            "title": itemModel.data.name
+        },
         ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-" + itemModel.mime),
             {
-                "data-ext": itemModel.ext
+                "data-ext": itemModel.ext                
             },
             ["span", itemModel.ext]
         ], itemModel.data.name]]).childNodes[0];

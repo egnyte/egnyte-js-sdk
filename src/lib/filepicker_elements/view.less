@@ -57,7 +57,7 @@ a.eg-btn{
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
     position: relative;
-    
+
 }
 
 .eg-filepicker {
@@ -164,6 +164,13 @@ a.eg-btn{
         //vertical-align: middle;
         display:inline-block;
 
+    }
+    &>a{
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 300px;
+        max-width: ~"calc(100% - 88px)";
     }
 }
 

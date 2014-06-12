@@ -381,18 +381,19 @@ enginePrototypeMethods.reloadForToken = function () {
     window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
 }
 
-enginePrototypeMethods.checkTokenResponse = function (success, none) {
+enginePrototypeMethods.checkTokenResponse = function (success, notoken) {
     if (!this.token) {
         var access = oauthRegex.exec(window.location.hash);
         if (access) {
             if (access.length > 1) {
                 this.token = access[1];
+                window.location.hash="";
                 success && success();
             } else {
                 //what now?
             }
         } else {
-            none && none();
+            notoken && notoken();
         }
     } else {
         success && success();
@@ -400,7 +401,7 @@ enginePrototypeMethods.checkTokenResponse = function (success, none) {
 }
 
 enginePrototypeMethods.requestToken = function (callback) {
-    this.checkTokenResponse(callback, this.reloadForToken);
+    this.checkTokenResponse(callback, helpers.bindThis(this,this.reloadForToken));
 }
 
 enginePrototypeMethods.onTokenReady = function (callback) {
