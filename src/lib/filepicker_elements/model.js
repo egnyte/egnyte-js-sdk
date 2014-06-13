@@ -96,13 +96,19 @@ Model.prototype._buildItems = function () {
 
 Model.prototype.fetch = function (path) {
     var self = this;
+    if (self.processing) {
+        return;
+    }
+    self.processing = true;
     if (path) {
-        this.path = path;
+        self.path = path;
     }
     self.onloading();
-    self.API.storage.get(this.path).then(function (m) {
+    self.API.storage.get(self.path).then(function (m) {
+        self.processing = false;
         self._set(m);
     }).error(function (e) {
+        self.processing = false;
         self.onerror(e.error || e);
     });
 }
