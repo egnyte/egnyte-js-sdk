@@ -14,6 +14,13 @@ To use the SDK, just add the script to your app's HTML document.
 
 After that, all SDK functionalities are available via global `Egnyte` constructor.
 
+If you wish to use filepicker with fonts matching main Egnyte UI, add `Open Sans` font too:
+
+```html
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<script src="egnyte.min.js"></script>
+```  
+
 #Building and dependencies
 
 To build the project and run tests `nodeJS` is required in your system.

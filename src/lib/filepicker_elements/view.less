@@ -1,11 +1,9 @@
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
-
 @size: 40px;
 @barheight: 50px;
 @fontsize: 12px;
 @fontcl: #5E5F60;
 @fontclA: #fff;
-@fontclB: #838383;
+@fontclB: #888;
 @framecl: #dbdbdb;
 @frameclA: #F2F3F3;
 @bodycl: #fff;
@@ -20,27 +18,41 @@
 
 //buttons and links
 .eg-btn{
-    display:inline-block;
+    display: inline-block;
     line-height: @size/2;
     height: @size/2;
-    text-align:center;
+    text-align: center;
     margin: 0 @smallspacing;
     cursor: pointer;
 }
 
+//block-y button
 span.eg-btn{
     padding: @smallspacing 15px;
     background: @btcl;
     border:1px solid @btframecl;
     border-radius: 2px;
+    opacity: 0.88;
+
+    &:hover{
+        opacity: 1;
+    }
+    &:active{
+        opacity: 1;
+        -webkit-box-shadow:inset 0 1px 6px -3px #000;
+        box-shadow:inset 0 1px 6px -3px #000;
+
+    }
     &[disabled]{
         opacity: 0.3;
     }
 }
+//link lookalike
 a.eg-btn{
     font-weight:600;
     padding: @smallspacing;
     border:1px solid transparent;
+    text-decoration: underline;
 }
 
 
@@ -91,12 +103,15 @@ a.eg-btn{
 .eg-filepicker-bar{
     z-index: 1;
     height: @barheight;
-    padding: @spacing @smallspacing;
+    padding: @spacing;
     background: @barcl;
-    outline: 1px solid @framecl;
+    border: 0 solid @framecl;
+    border-width: 1px 0 0 0;
     overflow: hidden;
-    &:nth-child(1){
+    &.eg-top{
+        box-shadow: 0px 4px 2px -2px #F2F1F2;
         margin-top: -@barheight;
+        border-width: 0 0 1px 0;
         padding-left:0;
         background: @bodycl;
     }
@@ -132,11 +147,11 @@ a.eg-btn{
 .eg-filepicker-path{
     min-width: 60%;
     width: ~"calc( 100% - 96px )";
-    //vertical-align: middle;
     line-height: @barheight - 2 * @spacing;
+    color:@fontclB;
+    font-size: @fontsize+2;
     &>a{
-        color:@fontclB;
-        font-size: @fontsize+2;
+        margin: 0 2px;
         white-space: nowrap;
         display: inline-block;
         overflow: hidden;
@@ -180,15 +195,17 @@ a.eg-btn{
     padding: @smallspacing @size/4;
     position:relative;
 
-    &::before {
+    &:before {
         content: "";
         display:block;
         left: @smallspacing;
         border: 0 solid @fontclB;
         border-width: 0 0 3px 3px;
         transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
         width: 7px;
         height: 7px;
+        padding: 0;
         position: absolute;
         bottom: @spacing;
     }
@@ -196,7 +213,10 @@ a.eg-btn{
 }
 
 @-webkit-keyframes egspin {
-    to { transform: rotate(360deg); }
+    to { 
+        -webkit-transform: rotate(360deg); 
+        transform: rotate(360deg); 
+    }
 }
 @keyframes egspin {
     to { transform: rotate(360deg); }
@@ -207,6 +227,7 @@ a.eg-btn{
     margin: ~"calc(50% - 88px)";
     margin-bottom: 0;
     text-align: center;
+    color: @fontclB;
     &>div{
         margin:0 auto 5px auto;
     }
@@ -287,47 +308,33 @@ a.eg-btn{
         width: @size*0.8;
         background: rgba(0,0,0,0.15);
         color: #fff;
-        cursor:default;
     }
 }
 
 .eg-filepicker-folder {
     background: #e1e1ba;
-    border: #d4d8bd .1em solid;
-    border-radius: .1em;
-    border-top-left-radius: 0;
-    font-size: @size/4;
-    margin-top: .75em;
-    height: 2.8em;
+    border: 1px #d4d8bd solid;
+    border-top: @size*0.1 #dfe4b9 solid;
+    margin-top: @size*0.22;
+    height: @size*0.64 - 1;
+    background: #f3f7d3;
     overflow: visible;
-    width: 4em;
+    width: @size - 2;
     position: relative;
     &:before {
         display: block;
         position: absolute;
-        top: -.5em;
-        left: -.1em;
-        border: #d1dabc .1em solid;
-        //        border-top-left-radius: .2em;
-        //        border-top-right-radius: .2em;
+        top: -@size*0.20;
+        left: -1px;
+        border: #d1dabc 1px solid;
         border-bottom: none;
+        border-radius: 2px;
         background: #dfe4b9;
         content: " ";
         width: 60%;
-        height: .5em;
+        height: @size*0.11;
     }
-    &:after {
-        display: block;
-        position: absolute;
-        top: .3em;
-        height: 2.40em;
-        left: 0;
-        width: 100%;
-        //        border-top-left-radius: .3em;
-        //        border-top-right-radius: .3em;
-        background: #f3f7d3;
-        content: " ";
-    }
+
     &>span{
         display:none;
     }

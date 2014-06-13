@@ -55,7 +55,7 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["a.eg-filepicker-back.eg-btn"]]).childNodes[0];
+    this.els.back = jungle([["a.eg-filepicker-back.eg-btn[title=back]"]]).childNodes[0];
     this.els.close = jungle([["a.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
     this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
     this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
@@ -149,7 +149,7 @@ viewPrototypeMethods.render = function () {
 
     this.els.list = document.createElement("ul");
 
-    var topbar = ["div.eg-filepicker-bar"];
+    var topbar = ["div.eg-filepicker-bar.eg-top"];
     if (this.model.isMultiselectable) {
         this.els.selectAll.checked = false;
         topbar.push(this.els.selectAll);
@@ -245,7 +245,7 @@ viewPrototypeMethods.breadcrumbify = function (path) {
     helpers.each(list, function (folder, num) {
         if (folder) {
             currentPath += folder + "/";
-            num > 1 && (crumbItems.push(["a", "/"]));
+            num > 1 && (crumbItems.push(["span", "/"]));
             crumbItems.push(["a", {
                     "data-path": currentPath,
                     "title": folder,
