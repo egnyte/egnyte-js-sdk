@@ -169,10 +169,23 @@ describe("API Filepicker", function () {
                 keyvent.up('space');
                 keyvent.up('down');
                 keyvent.up('space');
-                keyvent.up('enter');
-            },
-            selection: function (elements) {
-                expect(elements.length).toEqual(2);
+                expect(node.querySelectorAll("input:checked").length).toEqual(2);
+                done();
+            }
+        });
+    });
+
+    it('should allow disabling keyboard selection', function (done) {
+
+        var picker = eg.filePicker(node, {
+            keys: false,
+            ready: function () {
+                //pretend some keyboard
+                keyvent.up('down');
+                keyvent.up('space');
+                keyvent.up('down');
+                keyvent.up('space');
+                expect(node.querySelectorAll("input:checked").length).toEqual(0);
                 done();
             }
         });
@@ -186,8 +199,14 @@ describe("API Filepicker", function () {
 
         var picker2;
         var picker = eg.filePicker(node, {
+            keys: {
+                "confirm": "<enter>",
+            },
             ready: function () {
                 picker2 = eg.filePicker(node2, {
+                    keys: {
+                        "confirm": "<enter>",
+                    },
                     ready: function () {
                         node.click();
                         //pretend some keyboard

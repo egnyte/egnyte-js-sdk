@@ -45,7 +45,8 @@
                         setup.cancel && setup.cancel(e);
                     },
                     error: setup.error
-                }
+                },
+                keys: setup.keys
             },setup.texts);
 
             fpModel.fetch(setup.path || "/");

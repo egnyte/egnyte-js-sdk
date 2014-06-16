@@ -26,6 +26,7 @@ function View(opts, txtOverride) {
 
     this.handlers = helpers.extend({
         selection: helpers.noop,
+        events: helpers.noop,
         close: helpers.noop,
         error: null
     }, opts.handlers);
@@ -37,7 +38,9 @@ function View(opts, txtOverride) {
     //bind to model events
     this.model.onloading = helpers.bindThis(self, self.renderLoading);
     this.model.onupdate = function () {
+        self.handlers.events("beforeRender", self.model);
         self.render();
+        self.handlers.events("render", self.model);        
         if (self.handlers.ready) {
             var runReady = self.handlers.ready;
             self.handlers.ready = null;
@@ -191,13 +194,13 @@ viewPrototypeMethods.render = function () {
 viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name",
+    var itemName = jungle([["a.eg-filepicker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"),
         {
-            "title": itemModel.data.name
+            "title": itemModel.data.name,
         },
-        ["span.eg-ico.eg-filepicker-" + ((itemModel.data.is_folder) ? "folder" : "file.eg-mime-" + itemModel.mime),
+        ["span.eg-ico.eg-mime-" + itemModel.mime,
             {
-                "data-ext": itemModel.ext                
+                "data-ext": itemModel.ext
             },
             ["span", itemModel.ext]
         ], itemModel.data.name]]).childNodes[0];
@@ -225,6 +228,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     });
 
     itemModel.onchange = function () {
+        self.handlers.events("itemChange",itemModel);        
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {

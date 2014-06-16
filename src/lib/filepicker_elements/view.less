@@ -22,7 +22,7 @@
     line-height: @size/2;
     height: @size/2;
     text-align: center;
-    margin: 0 @smallspacing;
+    margin: 0 2*@smallspacing;
     cursor: pointer;
 }
 
@@ -61,6 +61,9 @@ a.eg-btn{
     &:hover{
         text-decoration: underline;
     }
+}
+.eg-filepicker a.eg-file:hover{
+    text-decoration: none;
 }
 
 //big block elements
@@ -131,7 +134,6 @@ a.eg-btn{
 
 .eg-filepicker-pager{
     float:right;
-    margin: 0 @spacing;
 }
 .eg-bar-right>.eg-filepicker-pager{
     float:left;
@@ -294,7 +296,7 @@ a.eg-btn{
 }
 
 
-.eg-filepicker-file {
+.eg-file .eg-ico{
     width: @size;
     height: @size;
     text-align: right;
@@ -311,7 +313,7 @@ a.eg-btn{
     }
 }
 
-.eg-filepicker-folder {
+.eg-folder .eg-ico {
     background: #e1e1ba;
     border: 1px #d4d8bd solid;
     border-top: @size*0.1 #dfe4b9 solid;
