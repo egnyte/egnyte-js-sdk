@@ -21,7 +21,7 @@ module.exports = function (grunt) {
             }
         },
         unpathify: {
-            files: ["dist/egnyte.js","dist/slim.js"]
+            files: ["dist/egnyte.js", "dist/slim.js"]
         },
         uglify: {
             options: {
@@ -38,6 +38,15 @@ module.exports = function (grunt) {
                     flatten: true, // remove all unnecessary nesting
                     ext: '.min.js' // replace .js to .min.js
                 }]
+            }
+        },
+
+        copy: {
+            resources: {
+                cwd: 'src/resources',
+                src: '*',
+                dest: 'dist/resources',
+                expand: true
             }
         },
 
@@ -96,11 +105,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
 
 
     grunt.registerTask("test", ["dist", "jasmine:all"]);
-    grunt.registerTask("dist", ["clean", "browserify", "unpathify", "uglify"]);
+    grunt.registerTask("dist", ["clean", "copy", "browserify", "unpathify", "uglify"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
 
     grunt.registerTask("default", ["test"]);

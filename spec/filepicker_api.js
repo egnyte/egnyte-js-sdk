@@ -39,10 +39,10 @@ describe("API Filepicker", function () {
 
         var picker = eg.filePicker(node, {
             ready: function () {
-                expect(node.querySelectorAll(".eg-filepicker").length).toEqual(1);
-                expect(node.querySelectorAll(".eg-filepicker ul li").length).toBeGreaterThan(1);
+                expect(node.querySelectorAll(".eg-picker").length).toEqual(1);
+                expect(node.querySelectorAll(".eg-picker ul li").length).toBeGreaterThan(1);
                 picker.close();
-                expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
+                expect(node.querySelectorAll(".eg-picker").length).toEqual(0);
                 done();
             }
         });
@@ -55,8 +55,8 @@ describe("API Filepicker", function () {
 
         var picker = eg.filePicker(node, {
             ready: function () {
-                expect(node.querySelectorAll(".eg-filepicker-ok")[0].innerText.trim()).toEqual(text);
-                expect(node.querySelectorAll(".eg-filepicker-close")[0].innerText.trim()).toEqual("Cancel");
+                expect(node.querySelectorAll(".eg-picker-ok")[0].innerText.trim()).toEqual(text);
+                expect(node.querySelectorAll(".eg-picker-close")[0].innerText.trim()).toEqual("Cancel");
 
                 picker.close();
 
@@ -74,12 +74,12 @@ describe("API Filepicker", function () {
 
         var picker = eg.filePicker(node, {
             cancel: function () {
-                expect(node.querySelectorAll(".eg-filepicker").length).toEqual(0);
+                expect(node.querySelectorAll(".eg-picker").length).toEqual(0);
                 done();
 
             },
             ready: function () {
-                var close = node.querySelectorAll(".eg-filepicker-close")[0];
+                var close = node.querySelectorAll(".eg-picker-close")[0];
                 expect(close).toBeTruthy();
                 close.click();
             }
@@ -95,10 +95,10 @@ describe("API Filepicker", function () {
                 done();
             },
             ready: function () {
-                var list = node.querySelectorAll(".eg-filepicker ul li");
+                var list = node.querySelectorAll(".eg-picker ul li");
                 list[0].click();
                 list[1].click();
-                node.querySelectorAll(".eg-filepicker-ok")[0].click();
+                node.querySelectorAll(".eg-picker-ok")[0].click();
             }
         });
     });
@@ -112,11 +112,11 @@ describe("API Filepicker", function () {
                 done();
             },
             ready: function () {
-                expect(node.querySelectorAll(".eg-filepicker-bar input").length).toEqual(0);
-                var list = node.querySelectorAll(".eg-filepicker ul li");
+                expect(node.querySelectorAll(".eg-picker-bar input").length).toEqual(0);
+                var list = node.querySelectorAll(".eg-picker ul li");
                 list[0].click();
                 list[1].click();
-                node.querySelectorAll(".eg-filepicker-ok")[0].click();
+                node.querySelectorAll(".eg-picker-ok")[0].click();
             },
             select: {
                 multiple: false
@@ -132,8 +132,8 @@ describe("API Filepicker", function () {
                 done();
             },
             ready: function () {
-                node.querySelectorAll(".eg-filepicker-bar input")[0].click();
-                node.querySelectorAll(".eg-filepicker-ok")[0].click();
+                node.querySelectorAll(".eg-picker-bar input")[0].click();
+                node.querySelectorAll(".eg-picker-ok")[0].click();
             },
             select: {
                 multiple: true
@@ -145,7 +145,7 @@ describe("API Filepicker", function () {
 
         var picker = eg.filePicker(node, {
             ready: function () {
-                var list = node.querySelectorAll(".eg-filepicker ul li");
+                var list = node.querySelectorAll(".eg-picker ul li");
                 list[0].click();
                 setTimeout(function () {
                     expect(node.querySelectorAll("input:checked").length).toEqual(0);

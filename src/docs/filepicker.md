@@ -146,6 +146,8 @@ File picker can be closed without the user clicking "cancel":
 
 File picker is easily stylable on its own. To ease the work of theming start with the `examples/theme.css` file and modify available properties. To see how the theme affects the filepicker see `examples/filepicker_theme.html`
 
+You can also modify the defaults to keep everything in one package. Change the colors in variables of `src/lib/filepicker_elements.view.less` and rebuild the package `grunt dist` (requires grunt and other dependencies installed via `npm`)
+
 ## Remote file picker (no API)
 
 If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.

@@ -1,0 +1,20 @@
+
+.eg-ico.eg-mime-goog>span{
+    display:none;
+}
+
+.eg-ico[data-ext=gdo]{
+    background: url('googicons.png') no-repeat center -6px;
+}
+
+.eg-ico[data-ext=gsl]{
+    background: url('googicons.png') no-repeat center -55px;
+}
+
+.eg-ico[data-ext=gsh]{
+    background: url('googicons.png') no-repeat center -104px;
+}
+
+.eg-ico[data-ext=gdr]{
+    background: url('googicons.png') no-repeat center -153px;
+}

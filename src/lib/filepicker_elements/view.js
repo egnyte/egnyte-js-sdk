@@ -7,6 +7,7 @@ var texts = require("../reusables/texts");
 var jungle = require("../../vendor/zenjungle");
 
 require("./view.less");
+var fontLoaded = true;
 
 var currentGlobalKeyboadrFocus = "no";
 
@@ -18,6 +19,10 @@ function View(opts, txtOverride) {
     this.el = opts.el;
     this.els = {};
     this.evs = [];
+
+    if(!opts.noFont){
+        renderFont();
+    }
 
 
     this.txt = texts(txtOverride);
@@ -40,7 +45,7 @@ function View(opts, txtOverride) {
     this.model.onupdate = function () {
         self.handlers.events("beforeRender", self.model);
         self.render();
-        self.handlers.events("render", self.model);        
+        self.handlers.events("render", self.model);
         if (self.handlers.ready) {
             var runReady = self.handlers.ready;
             self.handlers.ready = null;
@@ -58,12 +63,12 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["a.eg-filepicker-back.eg-btn[title=back]"]]).childNodes[0];
-    this.els.close = jungle([["a.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
-    this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
-    this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
-    this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
-    this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
+    this.els.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
+    this.els.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    this.els.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    this.els.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
+    this.els.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
+    this.els.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
     this.els.selectAll = jungle([["input[type=checkbox]", {
         title: this.txt("Select all")
     }]]).childNodes[0];
@@ -147,12 +152,26 @@ viewPrototypeMethods.errorHandler = function (e) {
 //================================================================= 
 // rendering
 //================================================================= 
+
+function renderFont() {
+    if (!fontLoaded) {
+        (document.getElementsByTagName("head")[0]).appendChild(jungle([
+            ["link", {
+                href:"https://fonts.googleapis.com/css?family=Open+Sans:400,600",
+                type:"text/css"
+                }
+            ]
+        ]));
+        fontLoaded = true;
+    }
+}
+
 viewPrototypeMethods.render = function () {
     var self = this;
-
+    
     this.els.list = document.createElement("ul");
 
-    var topbar = ["div.eg-filepicker-bar.eg-top"];
+    var topbar = ["div.eg-picker-bar.eg-top"];
     if (this.model.isMultiselectable) {
         this.els.selectAll.checked = false;
         topbar.push(this.els.selectAll);
@@ -160,13 +179,13 @@ viewPrototypeMethods.render = function () {
     topbar.push(this.els.back);
     topbar.push(this.els.crumb);
 
-    var layoutFragm = jungle([["div.eg-theme.eg-filepicker",
+    var layoutFragm = jungle([["div.eg-theme.eg-picker",
         topbar,
         this.els.list,
-        ["div.eg-filepicker-bar" + this.bottomBarClass,
+        ["div.eg-picker-bar" + this.bottomBarClass,
             this.els.ok,
             this.els.close,
-            ["div.eg-filepicker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+            ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
                 this.els.pgdown,
                 ["span", this.model.page + "/" + this.model.totalPages],
                 this.els.pgup
@@ -194,7 +213,7 @@ viewPrototypeMethods.render = function () {
 viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"),
+    var itemName = jungle([["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"),
         {
             "title": itemModel.data.name,
         },
@@ -210,7 +229,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 
 
 
-    var itemNode = jungle([["li.eg-filepicker-item",
+    var itemNode = jungle([["li.eg-picker-item",
         itemCheckbox,
         itemName
     ]]).childNodes[0];
@@ -228,7 +247,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     });
 
     itemModel.onchange = function () {
-        self.handlers.events("itemChange",itemModel);        
+        self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
@@ -294,7 +313,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-error"], message]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-error"], message]]));
     } else {
         this.handlers.close();
     }
@@ -302,7 +321,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-folder"], this.txt("This folder is empty")]]));
     }
 }
 

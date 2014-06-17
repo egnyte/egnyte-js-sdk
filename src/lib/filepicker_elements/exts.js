@@ -12,15 +12,19 @@ helpers.each({
     "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg"],
     "code": ["html", "htm", "sql", "xml", "java", "cpp", "c", "perl", "py", "rb", "php", "js", "css", "applescript", "as3", "as", "bash", "shell", "sh", "cfm", "cfml", "cs", "pas", "dcu", "diff", "patch", "ez", "erl", "groovy", "gvy", "gy", "gsh", "javafx", "jfx", "pl", "pm", "ps1", "ruby", "sass", "scss", "scala", "vb", "vbscript", "xhtml", "xslt"],
     "archive": ["zip", "rar", "tar", "gz", "7z", "bz2", "z", "xz", "ace", "sit", "sitx", "tgz", "apk"],
-    "goog": ["gdoc","gsheet","gslides","gdraw"]
-//    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
-}, function (list,mime) {
+    "goog": ["gdoc", "gsheet", "gslides", "gdraw"]
+    //    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
+}, function (list, mime) {
     helpers.each(list, function (ex) {
         mapping[ex] = mime;
     });
 });
 
 var fileext = /.*\.([a-z0-9]*)$/i;
+
+function _mime(ext) {
+    return mapping[ext] || "unknown";
+}
 
 function getExt(name) {
     if (fileext.test(name)) {
@@ -30,9 +34,20 @@ function getExt(name) {
     }
 }
 
+function getMime(name) {
+    return _mime(getExt(name));
+}
+
+
+function getExtensionFilter(filter) {
+    return function (file) {
+        var ext = getExt(file.name);
+        return filter(ext, _mime(ext));
+    }
+}
+
 module.exports = {
-    getMime: function (name) {
-        return mapping[getExt(name)] || "unknown";
-    },
-    getExt: getExt
+    getMime: getMime,
+    getExt: getExt,
+    getExtensionFilter: getExtensionFilter
 }

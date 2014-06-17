@@ -3,28 +3,28 @@
 * (it is not recomended to add properties affecting layout here)
 */
 
-.eg-theme.eg-filepicker {
+.eg-theme.eg-picker {
     border-color: #fff;
     color: #15252d;
     font-family: sans-serif;
     background: #fdffdf;
 }
 /*top and bottom bar*/
-.eg-theme .eg-filepicker-bar{
+.eg-theme .eg-picker-bar{
     outline: none;
     background: #fff;
 }
 /*file or folder row*/
-.eg-theme .eg-filepicker-item{
+.eg-theme .eg-picker-item{
     font-weight: bold;
 }
 /*mouse hover*/
-.eg-theme .eg-filepicker-item:hover {
+.eg-theme .eg-picker-item:hover {
     background-color: #f0ebbb;
     outline: 1px solid #768766;
 }
 /*keyboard highlight*/
-.eg-theme .eg-filepicker-item[aria-selected="true"] {
+.eg-theme .eg-picker-item[aria-selected="true"] {
     background-color: #f0ebbb;
 }
 /*button style*/
@@ -46,7 +46,7 @@
 }
 
 /*override default button style*/
-.eg-theme .eg-btn.eg-filepicker-ok{
+.eg-theme .eg-btn.eg-picker-ok{
     background-color: #fee08b;
     border: 1px solid #fdae61;
     color: #15252d;

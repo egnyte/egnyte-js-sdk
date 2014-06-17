@@ -44,6 +44,10 @@ function Model(API, opts) {
     this.API = API;
     this.page = 1;
     this.pageSize = 200;
+    
+    if(opts.filterExtensions){
+        this.fileFilter = exts.getExtensionFilter(opts.filterExtensions);
+    }
     // no defaults needed
     //    this.rawItems = [];
     //    this.hasPages = false;
@@ -66,7 +70,9 @@ Model.prototype._set = function (m) {
     //ignore files if they're not selectable
     if (this.opts.select.file) {
         helpers.each(m.files, function (f) {
-            self.rawItems.push(f);
+            if(!self.fileFilter || self.fileFilter(f)){
+                self.rawItems.push(f);
+            }
         });
     }
     this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;

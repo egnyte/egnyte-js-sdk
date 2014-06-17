@@ -3,7 +3,8 @@
 @fontsize: 12px;
 @fontcl: #5E5F60;
 @fontclA: #fff;
-@fontclB: #888;
+@fontclB: #777;
+@arrowHover: #4e4e4f;
 @framecl: #dbdbdb;
 @frameclA: #F2F3F3;
 @bodycl: #fff;
@@ -15,6 +16,11 @@
 @itemhover: #f1f5f8;
 @spacing: 10px;
 @smallspacing: 4px;
+
+.gradientByShadow(@v;@blur;@spread){
+     -webkit-box-shadow:inset 0 @v @blur @spread #000;
+     box-shadow:inset 0 @v @blur @spread #000;
+}
 
 //buttons and links
 .eg-btn{
@@ -32,16 +38,11 @@ span.eg-btn{
     background: @btcl;
     border:1px solid @btframecl;
     border-radius: 2px;
-    opacity: 0.88;
-
     &:hover{
-        opacity: 1;
+    .gradientByShadow(-0.5*@size; 1.25*@size; -1.5*@size);
     }
     &:active{
-        opacity: 1;
-        -webkit-box-shadow:inset 0 1px 6px -3px #000;
-        box-shadow:inset 0 1px 6px -3px #000;
-
+        .gradientByShadow(1px;5px;-4px);
     }
     &[disabled]{
         opacity: 0.3;
@@ -56,18 +57,18 @@ a.eg-btn{
 }
 
 
-.eg-filepicker a{
+.eg-picker a{
     cursor:pointer;
     &:hover{
         text-decoration: underline;
     }
 }
-.eg-filepicker a.eg-file:hover{
+.eg-picker a.eg-file:hover{
     text-decoration: none;
 }
 
 //big block elements
-.eg-filepicker, .eg-filepicker-bar {
+.eg-picker, .eg-picker-bar {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
@@ -76,14 +77,14 @@ a.eg-btn{
 
 }
 
-.eg-filepicker {
+.eg-picker {
     background: @bodycl;
     border: 1px solid @framecl;
     height: 100%;
     padding: @barheight 0;
     color: @fontcl;
-    font-family: 'Open Sans', sans-serif;
     font-size: @fontsize;
+    font-family: 'Open Sans', sans-serif;
     & *{
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -96,7 +97,7 @@ a.eg-btn{
     }
 }
 
-.eg-filepicker ul{
+.eg-picker ul{
     padding: 0;
     margin:0;
     height: 100%;
@@ -104,7 +105,7 @@ a.eg-btn{
 
 }
 
-.eg-filepicker-bar{
+.eg-picker-bar{
     z-index: 1;
     height: @barheight;
     padding: @spacing;
@@ -132,21 +133,21 @@ a.eg-btn{
     visibility: hidden;
 }
 
-.eg-filepicker-pager{
+.eg-picker-pager{
     float:right;
 }
-.eg-bar-right>.eg-filepicker-pager{
+.eg-bar-right>.eg-picker-pager{
     float:left;
 }
 
-.eg-btn.eg-filepicker-ok{
+.eg-btn.eg-picker-ok{
     background: @btclA;
     border-color: @btframeclA;
     color: @fontclA;
 }
 
 
-.eg-filepicker-path{
+.eg-picker-path{
     min-width: 60%;
     width: ~"calc( 100% - 96px )";
     line-height: @barheight - 2 * @spacing;
@@ -165,8 +166,8 @@ a.eg-btn{
     }
 }
 
-.eg-filepicker-item{
-    line-height: 1.2em;
+.eg-picker-item{
+    line-height: @size;
     list-style: none;
     padding: @smallspacing 0;
     border-bottom: 1px solid @frameclA;
@@ -193,15 +194,19 @@ a.eg-btn{
 
 //icons and shapes
 
-.eg-btn.eg-filepicker-back{
+.eg-btn.eg-picker-back{
     padding: @smallspacing @size/4;
     position:relative;
+    color: @fontclB;
+    &:hover{
+        color: @arrowHover;
+    }
 
     &:before {
         content: "";
         display:block;
         left: @smallspacing;
-        border: 0 solid @fontclB;
+        border-style: solid;
         border-width: 0 0 3px 3px;
         transform: rotate(45deg);
         -webkit-transform: rotate(45deg);
@@ -245,7 +250,7 @@ a.eg-btn{
     }
 }
 
-.eg-filepicker-error:before {
+.eg-picker-error:before {
     content:"?!";
     font-size: 32px;
     border: 2px solid @fontcl;
@@ -254,6 +259,8 @@ a.eg-btn{
 
 .eg-ico {
     margin-right: @spacing;
+    position: relative;
+    top: -2px; //vertical align rendering bugfix
 }
 .eg-mime-audio {
     background: #94cbff;
@@ -322,7 +329,7 @@ a.eg-btn{
     background: #f3f7d3;
     overflow: visible;
     width: @size - 2;
-    position: relative;
+    
     &:before {
         display: block;
         position: absolute;

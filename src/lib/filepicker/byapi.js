@@ -5,6 +5,10 @@
     var View = require("../filepicker_elements/view");
     var Model = require("../filepicker_elements/model");
 
+    function noGoog(ext, mime) {
+        return mime !== "goog";
+    }
+
     function init(API) {
         var filePicker;
 
@@ -27,7 +31,8 @@
             };
 
             fpModel = new Model(API, {
-                select: selectOpts
+                select: selectOpts,
+                filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
             });
 
             fpView = new View({
@@ -47,7 +52,7 @@
                     error: setup.error
                 },
                 keys: setup.keys
-            },setup.texts);
+            }, setup.texts);
 
             fpModel.fetch(setup.path || "/");
 

@@ -945,6 +945,10 @@ module.exports = function (apihelper, opts) {
     var View = require(2);
     var Model = require(1);
 
+    function noGoog(ext, mime) {
+        return mime !== "goog";
+    }
+
     function init(API) {
         var filePicker;
 
@@ -967,7 +971,8 @@ module.exports = function (apihelper, opts) {
             };
 
             fpModel = new Model(API, {
-                select: selectOpts
+                select: selectOpts,
+                filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
             });
 
             fpView = new View({
@@ -987,7 +992,7 @@ module.exports = function (apihelper, opts) {
                     error: setup.error
                 },
                 keys: setup.keys
-            },setup.texts);
+            }, setup.texts);
 
             fpModel.fetch(setup.path || "/");
 
@@ -1117,15 +1122,19 @@ helpers.each({
     "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg"],
     "code": ["html", "htm", "sql", "xml", "java", "cpp", "c", "perl", "py", "rb", "php", "js", "css", "applescript", "as3", "as", "bash", "shell", "sh", "cfm", "cfml", "cs", "pas", "dcu", "diff", "patch", "ez", "erl", "groovy", "gvy", "gy", "gsh", "javafx", "jfx", "pl", "pm", "ps1", "ruby", "sass", "scss", "scala", "vb", "vbscript", "xhtml", "xslt"],
     "archive": ["zip", "rar", "tar", "gz", "7z", "bz2", "z", "xz", "ace", "sit", "sitx", "tgz", "apk"],
-    "goog": ["gdoc","gsheet","gslides","gdraw"]
-//    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
-}, function (list,mime) {
+    "goog": ["gdoc", "gsheet", "gslides", "gdraw"]
+    //    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
+}, function (list, mime) {
     helpers.each(list, function (ex) {
         mapping[ex] = mime;
     });
 });
 
 var fileext = /.*\.([a-z0-9]*)$/i;
+
+function _mime(ext) {
+    return mapping[ext] || "unknown";
+}
 
 function getExt(name) {
     if (fileext.test(name)) {
@@ -1135,11 +1144,22 @@ function getExt(name) {
     }
 }
 
+function getMime(name) {
+    return _mime(getExt(name));
+}
+
+
+function getExtensionFilter(filter) {
+    return function (file) {
+        var ext = getExt(file.name);
+        return filter(ext, _mime(ext));
+    }
+}
+
 module.exports = {
-    getMime: function (name) {
-        return mapping[getExt(name)] || "unknown";
-    },
-    getExt: getExt
+    getMime: getMime,
+    getExt: getExt,
+    getExtensionFilter: getExtensionFilter
 }
 
 },{"1":20}],15:[function(require,module,exports){
@@ -1189,6 +1209,10 @@ function Model(API, opts) {
     this.API = API;
     this.page = 1;
     this.pageSize = 200;
+    
+    if(opts.filterExtensions){
+        this.fileFilter = exts.getExtensionFilter(opts.filterExtensions);
+    }
     // no defaults needed
     //    this.rawItems = [];
     //    this.hasPages = false;
@@ -1211,7 +1235,9 @@ Model.prototype._set = function (m) {
     //ignore files if they're not selectable
     if (this.opts.select.file) {
         helpers.each(m.files, function (f) {
-            self.rawItems.push(f);
+            if(!self.fileFilter || self.fileFilter(f)){
+                self.rawItems.push(f);
+            }
         });
     }
     this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
@@ -1328,6 +1354,7 @@ var texts = require(4);
 var jungle = require(1);
 
 require(5);
+var fontLoaded = true;
 
 var currentGlobalKeyboadrFocus = "no";
 
@@ -1339,6 +1366,10 @@ function View(opts, txtOverride) {
     this.el = opts.el;
     this.els = {};
     this.evs = [];
+
+    if(!opts.noFont){
+        renderFont();
+    }
 
 
     this.txt = texts(txtOverride);
@@ -1361,7 +1392,7 @@ function View(opts, txtOverride) {
     this.model.onupdate = function () {
         self.handlers.events("beforeRender", self.model);
         self.render();
-        self.handlers.events("render", self.model);        
+        self.handlers.events("render", self.model);
         if (self.handlers.ready) {
             var runReady = self.handlers.ready;
             self.handlers.ready = null;
@@ -1379,12 +1410,12 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["a.eg-filepicker-back.eg-btn[title=back]"]]).childNodes[0];
-    this.els.close = jungle([["a.eg-filepicker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
-    this.els.ok = jungle([["span.eg-filepicker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
-    this.els.pgup = jungle([["span.eg-filepicker-pgup.eg-btn", ">"]]).childNodes[0];
-    this.els.pgdown = jungle([["span.eg-filepicker-pgup.eg-btn", "<"]]).childNodes[0];
-    this.els.crumb = jungle([["span.eg-filepicker-path"]]).childNodes[0];
+    this.els.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
+    this.els.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    this.els.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    this.els.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
+    this.els.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
+    this.els.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
     this.els.selectAll = jungle([["input[type=checkbox]", {
         title: this.txt("Select all")
     }]]).childNodes[0];
@@ -1468,12 +1499,26 @@ viewPrototypeMethods.errorHandler = function (e) {
 //================================================================= 
 // rendering
 //================================================================= 
+
+function renderFont() {
+    if (!fontLoaded) {
+        (document.getElementsByTagName("head")[0]).appendChild(jungle([
+            ["link", {
+                href:"https://fonts.googleapis.com/css?family=Open+Sans:400,600",
+                type:"text/css"
+                }
+            ]
+        ]));
+        fontLoaded = true;
+    }
+}
+
 viewPrototypeMethods.render = function () {
     var self = this;
-
+    
     this.els.list = document.createElement("ul");
 
-    var topbar = ["div.eg-filepicker-bar.eg-top"];
+    var topbar = ["div.eg-picker-bar.eg-top"];
     if (this.model.isMultiselectable) {
         this.els.selectAll.checked = false;
         topbar.push(this.els.selectAll);
@@ -1481,13 +1526,13 @@ viewPrototypeMethods.render = function () {
     topbar.push(this.els.back);
     topbar.push(this.els.crumb);
 
-    var layoutFragm = jungle([["div.eg-theme.eg-filepicker",
+    var layoutFragm = jungle([["div.eg-theme.eg-picker",
         topbar,
         this.els.list,
-        ["div.eg-filepicker-bar" + this.bottomBarClass,
+        ["div.eg-picker-bar" + this.bottomBarClass,
             this.els.ok,
             this.els.close,
-            ["div.eg-filepicker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+            ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
                 this.els.pgdown,
                 ["span", this.model.page + "/" + this.model.totalPages],
                 this.els.pgup
@@ -1515,7 +1560,7 @@ viewPrototypeMethods.render = function () {
 viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([["a.eg-filepicker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"),
+    var itemName = jungle([["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"),
         {
             "title": itemModel.data.name,
         },
@@ -1531,7 +1576,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 
 
 
-    var itemNode = jungle([["li.eg-filepicker-item",
+    var itemNode = jungle([["li.eg-picker-item",
         itemCheckbox,
         itemName
     ]]).childNodes[0];
@@ -1549,7 +1594,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     });
 
     itemModel.onchange = function () {
-        self.handlers.events("itemChange",itemModel);        
+        self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
@@ -1615,7 +1660,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-error"], message]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-error"], message]]));
     } else {
         this.handlers.close();
     }
@@ -1623,7 +1668,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-filepicker-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-folder"], this.txt("This folder is empty")]]));
     }
 }
 
@@ -1683,7 +1728,7 @@ View.prototype = viewPrototypeMethods;
 
 module.exports = View;
 },{"1":23,"2":19,"3":20,"4":22,"5":17}],17:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px;opacity:.88}span.eg-btn:hover{opacity:1}span.eg-btn:active{opacity:1;-webkit-box-shadow:inset 0 1px 6px -3px #000;box-shadow:inset 0 1px 6px -3px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-filepicker a{cursor:pointer}.eg-filepicker a:hover{text-decoration:underline}.eg-filepicker a.eg-file:hover{text-decoration:none}.eg-filepicker,.eg-filepicker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-filepicker{background:#fff;border:1px solid #dbdbdb;height:100%;padding:50px 0;color:#5e5f60;font-family:\'Open Sans\',sans-serif;font-size:12px}.eg-filepicker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-filepicker input{margin:10px 20px}.eg-filepicker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-filepicker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-filepicker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;margin-top:-50px;border-width:0 0 1px;padding-left:0;background:#fff}.eg-filepicker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-filepicker-pager{float:right}.eg-bar-right>.eg-filepicker-pager{float:left}.eg-btn.eg-filepicker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-filepicker-path{min-width:60%;width:calc(100% - 96px);line-height:30px;color:#888;font-size:14px}.eg-filepicker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-filepicker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-filepicker-item{line-height:1.2em;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-filepicker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-filepicker-item[aria-selected=true]{background:#dde9f3}.eg-filepicker-item *{display:inline-block}.eg-filepicker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-filepicker-back{padding:4px 10px;position:relative}.eg-btn.eg-filepicker-back:before{content:\"\";display:block;left:4px;border:0 solid #888;border-width:0 0 3px 3px;transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#888}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-filepicker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px;position:relative}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;padding:50px 0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;height:100%;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;margin-top:-50px;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 96px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 
 },{}],18:[function(require,module,exports){
 var pinkySwear = require(1);
