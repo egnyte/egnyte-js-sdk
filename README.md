@@ -19,8 +19,8 @@ This package contains:
 
 _File sizes_
 ```
-dist/egnyte.min.js minified: 31.2 kB gzipped: 7.16 kB
-dist/slim.min.js minified: 10.46 kB gzipped: 2.26 kB
+dist/egnyte.min.js minified: 32.28 kB gzipped: 7.39 kB
+dist/slim.min.js minified: 10.51 kB gzipped: 2.27 kB
 ```
 
 To use the SDK, just add the script to your app's HTML document.

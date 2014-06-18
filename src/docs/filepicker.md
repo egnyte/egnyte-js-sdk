@@ -22,36 +22,37 @@ var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
     //open file picker
     var picker = egnyte.filePicker(containerNode,options);
 ```
-The options are:
- - `path` String - a path to open the filepicker at, default: "/"
- - `cancel` Function - a callback to run when the user decides to cancel selecting
- - `selection` Function - a callback to run when the user makes a selection. First argument is an array of selected items.
- - `error` Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.
- - `barAlign` String - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
- - `select` Map of selectables configuration
- 
-```javascript
-select: {
-  folder: true, //should folders be selectable
-  file: true,   //should files be selectable (files are hidden when not selectable)
-  multiple: true   //should allow multiselection
-}
-```
- - `texts` Map of labels in the filepicker to replace with given replacements, optional
- 
-```javascript
-texts: {
-  "Ok": "...",
-  "Cancel": "...",
-  "Loading": "...",
-  "This folder is empty": "..."
-}
-```
 
- - `keys` Map to override default keybinding, set to false to disable all keyboard handling
+None of the options are required. (although without the selection callback it doesn't make much sense to use the picker)
+
+The options are:
+ - `path` _String_ - a path to open the filepicker at, default: "/"
+ - `cancel` _Function_ - a callback to run when the user decides to cancel selecting
+ - `selection` _Function_ - a callback to run when the user makes a selection. First argument is an array of selected items.
+ - `error` _Function_ - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.
+ - `barAlign` _String_ - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
+ - `select` _Map_ of selectables configuration
+ ```javascript
+ select: {
+   folder: true, //should folders be selectable
+   file: true,   //should files be selectable (files are hidden when not selectable)
+   multiple: true   //should allow multiselection
+ }
+ ```
+ - `texts` _Map_ of labels in the filepicker to replace with given replacements, optional
+ ```javascript
+ texts: {
+   "Ok": "...",
+   "Cancel": "...",
+   "Loading": "...",
+   "This folder is empty": "..."
+ }
+ ```
+
+ - `keys` _Map_ to override default keybinding, set to false to disable all keyboard handling
  
-```javascript
-keys: {
+ ```javascript
+ keys: {
     "up": "<up>",
     "down": "<down>",
     "select": "<space>",
@@ -59,9 +60,20 @@ keys: {
     "back": "<left>",
     "confirm": "none",
     "close": "<escape>"
-}
-```
+ }
+ ```
 All keys handled by https://github.com/chrisdickinson/vkey are available.
+
+ - `filterExtensions` _Function_ - a filter function that decides if file should be visible to the user. Google drive files are filtered out by default. Pass `false` explicitly to disable filtering.  First argument to the function is 3 first characters of file extension, second is the internal mime group name (used for icon colors too).
+ 
+ ```javascript
+ filterExtensions: function(ext3chars, mime){
+    return ext3chars==="htm"; //show only htm* files
+ }
+ ```
+ Possible values of mime: `"audio", "video", "pdf", "word_processing", "spreadsheet", "presentation", "cad", "text", "image", "archive", "goog"`
+ 
+ - `noFont` _Boolean_ - set to true to opt-out from linking Open Sans from google fonts. The font will be linked to only once if at least one filepicker instance doesn't have `noFont:true` in options.
 
 ----
 
@@ -160,7 +172,7 @@ To use the remote file picker call `filePickerRemote` instead of `filePicker` wi
     var picker = egnyte.filePicker(containerNode,options);
 ```
 
-The `select` and `texts` options are not available in remote file picker.
+Only `path` `cancel` and `selection` options are available.
 
 The data returned by the remote filepicker is limited to:
  - `name` - name of the file

@@ -78,42 +78,49 @@
     var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
     //open file picker
     var picker = egnyte.filePicker(containerNode,options);</code></pre>
+<p>None of the options are required. (although without the selection callback it doesn&#39;t make much sense to use the picker)</p>
 <p>The options are:</p>
 <ul>
-<li><code>path</code> String - a path to open the filepicker at, default: &quot;/&quot;</li>
-<li><code>cancel</code> Function - a callback to run when the user decides to cancel selecting</li>
-<li><code>selection</code> Function - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
-<li><code>error</code> Function - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.</li>
-<li><code>barAlign</code> String - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
-<li><code>select</code> Map of selectables configuration</li>
-</ul>
-<pre><code class="lang-javascript">select: {
-  folder: true, //should folders be selectable
-  file: true,   //should files be selectable (files are hidden when not selectable)
-  multiple: true   //should allow multiselection
+<li><code>path</code> <em>String</em> - a path to open the filepicker at, default: &quot;/&quot;</li>
+<li><code>cancel</code> <em>Function</em> - a callback to run when the user decides to cancel selecting</li>
+<li><code>selection</code> <em>Function</em> - a callback to run when the user makes a selection. First argument is an array of selected items.</li>
+<li><code>error</code> <em>Function</em> - a callback to call when an error occurs. First argument is an error object. Filepicker has its default error handling, return false from your error handler function to supress that, return a string to replace the default error text. When picker instance is not useful after an error, remember to close it.</li>
+<li><code>barAlign</code> <em>String</em> - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
+<li><code>select</code> <em>Map</em> of selectables configuration<pre><code class="lang-javascript">select: {
+folder: true, //should folders be selectable
+file: true,   //should files be selectable (files are hidden when not selectable)
+multiple: true   //should allow multiselection
 }</code></pre>
-<ul>
-<li><code>texts</code> Map of labels in the filepicker to replace with given replacements, optional</li>
-</ul>
+</li>
+<li><p><code>texts</code> <em>Map</em> of labels in the filepicker to replace with given replacements, optional</p>
 <pre><code class="lang-javascript">texts: {
-  &quot;Ok&quot;: &quot;...&quot;,
-  &quot;Cancel&quot;: &quot;...&quot;,
-  &quot;Loading&quot;: &quot;...&quot;,
-  &quot;This folder is empty&quot;: &quot;...&quot;
+&quot;Ok&quot;: &quot;...&quot;,
+&quot;Cancel&quot;: &quot;...&quot;,
+&quot;Loading&quot;: &quot;...&quot;,
+&quot;This folder is empty&quot;: &quot;...&quot;
 }</code></pre>
-<ul>
-<li><code>keys</code> Map to override default keybinding, set to false to disable all keyboard handling</li>
-</ul>
+</li>
+<li><p><code>keys</code> <em>Map</em> to override default keybinding, set to false to disable all keyboard handling</p>
 <pre><code class="lang-javascript">keys: {
-    &quot;up&quot;: &quot;&lt;up&gt;&quot;,
-    &quot;down&quot;: &quot;&lt;down&gt;&quot;,
-    &quot;select&quot;: &quot;&lt;space&gt;&quot;,
-    &quot;explore&quot;: &quot;&lt;right&gt;&quot;,
-    &quot;back&quot;: &quot;&lt;left&gt;&quot;,
-    &quot;confirm&quot;: &quot;none&quot;,
-    &quot;close&quot;: &quot;&lt;escape&gt;&quot;
+ &quot;up&quot;: &quot;&lt;up&gt;&quot;,
+ &quot;down&quot;: &quot;&lt;down&gt;&quot;,
+ &quot;select&quot;: &quot;&lt;space&gt;&quot;,
+ &quot;explore&quot;: &quot;&lt;right&gt;&quot;,
+ &quot;back&quot;: &quot;&lt;left&gt;&quot;,
+ &quot;confirm&quot;: &quot;none&quot;,
+ &quot;close&quot;: &quot;&lt;escape&gt;&quot;
 }</code></pre>
 <p>All keys handled by <a href="https://github.com/chrisdickinson/vkey">https://github.com/chrisdickinson/vkey</a> are available.</p>
+</li>
+<li><p><code>filterExtensions</code> <em>Function</em> - a filter function that decides if file should be visible to the user. Google drive files are filtered out by default. Pass <code>false</code> explicitly to disable filtering.  First argument to the function is 3 first characters of file extension, second is the internal mime group name (used for icon colors too).</p>
+<pre><code class="lang-javascript">filterExtensions: function(ext3chars, mime){
+ return ext3chars===&quot;htm&quot;; //show only htm* files
+}</code></pre>
+<p>Possible values of mime: <code>&quot;audio&quot;, &quot;video&quot;, &quot;pdf&quot;, &quot;word_processing&quot;, &quot;spreadsheet&quot;, &quot;presentation&quot;, &quot;cad&quot;, &quot;text&quot;, &quot;image&quot;, &quot;archive&quot;, &quot;goog&quot;</code></p>
+</li>
+<li><p><code>noFont</code> <em>Boolean</em> - set to true to opt-out from linking Open Sans from google fonts. The font will be linked to only once if at least one filepicker instance doesn&#39;t have <code>noFont:true</code> in options.</p>
+</li>
+</ul>
 <hr>
 <p><em>Examples</em></p>
 <p>Open on <code>/Private</code> location, with single selection and changed labels for OK and empty folder</p>
@@ -180,7 +187,7 @@
     var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;);
 
     var picker = egnyte.filePicker(containerNode,options);</code></pre>
-<p>The <code>select</code> and <code>texts</code> options are not available in remote file picker.</p>
+<p>Only <code>path</code> <code>cancel</code> and <code>selection</code> options are available.</p>
 <p>The data returned by the remote filepicker is limited to:</p>
 <ul>
 <li><code>name</code> - name of the file</li>

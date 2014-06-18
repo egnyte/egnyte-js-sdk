@@ -1354,10 +1354,10 @@ var texts = require(4);
 var jungle = require(1);
 
 require(5);
-var fontLoaded = true;
+
+var fontLoaded = false;
 
 var currentGlobalKeyboadrFocus = "no";
-
 
 function View(opts, txtOverride) {
     var self = this;
@@ -1370,7 +1370,6 @@ function View(opts, txtOverride) {
     if(!opts.noFont){
         renderFont();
     }
-
 
     this.txt = texts(txtOverride);
 
@@ -1500,12 +1499,14 @@ viewPrototypeMethods.errorHandler = function (e) {
 // rendering
 //================================================================= 
 
+//all this mess is for IE8
 function renderFont() {
     if (!fontLoaded) {
         (document.getElementsByTagName("head")[0]).appendChild(jungle([
             ["link", {
                 href:"https://fonts.googleapis.com/css?family=Open+Sans:400,600",
-                type:"text/css"
+                type:"text/css",
+                rel:"stylesheet"
                 }
             ]
         ]));

@@ -188,6 +188,11 @@ $(".myForm").on("submit",function(){
 
 The `storeFile` method uses `FormData` constructor; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
+### Downloading a file
+
+It is possible to download a file to memory in modern browsers. A proof of concept of that can be found in `examples/filepicker_usecase.html`
+
+
 ## Link API helpers
 
 All API helpers return promises.
