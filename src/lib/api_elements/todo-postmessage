@@ -1,0 +1,40 @@
+
+enginePrototypeMethods.postTokenUp = function () {
+    if (!this.token && window.name === this.options.channelMarker) {
+        var channel = {
+            marker: this.options.channelMarker,
+            sourceOrigin: this.options.egnyteDomainURL
+        };
+
+        this.checkTokenResponse(function () {
+            messages.sendMessage(window.parent, this.channel, "token", this.token);
+        }, function () {
+            messages.sendMessage(window.parent, this.channel, "denied", null);
+        });
+
+    }
+}
+enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied) {
+    if (!this.token) {
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href
+        var iframe = dom.createFrame(url);
+        iframe.name = this.options.channelMarker;
+        var handler = messages.createMessageHandler("*", this.options.channelMarker, function (message) {
+            listener.destroy();
+            targetNode.removeChild(iframe);
+            if (message.action === "token") {
+                this.token = message.data;
+                callback && callback();
+            }
+            if (message.action === "denied") {
+                denied && denied();
+            }
+        });
+        var listener = dom.addListener(window, "message", handler);
+        targetNode.appendChild(iframe);
+        //listen for a postmessage from window that gives you a token 
+    } else {
+        callback();
+    }
+
+}

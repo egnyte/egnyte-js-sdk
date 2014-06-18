@@ -2,11 +2,11 @@ describe("API to JS (integration test)", function () {
 
     //our main testsubject
     var eg = Egnyte.init(egnyteDomain, {
-            token: APIToken,
-            QPS:2
-        });
-    
-    
+        token: APIToken,
+        QPS: 2
+    });
+
+
     function getTestBlob(txt) {
         // JavaScript file-like object...
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
@@ -35,12 +35,32 @@ describe("API to JS (integration test)", function () {
     beforeEach(function () {
         jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
-       
+
     });
 
     it('should accept an existing token', function () {
         //token was passed in beforeEach
         expect(eg.API.auth.isAuthorized()).toBe(true);
+    });
+
+
+    describe("Auth", function () {
+
+
+        var recentFileObject;
+
+        it("Should provide userinfo", function (done) {
+            eg.API.auth.getUserInfo().then(function (info) {
+                expect(info).toBeTruthy();
+                expect(info.username).toBeDefined();
+                expect(info.username.length).toBeGreaterThan(1);
+                done();
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
+            });
+
+        });
+
     });
 
 
@@ -286,6 +306,19 @@ describe("API to JS (integration test)", function () {
                 } else {
                     done();
                 }
+            }).error(function (e) {
+                expect(this).toAutoFail(e);
+            });
+
+        });
+        
+        it("Can find one link matching filter", function (done) {
+
+            eg.API.link.findOne({
+                path: recentFile.path
+            }).then(function (e) {
+                expect(e["path"]).toEqual(recentFile.path);
+                done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
             });

@@ -166,6 +166,11 @@
 <td><code>options</code></td>
 <td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
 </tr>
+<tr>
+<td>API.auth.getUserInfo</td>
+<td></td>
+<td>Returns promise that resolves to user info object</td>
+</tr>
 </tbody>
 </table>
 <h3 id="handling-requests">Handling requests</h3>
@@ -362,6 +367,11 @@
 <td><code>filters</code></td>
 <td>Resolves to a list of links, narrows the list down by filters given</td>
 </tr>
+<tr>
+<td>API.link.findOne</td>
+<td><code>filters</code></td>
+<td>Resolves to a link description object of a link that matches the filters. (the result of <code>listLink</code> called on first of the ids returned by <code>listLinks</code>) </td>
+</tr>
 </tbody>
 </table>
 <h3 id="creating-a-link">Creating a link</h3>
@@ -472,7 +482,7 @@
     &quot;copy_me&quot;: false
 }</code></pre>
 <h3 id="listing-links">Listing links</h3>
-<p><code>API.link.listLinks</code> method accepts filters definition. Filters are optional.</p>
+<p><code>API.link.listLinks</code> and <code>API.link.findOne</code> methods accept filters definition. All filters are optional.</p>
 <table>
 <thead>
 <tr>
@@ -515,7 +525,7 @@
 </tr>
 </tbody>
 </table>
-<p><em>Link list example</em></p>
+<p><em>Example response to listLinks</em></p>
 <pre><code class="lang-javascript">{
    &quot;total_count&quot;: 10,
    &quot;offset&quot;: 5,

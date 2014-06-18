@@ -500,6 +500,15 @@ function listLinks(filters) {
         });
 }
 
+function findOne(filters) {
+    return listLinks(filters).then(function (list) {
+        if (list.ids && list.ids.length > 0) {
+            return listLink(list.ids[0]);
+        } else {
+            return null;
+        }
+    });
+}
 
 
 module.exports = function (apihelper, opts) {
@@ -509,21 +518,29 @@ module.exports = function (apihelper, opts) {
         createLink: createLink,
         removeLink: removeLink,
         listLink: listLink,
-        listLinks: listLinks
+        listLinks: listLinks,
+        findOne: findOne
     };
 };
 },{"1":18,"2":20}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
+var oauthDeniedRegex = /\?error=access_denied/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
 var promises = require(1);
-var helpers = require(2);
-var xhr = require(3);
+var helpers = require(3);
+var dom = require(2);
+var xhr = require(4);
+
 
 
 function Engine(options) {
     this.options = options;
+    if (this.options.token) {
+        this.token = this.options.token;
+    }
+    this.userInfo = null;
     this.quota = {
         startOfTheSecond: 0,
         calls: 0,
@@ -531,10 +548,6 @@ function Engine(options) {
     }
     this.queue = [];
 
-    if (this.options.token) {
-        this.token = this.options.token;
-    }
-    
     this.queueHandler = helpers.bindThis(this, _rollQueue);
 
 }
@@ -545,42 +558,70 @@ enginePrototypeMethods.reloadForToken = function () {
     window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
 }
 
-enginePrototypeMethods.checkTokenResponse = function (success, notoken) {
+enginePrototypeMethods.checkTokenResponse = function (success, denied, notoken, overrideWindow) {
+    var win = overrideWindow || window;
     if (!this.token) {
-        var access = oauthRegex.exec(window.location.hash);
+        this.userInfo = null;
+        var access = oauthRegex.exec(win.location.hash);
         if (access) {
             if (access.length > 1) {
                 this.token = access[1];
-                window.location.hash="";
+                overrideWindow || (window.location.hash = "");
                 success && success();
             } else {
                 //what now?
             }
         } else {
-            notoken && notoken();
+            if (oauthDeniedRegex.test(win.location.href)) {
+                denied && denied();
+            } else {
+                notoken && notoken();
+            }
         }
     } else {
         success && success();
     }
 }
 
-enginePrototypeMethods.requestToken = function (callback) {
-    this.checkTokenResponse(callback, helpers.bindThis(this,this.reloadForToken));
+enginePrototypeMethods.requestToken = function (callback, denied) {
+    this.checkTokenResponse(callback, denied, helpers.bindThis(this, this.reloadForToken));
 }
 
 enginePrototypeMethods.onTokenReady = function (callback) {
-    this.checkTokenResponse(callback, function () {});
+    this.checkTokenResponse(callback);
 }
 
-//TODO: implement popup flow
-enginePrototypeMethods.requestTokenWindow = function (callback, pingbackURL) {
-    //    if (!this.token) {
-    //        var dialog = window.open(this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + pingbackURL);
-    //
-    //        //listen for a postmessage from window that gives you a token 
-    //    } else {
-    //        callback();
-    //    }
+enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
+    if (!this.token) {
+        var self = this;
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + (emptyPageURL || window.location.href)
+        var iframe = dom.createFrame(url);
+        iframe.onload = function () {
+            try {
+                var location = iframe.contentWindow.location;
+                var override = {
+                    location: {
+                        hash: "" + location.hash,
+                        href: "" + location.href
+                    }
+                };
+
+                self.checkTokenResponse(function () {
+                    iframe.src = "";
+                    targetNode.removeChild(iframe);
+                    callback();
+                }, function () {
+                    iframe.src = "";
+                    targetNode.removeChild(iframe);
+                    denied();
+                }, null, override);
+            } catch (e) {}
+        }
+        targetNode.appendChild(iframe);
+        //listen for a postmessage from window that gives you a token 
+    } else {
+        callback();
+    }
 
 }
 
@@ -616,6 +657,9 @@ enginePrototypeMethods.dropToken = function (externalToken) {
     this.token = null;
 }
 
+
+//======================================================================
+//request handling
 function params(obj) {
     var str = [];
     for (var p in obj) {
@@ -625,8 +669,6 @@ function params(obj) {
     }
     return str.join("&");
 }
-
-
 
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
@@ -744,13 +786,32 @@ enginePrototypeMethods.quotaWaitTime = function () {
     return 1001 - diff;
 }
 
+//======================================================================
+//api facade
+
+enginePrototypeMethods.getUserInfo = function () {
+    var self = this;
+    if (self.userInfo) {
+        promises.start(true).then(function () {
+            return self.userInfo;
+        });
+    } else {
+        return this.promiseRequest({
+            method: "GET",
+            url: this.getEndpoint() + "/userinfo",
+        }).then(function (result) { //result.response result.body
+            self.userInfo = result.body;
+            return result.body;
+        });
+    }
+}
 
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"1":18,"2":20,"3":3}],11:[function(require,module,exports){
+},{"1":18,"2":19,"3":20,"4":3}],11:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 

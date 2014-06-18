@@ -69,6 +69,15 @@ function listLinks(filters) {
         });
 }
 
+function findOne(filters) {
+    return listLinks(filters).then(function (list) {
+        if (list.ids && list.ids.length > 0) {
+            return listLink(list.ids[0]);
+        } else {
+            return null;
+        }
+    });
+}
 
 
 module.exports = function (apihelper, opts) {
@@ -78,6 +87,7 @@ module.exports = function (apihelper, opts) {
         createLink: createLink,
         removeLink: removeLink,
         listLink: listLink,
-        listLinks: listLinks
+        listLinks: listLinks,
+        findOne: findOne
     };
 };

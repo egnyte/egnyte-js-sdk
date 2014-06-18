@@ -84,6 +84,7 @@ API.auth.dropToken | | Forgets the current token
 API.auth.getEndpoint | | Returns the public API endpoint root URL
 API.auth.sendRequest | `options`,`callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
 API.auth.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
+API.auth.getUserInfo | | Returns promise that resolves to user info object
 
 ### Handling requests
 
@@ -203,6 +204,7 @@ API.link.createLink | `link_setup` | Creates a link, resolves to the new link de
 API.link.removeLink | `link_ID` | Destroys the link of given id
 API.link.listLink | `link_ID` | Resolves to link description object
 API.link.listLinks | `filters` | Resolves to a list of links, narrows the list down by filters given
+API.link.findOne | `filters` | Resolves to a link description object of a link that matches the filters. (the result of `listLink` called on first of the ids returned by `listLinks`) 
 
 ### Creating a link
 
@@ -269,7 +271,7 @@ _Full link description example_
 
 ### Listing links
 
-`API.link.listLinks` method accepts filters definition. Filters are optional.
+`API.link.listLinks` and `API.link.findOne` methods accept filters definition. All filters are optional.
 
 
 Name | Description
@@ -283,7 +285,7 @@ accessibility | show links with this accessibility (“anyone”, “password”
 offset | start at this link (0 = first link). If not specified, defaults to 0.
 count | send this number of links. If not specified, all links will be sent.
 
-_Link list example_
+_Example response to listLinks_
 
 ```javascript
 {
