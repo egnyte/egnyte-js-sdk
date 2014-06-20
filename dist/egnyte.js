@@ -587,15 +587,13 @@ enginePrototypeMethods.requestToken = function (callback, denied) {
     this.checkTokenResponse(callback, denied, helpers.bindThis(this, this.reloadForToken));
 }
 
-enginePrototypeMethods.onTokenReady = function (callback) {
-    this.checkTokenResponse(callback);
-}
-
 enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
     if (!this.token) {
         var self = this;
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + (emptyPageURL || window.location.href)
-        var iframe = dom.createFrame(url);
+        var locationObject = window.location;
+        emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
                 var location = iframe.contentWindow.location;
@@ -618,7 +616,6 @@ enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, deni
             } catch (e) {}
         }
         targetNode.appendChild(iframe);
-        //listen for a postmessage from window that gives you a token 
     } else {
         callback();
     }
@@ -1425,8 +1422,8 @@ function View(opts, txtOverride) {
     this.uid = Math.random();
     currentGlobalKeyboadrFocus = this.uid;
     this.el = opts.el;
-    this.els = {};
     this.evs = [];
+    var myElements = this.els = {};
 
     if (!opts.noFont) {
         renderFont();
@@ -1470,29 +1467,29 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    this.els.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
-    this.els.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
-    this.els.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
-    this.els.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
-    this.els.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
-    this.els.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
-    this.els.selectAll = jungle([["input[type=checkbox]", {
+    myElements.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
+    myElements.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
+    myElements.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    myElements.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
+    myElements.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
+    myElements.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
+    myElements.selectAll = jungle([["input[type=checkbox]", {
         title: this.txt("Select all")
     }]]).childNodes[0];
 
     //bind events and store references to unbind later
     this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
-    this.handleClick(this.els.back, self.goUp);
-    this.handleClick(this.els.close, self.handlers.close);
-    this.handleClick(this.els.ok, self.confirmSelection);
-    this.handleClick(this.els.crumb, self.crumbNav);
-    this.handleClick(this.els.selectAll, function (e) {
+    this.handleClick(myElements.back, self.goUp);
+    this.handleClick(myElements.close, self.handlers.close);
+    this.handleClick(myElements.ok, self.confirmSelection);
+    this.handleClick(myElements.crumb, self.crumbNav);
+    this.handleClick(myElements.selectAll, function (e) {
         self.model.setAllSelection(!!e.target.checked);
     });
-    this.handleClick(this.els.pgup, function (e) {
+    this.handleClick(myElements.pgup, function (e) {
         self.model.switchPage(1);
     });
-    this.handleClick(this.els.pgdown, function (e) {
+    this.handleClick(myElements.pgdown, function (e) {
         self.model.switchPage(-1);
     });
 
@@ -1577,29 +1574,30 @@ function renderFont() {
 
 viewPrototypeMethods.render = function () {
     var self = this;
+    var myElements = this.els;
 
-    this.els.list = document.createElement("ul");
+    myElements.list = document.createElement("ul");
 
     var topbar = ["div.eg-picker-bar.eg-top"];
     if (this.model.isMultiselectable) {
-        this.els.selectAll.checked = false;
-        topbar.push(this.els.selectAll);
+        myElements.selectAll.checked = false;
+        topbar.push(myElements.selectAll);
     }
-    topbar.push(this.els.back);
-    topbar.push(this.els.crumb);
+    topbar.push(myElements.back);
+    topbar.push(myElements.crumb);
 
     topbar = jungle([topbar]).childNodes[0];
 
     var layoutFragm = jungle([["div.eg-theme.eg-picker",
         topbar,
-        this.els.list,
+        myElements.list,
         ["div.eg-picker-bar" + this.bottomBarClass,
-            this.els.ok,
-            this.els.close,
+            myElements.ok,
+            myElements.close,
             ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
-                this.els.pgdown,
+                myElements.pgdown,
                 ["span", this.model.page + "/" + this.model.totalPages],
-                this.els.pgup
+                myElements.pgup
             ]
         ]
     ]]);
@@ -1607,7 +1605,7 @@ viewPrototypeMethods.render = function () {
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
     //IE <=8 detection
-    (!+"\v1") && (this.els.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px");
+    (!+"\v1") && (myElements.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px");
 
     this.breadcrumbify(this.model.path);
 
@@ -1874,9 +1872,11 @@ module.exports = {
         });
     },
 
-    createFrame: function (url) {
+    createFrame: function (url,scrolling) {
         var iframe = document.createElement("iframe");
-        iframe.setAttribute("scrolling", "no");
+        if(!scrolling){
+            iframe.setAttribute("scrolling", "no");
+        }
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.minWidth = "400px";

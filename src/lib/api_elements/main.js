@@ -62,15 +62,13 @@ enginePrototypeMethods.requestToken = function (callback, denied) {
     this.checkTokenResponse(callback, denied, helpers.bindThis(this, this.reloadForToken));
 }
 
-enginePrototypeMethods.onTokenReady = function (callback) {
-    this.checkTokenResponse(callback);
-}
-
 enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
     if (!this.token) {
         var self = this;
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + (emptyPageURL || window.location.href)
-        var iframe = dom.createFrame(url);
+        var locationObject = window.location;
+        emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
                 var location = iframe.contentWindow.location;
@@ -93,7 +91,6 @@ enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, deni
             } catch (e) {}
         }
         targetNode.appendChild(iframe);
-        //listen for a postmessage from window that gives you a token 
     } else {
         callback();
     }

@@ -37,14 +37,8 @@
     <script>
         function setup() {
             localStorage.egnyteDomain = "https://" + document.getElementById("fdomain").value;
-            localStorage.key = document.getElementById("fkey").value;
-
-            eg = Egnyte.init(localStorage.egnyteDomain, {
-                key: localStorage.key,
-                mobile: 1
-            });
-            eg.API.auth.requestToken();
-
+            localStorage.egnyteKey = document.getElementById("fkey").value;
+            init();
         }
 
         function unSetup() {
@@ -54,21 +48,26 @@
             location.reload();
         }
 
+        function init() {
+            eg = Egnyte.init(localStorage.egnyteDomain, {
+                key: localStorage.egnyteKey,
+                mobile: 1
+            });
+            eg.API.auth.requestToken(reopen);
+        }
+
         function reopen() {
 
-            //add a handler for token ready without trying requesting it if not present
-            eg.API.auth.onTokenReady(function () {
-                document.getElementById("reopen").style.display = "block";
+            document.getElementById("reopen").style.display = "block";
 
-                eg.filePicker(node, {
-                    selection: function (fileData) {
-                        node.innerHTML = JSON.stringify(fileData);
-                    },
-                    cancel: function () {
-                        console.warn("cancelled");
-                    }
-                    //defaults kick in
-                });
+            eg.filePicker(node, {
+                selection: function (fileData) {
+                    node.innerHTML = JSON.stringify(fileData);
+                },
+                cancel: function () {
+                    console.warn("cancelled");
+                }
+                //defaults kick in
             });
 
         }
@@ -79,12 +78,7 @@
             document.getElementById("setup").style.display = "none";
             document.getElementById("unsetup").style.display = "block";
 
-            eg = Egnyte.init(localStorage.egnyteDomain, {
-                key: localStorage.key,
-                mobile: 1
-            });
-
-            reopen();
+            init();
 
         }
     </script>

@@ -75,16 +75,44 @@ Method | Arguments | Description
 --- | --- | ---
 API.auth.isAuthorized | | Returns `boolean` true if a token is present
 API.auth.setToken | `token` | Accepts a token string. New token overwrites the previous one
-API.auth.requestToken | `callback` | Performs authorization and calls the callback synchronously once the token is available after reload
-API.auth.onTokenReady | `callback` | Calls the callback synchronously if the token is available now, does nothing if not authorized 
+API.auth.requestToken | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload
+API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location.
 API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string
 API.auth.dropToken | | Forgets the current token
 API.auth.getEndpoint | | Returns the public API endpoint root URL
-API.auth.sendRequest | `options`,`callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
+API.auth.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
 API.auth.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
 API.auth.getUserInfo | | Returns promise that resolves to user info object
+
+### Requesting tokens
+
+`API.auth.requestToken` method loads the log-in prompt in current window. Once the user accepts or denies access, current page is loaded again and the whole code on it runs again. This time `API.auth.requestToken` will find the token as it was appended to URL and runs the success callback.
+
+```javascript
+API.auth.requestToken(function(){
+    //can work with API
+},function(){
+    //request denied
+});
+```
+
+`API.auth.requestTokenIframe` method appends an iframe to given `node` and opens the log-in prompt in there. Once the user accepts or denies access, current page is loaded again in the iframe and the token is extracted from it. It is recommended to pass `path` to `API.auth.requestTokenIframe` to redirect to an empty page, not the current one. the `path` should be an absolute path in the current domain (starting with /).
+
+```javascript
+API.auth.requestTokenIframe(
+    document.body,
+    function(){
+        //can work with API
+    },
+    function(){
+        //request denied
+    },
+    "/empty.html"
+);
+```
+
 
 ### Handling requests
 

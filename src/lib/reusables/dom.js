@@ -51,9 +51,11 @@ module.exports = {
         });
     },
 
-    createFrame: function (url) {
+    createFrame: function (url,scrolling) {
         var iframe = document.createElement("iframe");
-        iframe.setAttribute("scrolling", "no");
+        if(!scrolling){
+            iframe.setAttribute("scrolling", "no");
+        }
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.minWidth = "400px";

@@ -123,13 +123,13 @@
 </tr>
 <tr>
 <td>API.auth.requestToken</td>
-<td><code>callback</code></td>
-<td>Performs authorization and calls the callback synchronously once the token is available after reload</td>
+<td><code>success_callback</code>, <code>denied_callback</code></td>
+<td>Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload</td>
 </tr>
 <tr>
-<td>API.auth.onTokenReady</td>
-<td><code>callback</code></td>
-<td>Calls the callback synchronously if the token is available now, does nothing if not authorized </td>
+<td>API.auth.requestTokenIframe</td>
+<td><code>node</code>, <code>success_callback</code>, <code>denied_callback</code>, <code>path</code></td>
+<td>Performs authorization in an iframe instead of reloading the page. Iframe is appended to <code>node</code>. <code>path</code> argument is used as a redirect target for log-in prompt completion. <code>path</code> defaults to current window location.</td>
 </tr>
 <tr>
 <td>API.auth.authorizeXHR</td>
@@ -158,7 +158,7 @@
 </tr>
 <tr>
 <td>API.auth.sendRequest</td>
-<td><code>options</code>,<code>callback</code></td>
+<td><code>options</code>, <code>callback</code></td>
 <td>Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
 </tr>
 <tr>
@@ -173,6 +173,24 @@
 </tr>
 </tbody>
 </table>
+<h3 id="requesting-tokens">Requesting tokens</h3>
+<p><code>API.auth.requestToken</code> method loads the log-in prompt in current window. Once the user accepts or denies access, current page is loaded again and the whole code on it runs again. This time <code>API.auth.requestToken</code> will find the token as it was appended to URL and runs the success callback.</p>
+<pre><code class="lang-javascript">API.auth.requestToken(function(){
+    //can work with API
+},function(){
+    //request denied
+});</code></pre>
+<p><code>API.auth.requestTokenIframe</code> method appends an iframe to given <code>node</code> and opens the log-in prompt in there. Once the user accepts or denies access, current page is loaded again in the iframe and the token is extracted from it. It is recommended to pass <code>path</code> to <code>API.auth.requestTokenIframe</code> to redirect to an empty page, not the current one. the <code>path</code> should be an absolute path in the current domain (starting with /).</p>
+<pre><code class="lang-javascript">API.auth.requestTokenIframe(
+    document.body,
+    function(){
+        //can work with API
+    },
+    function(){
+        //request denied
+    },
+    &quot;/empty.html&quot;
+);</code></pre>
 <h3 id="handling-requests">Handling requests</h3>
 <p><em>Request options</em></p>
 <table>
