@@ -1,4 +1,4 @@
-   describe("API Quota handlers (unstable, may fail on lags)", function () {
+   describe("API Quota handlers (may fail on lags)", function () {
        it('BTW. The test should have a working matcher for errors', function () {
            //token was passed in beforeEach
            expect(expect(this).toAutoFail).toBeDefined();
@@ -33,7 +33,7 @@
                //assuming 404 is quite stable in terms of response time
                //but the response can be cached and the second one is faster
                expect(t2 - t1).toBeGreaterThan(500);
-               done();
+               setTimeout(done,1000); //wait for quota reset
            }).error(function (e) {
                expect(this).toAutoFail(e);
            });
@@ -57,7 +57,7 @@
                //assuming 404 is quite stable in terms of response time
                //but the response can be cached and the second one is faster
                expect(!t1 || (t2 - t1) < 500).toBe(true);
-               done();
+               setTimeout(done,1000); //wait for quota reset
            }).error(function (e) {
                expect(this).toAutoFail(e);
            });
@@ -98,7 +98,7 @@
                    t2 = +new Date();
                    //assuming response comes in less than 800ms
                    expect(t2 - t1).toBeGreaterThan(800);
-                   done();
+                   setTimeout(done,1000); //wait for quota reset
                }).error(function (e) {
                    expect(this).toAutoFail(e);
                });
