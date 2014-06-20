@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>how to get API token</title>
+    <script src="../dist/slim.js"></script>
+    <style>
+        #there {
+            width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h3 id="token"></h3>
+
+    <div id="there">
+
+
+    </div>
+
+    <button onclick="requestToken()">request Token</button>
+    <script>
+        var adomain;
+        var akey;
+
+        function requestToken() {
+            var node = document.getElementById("there");
+
+            if (!adomain) {
+                adomain = prompt("Your Egnyte domain address", "https://acme.egnyte.com");
+                akey = prompt("Your Public API key");
+            }
+
+
+            var eg = Egnyte.init(adomain, {
+                key: akey,
+                mobile: true
+            });
+
+            eg.API.auth.requestTokenPopup(function () {
+                document.getElementById("token").innerHTML = "Your token: " + eg.API.auth.getToken();
+            }, function () {
+                document.getElementById("token").innerHTML = "denied";
+            },"https://"+window.location.host+"/dist/resources/token.html");
+
+        }
+    </script>
+</body>
+
+</html>

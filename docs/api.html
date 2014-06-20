@@ -81,10 +81,7 @@
         mobile: true      //optional, changes login prompt to mobile friendly
     });</code></pre>
 <p>Request an access token</p>
-<pre><code class="lang-javascript">egnyte.API.auth.requestToken(function() {
-        var accessToken = egnyte.API.auth.getToken();
-    });</code></pre>
-<p><strong>Warning</strong>: <code>API.auth.requestToken</code> will cause a page reload to let the user authorize the application to use the API.</p>
+<p>Call any of the <code>API.auth.requestToken*</code> methods.</p>
 <h3 id="initialize-with-token">Initialize with token</h3>
 <p>If the token is already stored securely and there is no need to request it, it can be passed as initial configuration.</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
@@ -122,14 +119,19 @@
 <td>Accepts a token string. New token overwrites the previous one</td>
 </tr>
 <tr>
-<td>API.auth.requestToken</td>
+<td>API.auth.requestTokenReload</td>
 <td><code>success_callback</code>, <code>denied_callback</code></td>
-<td>Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload</td>
+<td>Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload. (see examples/request_token.html)</td>
+</tr>
+<tr>
+<td>API.auth.requestTokenPopup</td>
+<td><code>success_callback</code>, <code>denied_callback</code>,<code>postmessage_sender</code></td>
+<td>Opens a new window or tab for the user. <code>postmessage_sender</code> is a fully qualified HTTPS URL to a copy of <code>dist/resources/token.html</code>. (see examples/request_token_popup.html)</td>
 </tr>
 <tr>
 <td>API.auth.requestTokenIframe</td>
 <td><code>node</code>, <code>success_callback</code>, <code>denied_callback</code>, <code>path</code></td>
-<td>Performs authorization in an iframe instead of reloading the page. Iframe is appended to <code>node</code>. <code>path</code> argument is used as a redirect target for log-in prompt completion. <code>path</code> defaults to current window location.</td>
+<td>Performs authorization in an iframe instead of reloading the page. Iframe is appended to <code>node</code>. <code>path</code> argument is used as a redirect target for log-in prompt completion. <code>path</code> defaults to current window location. (see examples/request_token_iframe.html)</td>
 </tr>
 <tr>
 <td>API.auth.authorizeXHR</td>
@@ -175,11 +177,21 @@
 </table>
 <h3 id="requesting-tokens">Requesting tokens</h3>
 <p><code>API.auth.requestToken</code> method loads the log-in prompt in current window. Once the user accepts or denies access, current page is loaded again and the whole code on it runs again. This time <code>API.auth.requestToken</code> will find the token as it was appended to URL and runs the success callback.</p>
-<pre><code class="lang-javascript">API.auth.requestToken(function(){
+<pre><code class="lang-javascript">API.auth.requestTokenReload(function(){
     //can work with API
 },function(){
     //request denied
 });</code></pre>
+<p><code>API.auth.requestTokenPopup</code> method opens a window or tab with the log-in prompt. Once the user accepts or denies access, <code>postmessage_sender</code> is loaded in the window and the token is transmited to our main window. <code>postmessage_sender</code> must be a HTTPS URL pointing to a document, that calls <code>API.auth._postTokenUp()</code></p>
+<pre><code class="lang-javascript">API.auth.requestTokenPopup(
+    function(){
+        //can work with API
+    },
+    function(){
+        //request denied
+    },
+    &quot;https://127.0.0.1:9999/dist/resources/token.html&quot;
+);</code></pre>
 <p><code>API.auth.requestTokenIframe</code> method appends an iframe to given <code>node</code> and opens the log-in prompt in there. Once the user accepts or denies access, current page is loaded again in the iframe and the token is extracted from it. It is recommended to pass <code>path</code> to <code>API.auth.requestTokenIframe</code> to redirect to an empty page, not the current one. the <code>path</code> should be an absolute path in the current domain (starting with /).</p>
 <pre><code class="lang-javascript">API.auth.requestTokenIframe(
     document.body,

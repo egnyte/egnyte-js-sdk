@@ -29,13 +29,7 @@ var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
 
 Request an access token
 
-```javascript
-egnyte.API.auth.requestToken(function() {
-        var accessToken = egnyte.API.auth.getToken();
-    });
-```
-
-__Warning__: `API.auth.requestToken` will cause a page reload to let the user authorize the application to use the API.
+Call any of the `API.auth.requestToken*` methods.
 
 ### Initialize with token
 
@@ -75,8 +69,9 @@ Method | Arguments | Description
 --- | --- | ---
 API.auth.isAuthorized | | Returns `boolean` true if a token is present
 API.auth.setToken | `token` | Accepts a token string. New token overwrites the previous one
-API.auth.requestToken | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload
-API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location.
+API.auth.requestTokenReload | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload. (see examples/request_token.html)
+API.auth.requestTokenPopup | `success_callback`, `denied_callback`,`postmessage_sender` | Opens a new window or tab for the user. `postmessage_sender` is a fully qualified HTTPS URL to a copy of `dist/resources/token.html`. (see examples/request_token_popup.html)
+API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location. (see examples/request_token_iframe.html)
 API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string
@@ -91,11 +86,25 @@ API.auth.getUserInfo | | Returns promise that resolves to user info object
 `API.auth.requestToken` method loads the log-in prompt in current window. Once the user accepts or denies access, current page is loaded again and the whole code on it runs again. This time `API.auth.requestToken` will find the token as it was appended to URL and runs the success callback.
 
 ```javascript
-API.auth.requestToken(function(){
+API.auth.requestTokenReload(function(){
     //can work with API
 },function(){
     //request denied
 });
+```
+
+`API.auth.requestTokenPopup` method opens a window or tab with the log-in prompt. Once the user accepts or denies access, `postmessage_sender` is loaded in the window and the token is transmited to our main window. `postmessage_sender` must be a HTTPS URL pointing to a document, that calls `API.auth._postTokenUp()`
+
+```javascript
+API.auth.requestTokenPopup(
+    function(){
+        //can work with API
+    },
+    function(){
+        //request denied
+    },
+    "https://127.0.0.1:9999/dist/resources/token.html"
+);
 ```
 
 `API.auth.requestTokenIframe` method appends an iframe to given `node` and opens the log-in prompt in there. Once the user accepts or denies access, current page is loaded again in the iframe and the token is extracted from it. It is recommended to pass `path` to `API.auth.requestTokenIframe` to redirect to an empty page, not the current one. the `path` should be an absolute path in the current domain (starting with /).

@@ -531,7 +531,8 @@ var quotaRegex = /^<h1>Developer Over Qps/i;
 var promises = require(1);
 var helpers = require(3);
 var dom = require(2);
-var xhr = require(4);
+var messages = require(4);
+var xhr = require(5);
 
 
 
@@ -554,11 +555,11 @@ function Engine(options) {
 
 var enginePrototypeMethods = {};
 
-enginePrototypeMethods.reloadForToken = function () {
+enginePrototypeMethods._reloadForToken = function () {
     window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
 }
 
-enginePrototypeMethods.checkTokenResponse = function (success, denied, notoken, overrideWindow) {
+enginePrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
     var win = overrideWindow || window;
     if (!this.token) {
         this.userInfo = null;
@@ -566,7 +567,7 @@ enginePrototypeMethods.checkTokenResponse = function (success, denied, notoken, 
         if (access) {
             if (access.length > 1) {
                 this.token = access[1];
-                overrideWindow || (window.location.hash = "");
+                //overrideWindow || (window.location.hash = "");
                 success && success();
             } else {
                 //what now?
@@ -583,8 +584,8 @@ enginePrototypeMethods.checkTokenResponse = function (success, denied, notoken, 
     }
 }
 
-enginePrototypeMethods.requestToken = function (callback, denied) {
-    this.checkTokenResponse(callback, denied, helpers.bindThis(this, this.reloadForToken));
+enginePrototypeMethods.requestTokenReload = function (callback, denied) {
+    this._checkTokenResponse(callback, denied, helpers.bindThis(this, this._reloadForToken));
 }
 
 enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
@@ -604,7 +605,7 @@ enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, deni
                     }
                 };
 
-                self.checkTokenResponse(function () {
+                self._checkTokenResponse(function () {
                     iframe.src = "";
                     targetNode.removeChild(iframe);
                     callback();
@@ -616,6 +617,47 @@ enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, deni
             } catch (e) {}
         }
         targetNode.appendChild(iframe);
+    } else {
+        callback();
+    }
+
+}
+
+
+enginePrototypeMethods._postTokenUp = function () {
+    var self=this;
+    if (!this.token && window.name === this.options.channelMarker) {
+        var channel = {
+            marker: this.options.channelMarker,
+            sourceOrigin: this.options.egnyteDomainURL
+        };
+
+        this._checkTokenResponse(function () {
+            messages.sendMessage(window.opener, channel, "token", self.token);
+        }, function () {
+            messages.sendMessage(window.opener, channel, "denied","");
+        });
+
+    }
+}
+enginePrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
+    var self=this;
+    if (!this.token) {
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var win = window.open(url);
+        win.name = this.options.channelMarker;
+        var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
+            listener.destroy();
+            win.close();
+            if (message.action === "token") {
+                self.token = message.data;
+                callback && callback();
+            }
+            if (message.action === "denied") {
+                denied && denied();
+            }
+        });
+        var listener = dom.addListener(window, "message", handler);
     } else {
         callback();
     }
@@ -709,7 +751,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
 enginePrototypeMethods.promiseRequest = function (opts) {
     var defer = promises.defer();
     var self = this;
-    var performRequest = function () {
+    var requestFunction = function () {
         try {
             self.sendRequest(opts, function (error, response, body) {
                 if (error) {
@@ -731,26 +773,24 @@ enginePrototypeMethods.promiseRequest = function (opts) {
             });
         }
     }
-    this.addToQueue(performRequest);
-    return defer.promise;
-}
-
-enginePrototypeMethods.addToQueue = function (requestFunction) {
     if (!this.options.handleQuota) {
         requestFunction();
     } else {
+        //add to queue
         this.queue.push(requestFunction);
         //stop previous queue processing if any
         clearTimeout(this.quota.to);
         //start queue processing
         this.queueHandler();
     }
+    return defer.promise;
 }
+
 
 //gets bound to this in the constructor and saved as this.queueHandler
 function _rollQueue() {
     if (this.queue.length) {
-        var currentWait = this.quotaWaitTime();
+        var currentWait = _quotaWaitTime(this.quota,this.options.QPS);
         if (currentWait === 0) {
             var requestFunction = this.queue.shift();
             requestFunction();
@@ -761,22 +801,22 @@ function _rollQueue() {
 
 }
 
-enginePrototypeMethods.quotaWaitTime = function () {
+function _quotaWaitTime (quota,QPS) {
     var now = +new Date();
-    var diff = now - this.quota.startOfTheSecond;
+    var diff = now - quota.startOfTheSecond;
     //in the middle of retrying a denied call
-    if (this.quota.retrying) {
-        this.quota.startOfTheSecond = now + this.quota.retrying;
-        return this.quota.retrying + 1;
+    if (quota.retrying) {
+        quota.startOfTheSecond = now + quota.retrying;
+        return quota.retrying + 1;
     }
     //last call was over a second ago, can start
     if (diff > 1000) {
-        this.quota.startOfTheSecond = now;
-        this.quota.calls = 0;
+        quota.startOfTheSecond = now;
+        quota.calls = 0;
         return 0;
     }
     //calls limit not reached
-    if (this.quota.calls < this.options.QPS) {
+    if (quota.calls < QPS) {
         return 0;
     }
     //calls limit reached, delay to the next second
@@ -808,7 +848,7 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"1":18,"2":19,"3":20,"4":3}],11:[function(require,module,exports){
+},{"1":18,"2":19,"3":20,"4":21,"5":3}],11:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 

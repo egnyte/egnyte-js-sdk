@@ -32,7 +32,7 @@
                 mobile: true
             });
 
-            eg.API.auth.requestToken(function() {
+            eg.API.auth.requestTokenReload(function() {
                 document.getElementById("token").innerHTML = "Your token: "+eg.API.auth.getToken();
             });
 
