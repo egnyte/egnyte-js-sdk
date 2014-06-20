@@ -20,7 +20,7 @@ function View(opts, txtOverride) {
     this.els = {};
     this.evs = [];
 
-    if(!opts.noFont){
+    if (!opts.noFont) {
         renderFont();
     }
 
@@ -152,14 +152,14 @@ viewPrototypeMethods.errorHandler = function (e) {
 // rendering
 //================================================================= 
 
-//all this mess is for IE8
+//all this mess is because IE8 dies on @include in css
 function renderFont() {
     if (!fontLoaded) {
         (document.getElementsByTagName("head")[0]).appendChild(jungle([
             ["link", {
-                href:"https://fonts.googleapis.com/css?family=Open+Sans:400,600",
-                type:"text/css",
-                rel:"stylesheet"
+                    href: "https://fonts.googleapis.com/css?family=Open+Sans:400,600",
+                    type: "text/css",
+                    rel: "stylesheet"
                 }
             ]
         ]));
@@ -169,7 +169,7 @@ function renderFont() {
 
 viewPrototypeMethods.render = function () {
     var self = this;
-    
+
     this.els.list = document.createElement("ul");
 
     var topbar = ["div.eg-picker-bar.eg-top"];
@@ -179,6 +179,8 @@ viewPrototypeMethods.render = function () {
     }
     topbar.push(this.els.back);
     topbar.push(this.els.crumb);
+
+    topbar = jungle([topbar]).childNodes[0];
 
     var layoutFragm = jungle([["div.eg-theme.eg-picker",
         topbar,
@@ -196,6 +198,8 @@ viewPrototypeMethods.render = function () {
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
+    //IE <=8 detection
+    (!+"\v1") && (this.els.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px");
 
     this.breadcrumbify(this.model.path);
 
