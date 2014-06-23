@@ -26,7 +26,7 @@ function exists(pathFromRoot) {
         if (result.response && result.response.statusCode == 404) {
             return false;
         } else {
-            throw result.error;
+            throw result;
         }
     });
 }
@@ -124,14 +124,10 @@ function storeFile(pathFromRoot, fileOrBlob) {
             body: formData,
         });
     }).then(function (result) { //result.response result.body
-        if (result.response.statusCode === 200 || result.response.statusCode === 201) {
-            return ({
-                id: result.response.getResponseHeader("etag"),
-                path: pathFromRoot
-            });
-        } else {
-            throw new Error(result.response.statusCode);
-        }
+        return ({
+            id: result.response.getResponseHeader("etag"),
+            path: pathFromRoot
+        });
     });
 }
 

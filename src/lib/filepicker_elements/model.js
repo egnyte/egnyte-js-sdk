@@ -115,7 +115,7 @@ Model.prototype.fetch = function (path) {
         self._set(m);
     }).error(function (e) {
         self.processing = false;
-        self.onerror(e.error || e);
+        self.onerror(e);
     });
 }
 

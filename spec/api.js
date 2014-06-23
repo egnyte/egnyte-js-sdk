@@ -122,6 +122,31 @@ describe("API to JS (integration test)", function () {
 
         });
 
+        it("Forbids creating folder in root", function (done) {
+            eg.API.storage.createFolder("/foo")
+                .then(function (e) {
+                    expect(this).toAutoFail("was created");
+                })
+                .error(function (e) {
+                    expect(e.response.statusCode).toEqual(409);
+                    done();
+                });
+
+        });
+        
+        it("Gets a 596 on weird mess in paths", function (done) {
+            eg.API.storage.exists("%20foo")
+                .then(function (e) {
+                    expect(this).toAutoFail(e);
+                })
+                .error(function (e) {
+                    console.log(e);
+                    expect(e.response.statusCode).toEqual(596);
+                    done();
+                });
+
+        });
+
         it("Can move a folder", function (done) {
             eg.API.storage.move(testpath, testpath2)
                 .then(function (e) {
@@ -311,7 +336,7 @@ describe("API to JS (integration test)", function () {
             });
 
         });
-        
+
         it("Can find one link matching filter", function (done) {
 
             eg.API.link.findOne({

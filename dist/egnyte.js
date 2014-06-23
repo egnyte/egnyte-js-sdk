@@ -625,7 +625,7 @@ enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, deni
 
 
 enginePrototypeMethods._postTokenUp = function () {
-    var self=this;
+    var self = this;
     if (!this.token && window.name === this.options.channelMarker) {
         var channel = {
             marker: this.options.channelMarker,
@@ -635,13 +635,13 @@ enginePrototypeMethods._postTokenUp = function () {
         this._checkTokenResponse(function () {
             messages.sendMessage(window.opener, channel, "token", self.token);
         }, function () {
-            messages.sendMessage(window.opener, channel, "denied","");
+            messages.sendMessage(window.opener, channel, "denied", "");
         });
 
     }
 }
 enginePrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
-    var self=this;
+    var self = this;
     if (!this.token) {
         var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
         var win = window.open(url);
@@ -709,6 +709,18 @@ function params(obj) {
     return str.join("&");
 }
 
+enginePrototypeMethods.newError = function (result, errorFallback) {
+    var error = new Error(result.error || errorFallback);
+    if (result.response) {
+        error.statusCode = ~~ (result.response.statusCode);
+        error.response = result.response;
+        error.body = result.body;
+    } else {
+        error.statusCode = 0;
+    }
+    return error;
+}
+
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
@@ -723,18 +735,27 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
+            var retryAfter = response.getResponseHeader("Retry-After");
             if (
                 self.options.handleQuota &&
                 response.statusCode === 403 &&
-                response.getResponseHeader("Retry-After")
+                retryAfter
             ) {
-                //retry
-                console && console.warn("develoer over QPS, retrying");
-                self.quota.retrying = 1000 * ~~(response.getResponseHeader("Retry-After"));
-                setTimeout(function () {
-                    self.quota.retrying = 0;
-                    self.sendRequest(originalOpts, callback);
-                }, self.quota.retrying);
+                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+                if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
+                    //retry
+                    console && console.warn("develoer over QPS, retrying");
+                    self.quota.retrying = 1000 * ~~(retryAfter);
+                    setTimeout(function () {
+                        self.quota.retrying = 0;
+                        self.sendRequest(originalOpts, callback);
+                    }, self.quota.retrying);
+
+                }
+                if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
+                    error.RATE = true;
+                    callback.call(this, error, response, body);
+                }
 
             } else {
                 callback.call(this, error, response, body);
@@ -755,11 +776,11 @@ enginePrototypeMethods.promiseRequest = function (opts) {
         try {
             self.sendRequest(opts, function (error, response, body) {
                 if (error) {
-                    defer.reject({
+                    defer.reject(self.newError({
                         error: error,
                         response: response,
                         body: body
-                    });
+                    }));
                 } else {
                     defer.resolve({
                         response: response,
@@ -768,9 +789,9 @@ enginePrototypeMethods.promiseRequest = function (opts) {
                 }
             });
         } catch (error) {
-            defer.reject({
+            defer.reject(self.newError({
                 error: error
-            });
+            }));
         }
     }
     if (!this.options.handleQuota) {
@@ -790,7 +811,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
 //gets bound to this in the constructor and saved as this.queueHandler
 function _rollQueue() {
     if (this.queue.length) {
-        var currentWait = _quotaWaitTime(this.quota,this.options.QPS);
+        var currentWait = _quotaWaitTime(this.quota, this.options.QPS);
         if (currentWait === 0) {
             var requestFunction = this.queue.shift();
             requestFunction();
@@ -801,7 +822,7 @@ function _rollQueue() {
 
 }
 
-function _quotaWaitTime (quota,QPS) {
+function _quotaWaitTime(quota, QPS) {
     var now = +new Date();
     var diff = now - quota.startOfTheSecond;
     //in the middle of retrying a denied call
@@ -877,7 +898,7 @@ function exists(pathFromRoot) {
         if (result.response && result.response.statusCode == 404) {
             return false;
         } else {
-            throw result.error;
+            throw result;
         }
     });
 }
@@ -975,14 +996,10 @@ function storeFile(pathFromRoot, fileOrBlob) {
             body: formData,
         });
     }).then(function (result) { //result.response result.body
-        if (result.response.statusCode === 200 || result.response.statusCode === 201) {
-            return ({
-                id: result.response.getResponseHeader("etag"),
-                path: pathFromRoot
-            });
-        } else {
-            throw new Error(result.response.statusCode);
-        }
+        return ({
+            id: result.response.getResponseHeader("etag"),
+            path: pathFromRoot
+        });
     });
 }
 
@@ -1054,7 +1071,7 @@ module.exports = function (apihelper, opts) {
             if (!setup) {
                 throw new Error("Setup required as a second argument");
             }
-            var close, fpView, fpModel,
+            var close, openPath, fpView, fpModel,
                 defaults = {
                     folder: true,
                     file: true,
@@ -1067,6 +1084,10 @@ module.exports = function (apihelper, opts) {
                 fpView = null;
                 fpModel = null;
             };
+
+            openPath = function (path) {
+                fpModel.fetch(path || "/");
+            }
 
             fpModel = new Model(API, {
                 select: selectOpts,
@@ -1092,9 +1113,10 @@ module.exports = function (apihelper, opts) {
                 keys: setup.keys
             }, setup.texts);
 
-            fpModel.fetch(setup.path || "/");
+            openPath(setup.path || "/");
 
             return {
+                openPath: openPath,
                 close: close,
             };
         };
@@ -1378,7 +1400,7 @@ Model.prototype.fetch = function (path) {
         self._set(m);
     }).error(function (e) {
         self.processing = false;
-        self.onerror(e.error || e);
+        self.onerror(e);
     });
 }
 
@@ -1581,15 +1603,14 @@ viewPrototypeMethods.errorHandler = function (e) {
         var message = this.handlers.error(e);
         if (typeof message === "string") {
             this.renderProblem("*", message);
+            return;
         } else {
             if (message === false) {
                 return;
             }
-            this.renderProblem(~~(e.statusCode), e.message);
         }
-    } else {
-        this.renderProblem(~~(e.statusCode), e.message);
     }
+    this.renderProblem((e.RATE) ? "R" : e.statusCode, e.message);
 }
 
 
@@ -1754,8 +1775,10 @@ var msgs = {
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
     "409": "Forbidden location (409)",
+    "596": "Path contains an unexpected character (596)",
     "4XX": "Incorrect API request",
     "5XX": "API server error, try again later",
+    "R": "API use limit reached",
     "0": "Browser error, try again",
     "?": "Unknown error"
 }

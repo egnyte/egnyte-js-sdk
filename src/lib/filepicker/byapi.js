@@ -16,7 +16,7 @@
             if (!setup) {
                 throw new Error("Setup required as a second argument");
             }
-            var close, fpView, fpModel,
+            var close, openPath, fpView, fpModel,
                 defaults = {
                     folder: true,
                     file: true,
@@ -29,6 +29,10 @@
                 fpView = null;
                 fpModel = null;
             };
+
+            openPath = function (path) {
+                fpModel.fetch(path || "/");
+            }
 
             fpModel = new Model(API, {
                 select: selectOpts,
@@ -54,9 +58,10 @@
                 keys: setup.keys
             }, setup.texts);
 
-            fpModel.fetch(setup.path || "/");
+            openPath(setup.path || "/");
 
             return {
+                openPath: openPath,
                 close: close,
             };
         };
