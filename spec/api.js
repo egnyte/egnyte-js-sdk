@@ -135,7 +135,7 @@ describe("API to JS (integration test)", function () {
         });
         
         it("Gets a 596 on weird mess in paths", function (done) {
-            eg.API.storage.exists("%20foo")
+            eg.API.storage.exists(" foo")
                 .then(function (e) {
                     expect(this).toAutoFail(e);
                 })

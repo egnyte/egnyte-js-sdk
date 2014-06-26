@@ -13,6 +13,7 @@ function each(collection, fun) {
         }
     }
 }
+var disallowedChars = /[":<>|?*+&#\\]/;
 
 module.exports = {
     //simple extend function
@@ -30,9 +31,9 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    bindThis: function(that,func){
-        return function(){
-            return func.apply(that,arguments);
+    bindThis: function (that, func) {
+        return function () {
+            return func.apply(that, arguments);
         }
     },
     each: each,
@@ -43,12 +44,12 @@ module.exports = {
         if (!name) {
             throw new Error("No name given");
         }
-        var name2 = [];
-        each(name.split("/"), function (e) {
-            name2.push(e.replace(/[?*&#%<>]*/gi, ""));
-        });
-        name2 = name2.join("/").replace(/^\/\//, "/");
+        if (disallowedChars.test(name)) {
+            throw new Error("Disallowed characters in path");
+        }
 
-        return (name2);
+        name = name.replace(/^\/\//, "/");
+
+        return (name);
     }
 };
