@@ -198,8 +198,7 @@ viewPrototypeMethods.render = function () {
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
-    //IE <=8 detection
-    (!+"\v1") && (myElements.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px");
+    myElements.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px";
 
     this.breadcrumbify(this.model.path);
 
