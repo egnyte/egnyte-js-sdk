@@ -304,17 +304,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = {
-    "404": "This item doesn't exist (404)",
-    "403": "Access denied (403)",
-    "409": "Forbidden location (409)",
-    "596": "Path contains an unexpected character (596)",
-    "4XX": "Incorrect API request",
-    "5XX": "API server error, try again later",
-    "R": "API use limit reached",
-    "0": "Browser error, try again",
-    "?": "Unknown error"
-}
+var msgs = require("./errormsg.js");
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     if (this.els.list) {
@@ -328,7 +318,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]]));
     }
 }
 

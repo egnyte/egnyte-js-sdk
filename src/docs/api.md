@@ -6,7 +6,7 @@
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
 
-## Disclaimer
+## Introduction
 
 Egnyte SDK contains methods helping the developer with authorization, FileSystem API and Link API.
 
@@ -21,7 +21,7 @@ Need API key? [Get API access here!](https://developers.egnyte.com/member/regist
 Initialize Egnyte SDK to use API with your key
 
 ```javascript
-var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
+var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
         key: YOURAPIKEY,
         mobile: true      //optional, changes login prompt to mobile friendly
     });
@@ -36,7 +36,7 @@ Call any of the `API.auth.requestToken*` methods.
 If the token is already stored securely and there is no need to request it, it can be passed as initial configuration.
 
 ```javascript
-var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
+var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
         token: YOURAPITOKEN
     });
 ```
@@ -52,7 +52,7 @@ The SDK transparently handles user quota by default. All calls have a default re
 To set your query per second quota to something else than 2, initialize with `QPS` option
 
 ```javascript
-var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
+var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
         key: YOURAPIKEY,
         mobile: true,
         QPS: 2

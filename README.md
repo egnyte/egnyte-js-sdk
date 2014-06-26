@@ -1,4 +1,4 @@
-Egnyte SDK
+Egnyte JavaScript SDK
 =============
 
 ## Features
@@ -36,4 +36,7 @@ See `docs/` or explore:
 
 The `examples/` folder could also be helpful.
 
-   
+
+## License
+
+MIT License

@@ -411,7 +411,7 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":8,"3":12,"4":13,"5":20}],8:[function(require,module,exports){
+},{"1":6,"2":8,"3":12,"4":13,"5":21}],8:[function(require,module,exports){
 var APIMain = require(2);
 var storageFacade = require(3);
 var linkFacade = require(1);
@@ -522,7 +522,7 @@ module.exports = function (apihelper, opts) {
         findOne: findOne
     };
 };
-},{"1":18,"2":20}],10:[function(require,module,exports){
+},{"1":19,"2":21}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
@@ -869,7 +869,7 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"1":18,"2":19,"3":20,"4":21,"5":3}],11:[function(require,module,exports){
+},{"1":19,"2":20,"3":21,"4":22,"5":3}],11:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 
@@ -1052,7 +1052,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"1":18,"2":20}],12:[function(require,module,exports){
+},{"1":19,"2":21}],12:[function(require,module,exports){
 (function () {
 
     var helpers = require(4);
@@ -1129,7 +1129,7 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"1":15,"2":16,"3":19,"4":20}],13:[function(require,module,exports){
+},{"1":16,"2":17,"3":20,"4":21}],13:[function(require,module,exports){
 (function () {
 
     var helpers = require(2);
@@ -1227,7 +1227,21 @@ module.exports = function (apihelper, opts) {
 
 
 })();
-},{"1":19,"2":20,"3":21}],14:[function(require,module,exports){
+},{"1":20,"2":21,"3":22}],14:[function(require,module,exports){
+module.exports={
+    "404": "This item doesn't exist (404)",
+    "403": "Access denied (403)",
+    "409": "Forbidden location (409)",
+    "596": "Path contains an unexpected character (596)",
+    "4XX": "Incorrect API request",
+    "5XX": "API server error, try again later",
+    "R": "API use limit reached",
+    "0": "Browser error, try again",
+    "?": "Unknown error"
+}
+
+
+},{}],15:[function(require,module,exports){
 var helpers = require(1);
 var mapping = {};
 helpers.each({
@@ -1282,7 +1296,7 @@ module.exports = {
     getExtensionFilter: getExtensionFilter
 }
 
-},{"1":20}],15:[function(require,module,exports){
+},{"1":21}],16:[function(require,module,exports){
 var helpers = require(1);
 var exts = require(2);
 
@@ -1464,7 +1478,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"1":20,"2":14}],16:[function(require,module,exports){
+},{"1":21,"2":15}],17:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -1473,7 +1487,7 @@ var helpers = require(3);
 var texts = require(4);
 var jungle = require(1);
 
-require(5);
+require(6);
 
 var fontLoaded = false;
 
@@ -1771,17 +1785,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = {
-    "404": "This item doesn't exist (404)",
-    "403": "Access denied (403)",
-    "409": "Forbidden location (409)",
-    "596": "Path contains an unexpected character (596)",
-    "4XX": "Incorrect API request",
-    "5XX": "API server error, try again later",
-    "R": "API use limit reached",
-    "0": "Browser error, try again",
-    "?": "Unknown error"
-}
+var msgs = require(5);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     if (this.els.list) {
@@ -1795,7 +1799,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-folder"], this.txt("This folder is empty")]]));
+        this.els.list.appendChild(jungle([["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]]));
     }
 }
 
@@ -1854,10 +1858,10 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"1":23,"2":19,"3":20,"4":22,"5":17}],17:[function(require,module,exports){
+},{"1":24,"2":20,"3":21,"4":23,"5":14,"6":18}],18:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;height:calc(100% - 100px);overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 96px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var pinkySwear = require(1);
 
 module.exports = {
@@ -1881,7 +1885,7 @@ module.exports = {
 
 }
 
-},{"1":1}],19:[function(require,module,exports){
+},{"1":1}],20:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1951,7 +1955,7 @@ module.exports = {
 
 }
 
-},{"1":2}],20:[function(require,module,exports){
+},{"1":2}],21:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2006,7 +2010,7 @@ module.exports = {
         return (name2);
     }
 };
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2050,7 +2054,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":20}],22:[function(require,module,exports){
+},{"1":21}],23:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -2063,7 +2067,7 @@ module.exports = function (overrides) {
         return txt;
     };
 };
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {
