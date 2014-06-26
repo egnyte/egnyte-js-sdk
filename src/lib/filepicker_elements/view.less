@@ -119,6 +119,7 @@ a.eg-btn{
         background: @bodycl;
     }
     &>*{
+        //display:inline-block;
         float:left;
     }
 }
@@ -148,7 +149,7 @@ a.eg-btn{
 
 .eg-picker-path{
     min-width: 60%;
-    width: ~"calc( 100% - 96px )";
+    width: ~"calc( 100% - 110px )";
     line-height: @barheight - 2 * @spacing;
     color:@fontclB;
     font-size: @fontsize+2;
@@ -208,6 +209,7 @@ a.eg-btn{
         border-style: solid;
         border-width: 0 0 3px 3px;
         transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
         -moz-transform: rotate(45deg);
         -webkit-transform: rotate(45deg);
         width: 7px;
