@@ -1264,15 +1264,15 @@ helpers.each({
     });
 });
 
-var fileext = /.*\.([a-z0-9]*)$/i;
 
 function _mime(ext) {
     return mapping[ext] || "unknown";
 }
 
 function getExt(name) {
-    if (fileext.test(name)) {
-        return name.replace(fileext, "$1");
+    var splitted = name.split(".");
+    if (splitted.length>1) {
+        return splitted[splitted.length-1];
     } else {
         return "";
     }
