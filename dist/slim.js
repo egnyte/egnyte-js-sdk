@@ -429,6 +429,10 @@ function psychicMessageParser(mess, statusCode) {
     var nice;
     try {
         nice = findMessage(JSON.parse(mess));
+        if (!nice) {
+            //fallback if nothing found - return raw JSON string anyway
+            nice = mess;
+        }
     } catch (e) {
         nice = mess.replace(htmlMsgRegex, "$1");
     }
