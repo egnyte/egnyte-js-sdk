@@ -107,21 +107,15 @@ function move(pathFromRoot, newPath) {
     });
 }
 
-
 function storeFile(pathFromRoot, fileOrBlob) {
     return promises.start(true).then(function () {
-        if (!window.FormData) {
-            throw new Error("Unsupported browser");
-        }
         var file = fileOrBlob;
-        var formData = new window.FormData();
-        formData.append('file', file);
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
         return api.promiseRequest({
             method: "POST",
             url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-            body: formData,
+            body: file,
         });
     }).then(function (result) { //result.response result.body
         return ({
@@ -130,6 +124,30 @@ function storeFile(pathFromRoot, fileOrBlob) {
         });
     });
 }
+
+//currently not supported by back-end
+//function storeFileMultipart(pathFromRoot, fileOrBlob) {
+//    return promises.start(true).then(function () {
+//        if (!window.FormData) {
+//            throw new Error("Unsupported browser");
+//        }
+//        var file = fileOrBlob;
+//        var formData = new window.FormData();
+//        formData.append('file', file);
+//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+//
+//        return api.promiseRequest({
+//            method: "POST",
+//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+//            body: formData,
+//        });
+//    }).then(function (result) { //result.response result.body
+//        return ({
+//            id: result.response.getResponseHeader("etag"),
+//            path: pathFromRoot
+//        });
+//    });
+//}
 
 function remove(pathFromRoot, versionEntryId) {
     return promises.start(true).then(function () {

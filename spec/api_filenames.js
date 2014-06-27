@@ -24,13 +24,11 @@ describe("Item names / ", function () {
                 type: "text/xml"
             });
         } catch (e) {
-            var builder = new WebKitBlobBuilder();
-            builder.append(content);
-            var blob = builder.getBlob();
+            //napaeeee!
+            var blob = content;
         }
         return blob;
     }
-
 
     beforeEach(function () {
         jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy

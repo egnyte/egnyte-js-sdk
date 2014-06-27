@@ -63,6 +63,9 @@ module.exports = function (grunt) {
                 }
             }
         },
+        nodeunit: {
+            all: ['src/unittests/*.js']          
+        },
         connect: {
             server: {
                 options: {
@@ -104,12 +107,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
 
 
-    grunt.registerTask("test", ["dist", "jasmine:all"]);
+    grunt.registerTask("test", ["nodeunit", "dist", "jasmine:all"]);
     grunt.registerTask("dist", ["clean", "copy", "browserify", "unpathify", "uglify"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
 

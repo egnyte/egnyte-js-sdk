@@ -16,9 +16,8 @@ describe("API to JS (integration test)", function () {
                 type: "text/xml"
             });
         } catch (e) {
-            var builder = new WebKitBlobBuilder();
-            builder.append(content);
-            var blob = builder.getBlob();
+            //napaeeee!
+            var blob = content;
         }
         return blob;
     }
@@ -133,7 +132,7 @@ describe("API to JS (integration test)", function () {
                 });
 
         });
-        
+
         it("Gets a 596 on weird mess in paths", function (done) {
             eg.API.storage.exists(" foo")
                 .then(function (e) {
@@ -210,6 +209,15 @@ describe("API to JS (integration test)", function () {
                     expect(this).toAutoFail(e);
                 });
 
+        });
+
+        it("Can download a file and use content", function (done) {
+            eg.API.storage.download(testpath, false /*non binary*/ ).then(function (xhr) {
+
+                expect(xhr.responseText).toMatch(/^<a id="a"><b id="b">/);
+
+                done();
+            });
         });
 
         it("Can store another version of a file", function (done) {

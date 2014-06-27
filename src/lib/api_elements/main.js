@@ -7,6 +7,7 @@ var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 var dom = require('../reusables/dom');
 var messages = require('../reusables/messages');
+var errorify = require("./errorify");
 var xhr = require("xhr");
 
 
@@ -184,18 +185,6 @@ function params(obj) {
     return str.join("&");
 }
 
-enginePrototypeMethods.newError = function (result, errorFallback) {
-    var error = new Error(result.error || errorFallback);
-    if (result.response) {
-        error.statusCode = ~~ (result.response.statusCode);
-        error.response = result.response;
-        error.body = result.body;
-    } else {
-        error.statusCode = 0;
-    }
-    return error;
-}
-
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
@@ -251,7 +240,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
         try {
             self.sendRequest(opts, function (error, response, body) {
                 if (error) {
-                    defer.reject(self.newError({
+                    defer.reject(errorify({
                         error: error,
                         response: response,
                         body: body
@@ -264,7 +253,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
                 }
             });
         } catch (error) {
-            defer.reject(self.newError({
+            defer.reject(errorify({
                 error: error
             }));
         }

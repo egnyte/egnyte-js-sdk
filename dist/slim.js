@@ -401,7 +401,61 @@ module.exports = function (options) {
         link: link
     };
 };
-},{"1":8,"2":9,"3":10}],8:[function(require,module,exports){
+},{"1":9,"2":10,"3":11}],8:[function(require,module,exports){
+var isMsg = {
+    "msg": 1,
+    "message": 1,
+    "errorMessage": 1
+};
+
+var htmlMsgRegex = /^\s*<h1>([^<]*)<\/h1>\s*$/gi;
+
+function findMessage(obj) {
+    var result;
+    for (var i in obj) {
+        if (isMsg[i]) {
+            return obj[i];
+        }
+        if (typeof obj[i] === "object") {
+            result = findMessage(obj[i]);
+            if (result) {
+                return result;
+            }
+        }
+    }
+}
+//this should understand all the message formats from the server and translate to a nice message
+function psychicMessageParser(mess, statusCode) {
+    var nice;
+    try {
+        nice = findMessage(JSON.parse(mess));
+    } catch (e) {
+        nice = mess.replace(htmlMsgRegex, "$1");
+    }
+    if (statusCode === 404 && mess.length > 300) {
+        //server returned a dirty 404
+        nice = "Not found";
+    }
+    return nice;
+}
+
+module.exports = function (result) {
+    var error, code;
+    if (result.response) {
+        code = ~~ (result.response.statusCode);
+        error = result.error;
+        error.statusCode = code;
+        error.message = psychicMessageParser(result.error.message, code);
+        error.response = result.response;
+        error.body = result.body;
+    } else {
+        error = result.error;
+        error.statusCode = 0;
+    }
+    return error;
+}
+
+},{}],9:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 
@@ -495,7 +549,7 @@ module.exports = function (apihelper, opts) {
         findOne: findOne
     };
 };
-},{"1":11,"2":13}],9:[function(require,module,exports){
+},{"1":12,"2":14}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
@@ -505,7 +559,8 @@ var promises = require(1);
 var helpers = require(3);
 var dom = require(2);
 var messages = require(4);
-var xhr = require(5);
+var errorify = require(5);
+var xhr = require(6);
 
 
 
@@ -682,18 +737,6 @@ function params(obj) {
     return str.join("&");
 }
 
-enginePrototypeMethods.newError = function (result, errorFallback) {
-    var error = new Error(result.error || errorFallback);
-    if (result.response) {
-        error.statusCode = ~~ (result.response.statusCode);
-        error.response = result.response;
-        error.body = result.body;
-    } else {
-        error.statusCode = 0;
-    }
-    return error;
-}
-
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
@@ -749,7 +792,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
         try {
             self.sendRequest(opts, function (error, response, body) {
                 if (error) {
-                    defer.reject(self.newError({
+                    defer.reject(errorify({
                         error: error,
                         response: response,
                         body: body
@@ -762,7 +805,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
                 }
             });
         } catch (error) {
-            defer.reject(self.newError({
+            defer.reject(errorify({
                 error: error
             }));
         }
@@ -842,7 +885,7 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"1":11,"2":12,"3":13,"4":14,"5":3}],10:[function(require,module,exports){
+},{"1":12,"2":13,"3":14,"4":15,"5":8,"6":3}],11:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 
@@ -952,21 +995,15 @@ function move(pathFromRoot, newPath) {
     });
 }
 
-
 function storeFile(pathFromRoot, fileOrBlob) {
     return promises.start(true).then(function () {
-        if (!window.FormData) {
-            throw new Error("Unsupported browser");
-        }
         var file = fileOrBlob;
-        var formData = new window.FormData();
-        formData.append('file', file);
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
         return api.promiseRequest({
             method: "POST",
             url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-            body: formData,
+            body: file,
         });
     }).then(function (result) { //result.response result.body
         return ({
@@ -975,6 +1012,30 @@ function storeFile(pathFromRoot, fileOrBlob) {
         });
     });
 }
+
+//currently not supported by back-end
+//function storeFileMultipart(pathFromRoot, fileOrBlob) {
+//    return promises.start(true).then(function () {
+//        if (!window.FormData) {
+//            throw new Error("Unsupported browser");
+//        }
+//        var file = fileOrBlob;
+//        var formData = new window.FormData();
+//        formData.append('file', file);
+//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+//
+//        return api.promiseRequest({
+//            method: "POST",
+//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+//            body: formData,
+//        });
+//    }).then(function (result) { //result.response result.body
+//        return ({
+//            id: result.response.getResponseHeader("etag"),
+//            path: pathFromRoot
+//        });
+//    });
+//}
 
 function remove(pathFromRoot, versionEntryId) {
     return promises.start(true).then(function () {
@@ -1025,7 +1086,7 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"1":11,"2":13}],11:[function(require,module,exports){
+},{"1":12,"2":14}],12:[function(require,module,exports){
 var pinkySwear = require(1);
 
 module.exports = {
@@ -1049,7 +1110,7 @@ module.exports = {
 
 }
 
-},{"1":1}],12:[function(require,module,exports){
+},{"1":1}],13:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1119,7 +1180,7 @@ module.exports = {
 
 }
 
-},{"1":2}],13:[function(require,module,exports){
+},{"1":2}],14:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1175,7 +1236,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -1219,7 +1280,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":13}],15:[function(require,module,exports){
+},{"1":14}],16:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -1242,4 +1303,4 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":7,"3":13}]},{},[15])
+},{"1":6,"2":7,"3":14}]},{},[16])
