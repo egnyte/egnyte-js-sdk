@@ -1,5 +1,5 @@
 {
-  "name": "egnyte-sdk",
+  "name": "egnyte-js-sdk",
   "version": "1.0.0",
   "description": "An SDK for Egnyte integrations",
   "main": "egnyte.js",
@@ -12,9 +12,9 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "dependencies": {
-    "pinkyswear": "^2.1",
+    "pinkyswear": "2.0.1",
     "vkey": "0.0.3",
-    "xhr": "git://github.com/naugtur/xhr.git"
+    "xhr": "1.10"
   },
   "devDependencies": {
     "browserify": "^4.0.0",

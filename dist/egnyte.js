@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function(target) {
 	var undef;
-
+	
 	function isFunction(f) {
 		return typeof f == 'function';
 	}
@@ -9,14 +9,12 @@
 		return typeof f == 'object';
 	}
 	function defer(callback) {
-		if (typeof setImmediate != 'undefined')
-			setImmediate(callback);
-		else if (typeof process != 'undefined' && process['nextTick'])
+		if (typeof process != 'undefined' && process['nextTick'])
 			process['nextTick'](callback);
 		else
 			setTimeout(callback, 0);
 	}
-
+	
 	target[0][target[1]] = function pinkySwear() {
 		var state;           // undefined/null = pending, true = fulfilled, false = rejected
 		var values = [];     // an array of values as arguments for the then() handlers
@@ -34,7 +32,7 @@
 			}
 			return state;
 		};
-
+		
 		set['then'] = function (onFulfilled, onRejected) {
 			var promise2 = pinkySwear();
 			var callCallbacks = function() {
@@ -55,7 +53,7 @@
 				   					promise2(true, arguments);
 		   					}
 		   					catch(e) {
-		   						if (!cbCalled++)
+		   						if (!cbCalled++) 
 		   							promise2(false, [e]);
 		   					}
 		   				}
@@ -71,7 +69,7 @@
 			if (state != null)
 				defer(callCallbacks);
 			else
-				deferred.push(callCallbacks);
+				deferred.push(callCallbacks);    		
 			return promise2;
 		};
 
@@ -82,7 +80,7 @@
 		set['error'] = function(func) { return set['then'](0, func); };
 		return set;
 	};
-})(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
+})(typeof module === 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 },{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
@@ -262,6 +260,7 @@ function createXHR(options, callback) {
 
     if ("json" in options) {
         isJson = true
+        headers["Accept"] = "application/json"
         if (method !== "GET" && method !== "HEAD") {
             headers["Content-Type"] = "application/json"
             body = JSON.stringify(options.json)
@@ -297,6 +296,12 @@ function createXHR(options, callback) {
     if ("responseType" in options) {
         xhr.responseType = options.responseType
     }
+    
+    if ("beforeSend" in options && 
+        typeof options.beforeSend === "function"
+    ) {
+        options.beforeSend(xhr)
+    }
 
     xhr.send(body)
 
@@ -311,21 +316,22 @@ function createXHR(options, callback) {
     function load() {
         var error = null
         var status = xhr.statusCode = xhr.status
-        var body = xhr.body = xhr.response ||
-            xhr.responseText || xhr.responseXML
+        // Chrome with requestType=blob throws errors arround when even testing access to responseText
+        var body = null
+
+        if (xhr.response) {
+            body = xhr.body = xhr.response
+        } else if (xhr.responseType === 'text' || xhr.responseType === '') {
+            body = xhr.body = xhr.responseText || xhr.responseXML
+        }
 
         if (status === 1223) {
             status = 204
         }
 
         if (status === 0 || (status >= 400 && status < 600)) {
-            var message;
-            try{
-            message = xhr.responseText;
-            }catch(e){
-                // accessing xhr.responseText can throw errors when xhr.responseType is changed
-            }
-            message = message || messages[String(xhr.status).charAt(0)];
+            var message = (typeof body === "string" ? body : false) ||
+                messages[String(xhr.status).charAt(0)]
             error = new Error(message)
 
             error.statusCode = xhr.status
