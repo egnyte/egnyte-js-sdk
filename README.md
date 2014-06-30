@@ -39,4 +39,6 @@ The `examples/` folder could also be helpful.
 
 ## License
 
-MIT License
+Apache2 License
+
+http://opensource.org/licenses/Apache-2.0

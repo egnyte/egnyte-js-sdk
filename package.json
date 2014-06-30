@@ -10,7 +10,7 @@
     "filepicker"
   ],
   "author": "ztenerowicz@egnyte.com",
-  "license": "MIT",
+  "license": "Apache2",
   "dependencies": {
     "pinkyswear": "^2.1",
     "vkey": "0.0.3",
