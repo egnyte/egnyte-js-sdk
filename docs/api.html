@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="en">
+<!-----------------------------------------------------------------
 
+   THIS FILE WAS GENERATED FROM SRC/DOCS
+   TO CHANGE DOCUMENTATION EDIT .md FILES
+
+------------------------------------------------------------------->
 <head>
     <meta charset="UTF-8">
     <title>Egnyte SDK docs</title>
@@ -67,6 +72,9 @@
 </tr>
 <tr>
 <td><a href="#link-api-helpers">Link API</a></td>
+</tr>
+<tr>
+<td><a href="#error-handling">Error handling</a></td>
 </tr>
 </tbody>
 </table>
@@ -562,6 +570,35 @@
    &quot;count&quot;: 3,
    &quot;ids&quot;: [&quot;47b774f66f344a67&quot;,&quot;56d35b2320d74948&quot;,&quot;426683f37dd64e41&quot;]
 }</code></pre>
+<h2 id="error-handling">Error handling</h2>
+<p>All errors are returned in common format of a JavaScript error enhanced with additional fields</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>statusCode</td>
+<td>HTTP status code if error comes from the server. 0 if request failed before being sent. <code>undefined</code> if error occured in the source of this SDK</td>
+</tr>
+<tr>
+<td>message</td>
+<td>readable error message text</td>
+</tr>
+<tr>
+<td>response</td>
+<td>If the query happened, error.response is the xhr response object</td>
+</tr>
+<tr>
+<td>body</td>
+<td>If the query happened, error.body contains the body of the response</td>
+</tr>
+</tbody>
+</table>
+<p>The &quot;Developer over QPS&quot; error is not returned at all, instead a call is repeated when appropriate.</p>
 
 
     </div>

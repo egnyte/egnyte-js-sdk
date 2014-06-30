@@ -5,6 +5,7 @@
 |[Init and Authorize](#initialize-and-connect-to-api)|
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
+|[Error handling](#error-handling)|
 
 ## Introduction
 
@@ -332,3 +333,17 @@ _Example response to listLinks_
    "ids": ["47b774f66f344a67","56d35b2320d74948","426683f37dd64e41"]
 }
 ```
+
+
+## Error handling
+
+All errors are returned in common format of a JavaScript error enhanced with additional fields
+
+Name |  Description
+--- |  ---
+statusCode | HTTP status code if error comes from the server. 0 if request failed before being sent. `undefined` if error occured in the source of this SDK
+message | readable error message text
+response | If the query happened, error.response is the xhr response object
+body | If the query happened, error.body contains the body of the response
+
+The "Developer over QPS" error is not returned at all, instead a call is repeated when appropriate.

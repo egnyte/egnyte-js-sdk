@@ -64,7 +64,7 @@ module.exports = function (grunt) {
             }
         },
         nodeunit: {
-            all: ['src/unittests/*.js']          
+            all: ['src/unittests/*.js']
         },
         connect: {
             server: {
@@ -114,7 +114,8 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test", ["nodeunit", "dist", "jasmine:all"]);
-    grunt.registerTask("dist", ["clean", "copy", "browserify", "unpathify", "uglify"]);
+    grunt.registerTask("dist", ["clean", "markdown", "copy", "browserify", "unpathify", "uglify"]);
+    grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
 
     grunt.registerTask("default", ["test"]);

@@ -321,7 +321,7 @@ function createXHR(options, callback) {
 
         if (xhr.response) {
             body = xhr.body = xhr.response
-        } else if (xhr.responseType === 'text' || xhr.responseType === '') {
+        } else if (xhr.responseType === 'text' || !xhr.responseType) {
             body = xhr.body = xhr.responseText || xhr.responseXML
         }
 
@@ -1750,7 +1750,8 @@ viewPrototypeMethods.render = function () {
 
     this.el.innerHTML = "";
     this.el.appendChild(layoutFragm);
-    myElements.list.style.height = (this.el.clientHeight - 2 * topbar.clientHeight) + "px";
+    //couldn't CSS it. blame old browsers
+    myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
 
     this.breadcrumbify(this.model.path);
 
