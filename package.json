@@ -14,7 +14,7 @@
   "dependencies": {
     "pinkyswear": "2.0.1",
     "vkey": "0.0.3",
-    "xhr": "git://github.com/naugtur/xhr.git"
+    "xhr": "1.10.1"
   },
   "devDependencies": {
     "browserify": "^4.0.0",

@@ -334,6 +334,11 @@ _Example response to listLinks_
 }
 ```
 
+## Browser support
+
+The SDk overall supports IE8 and IE9, but due to certain limitations in their implementations of Cross Origin Resource Sharing some of the API methods cannot work. Those browsers will only handle reading and downloading data, moving items, creating folders, and all the link features.
+Other limitations regarding domains are present as well. For details please refer this Microsoft publication: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+
 
 ## Error handling
 

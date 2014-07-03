@@ -570,6 +570,9 @@
    &quot;count&quot;: 3,
    &quot;ids&quot;: [&quot;47b774f66f344a67&quot;,&quot;56d35b2320d74948&quot;,&quot;426683f37dd64e41&quot;]
 }</code></pre>
+<h2 id="browser-support">Browser support</h2>
+<p>The SDk overall supports IE8 and IE9, but due to certain limitations in their implementations of Cross Origin Resource Sharing some of the API methods cannot work. Those browsers will only handle reading and downloading data, moving items, creating folders, and all the link features.
+Other limitations regarding domains are present as well. For details please refer this Microsoft publication: <a href="http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx">http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx</a></p>
 <h2 id="error-handling">Error handling</h2>
 <p>All errors are returned in common format of a JavaScript error enhanced with additional fields</p>
 <table>
