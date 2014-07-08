@@ -256,7 +256,9 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
+            try{ //IE8 dies on this randomly :/
             self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
+            }catch(e){};
             //itemNode.scrollIntoView(false);
         }
     };
