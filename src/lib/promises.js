@@ -1,9 +1,17 @@
 //wrapper for any promises library
 var pinkySwear = require('pinkyswear');
 
+//for pinkyswear starting versions above 2.10
+var createErrorAlias = function (promObj) {
+    promObj.error = function (func) {
+        return promObj.then(0, func);
+    };
+    return promObj;
+}
+
 module.exports = {
     "defer": function () {
-        var promise = pinkySwear();
+        var promise = pinkySwear(createErrorAlias);
         return {
             promise: promise,
             resolve: function (a) {
@@ -15,7 +23,7 @@ module.exports = {
         };
     },
     "start": function (value) {
-        var promise = pinkySwear();
+        var promise = pinkySwear(createErrorAlias);
         promise(value);
         return promise;
     }

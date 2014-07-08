@@ -85,7 +85,14 @@ describe("Item names / ", function () {
         });
 
 
+
         goodTestNames.forEach(function (fname) {
+
+            it("BTW. file leftovers from previous tests need to be destroyed", function (done) {
+                eg.API.storage.remove(basePath + "/" + fname).then(done, done);
+            });
+
+
 
             it("should create a folder called " + fname, function (done) {
                 eg.API.storage.createFolder(basePath + "/" + fname)

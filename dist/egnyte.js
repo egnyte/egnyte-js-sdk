@@ -789,12 +789,12 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 body = JSON.parse(body);
             } catch (e) {}
             var retryAfter = response.getResponseHeader("Retry-After");
+            var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
             if (
                 self.options.handleQuota &&
                 response.statusCode === 403 &&
                 retryAfter
             ) {
-                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
                 if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
                     //retry
                     console && console.warn("develoer over QPS, retrying");
@@ -811,6 +811,23 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 }
 
             } else {
+
+                if (
+                    //Checking for failed auth responses
+                    //(ノಠ益ಠ)ノ彡┻━┻
+                    self.options.onInvalidToken &&
+                    (
+                        response.statusCode === 401 ||
+                        (
+                            response.statusCode === 403 &&
+                            masheryCode === "ERR_403_DEVELOPER_INACTIVE"
+                        )
+                    )
+                ) {
+                    self.dropToken();
+                    self.options.onInvalidToken();
+                }
+                
                 callback.call(this, error, response, body);
             }
         });
@@ -1935,9 +1952,17 @@ module.exports = View;
 },{}],20:[function(require,module,exports){
 var pinkySwear = require(1);
 
+//for pinkyswear starting versions above 2.10
+var createErrorAlias = function (promObj) {
+    promObj.error = function (func) {
+        return promObj.then(0, func);
+    };
+    return promObj;
+}
+
 module.exports = {
     "defer": function () {
-        var promise = pinkySwear();
+        var promise = pinkySwear(createErrorAlias);
         return {
             promise: promise,
             resolve: function (a) {
@@ -1949,7 +1974,7 @@ module.exports = {
         };
     },
     "start": function (value) {
-        var promise = pinkySwear();
+        var promise = pinkySwear(createErrorAlias);
         promise(value);
         return promise;
     }

@@ -2,7 +2,7 @@
     // cases we need to execute the native click on an element. However, jQuery's 
     // $.fn.click() does not dispatch to the native function on <a> elements, so we
     // can't use it in our implementations: $el[0].click() to correctly dispatch.
-   if (!HTMLElement.prototype.click) {
+   if (typeof HTMLElement !== "undefined" && !HTMLElement.prototype.click) {
        HTMLElement.prototype.click = function () {
            var ev = document.createEvent('MouseEvent');
            ev.initMouseEvent(

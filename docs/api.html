@@ -211,6 +211,27 @@
     },
     &quot;/empty.html&quot;
 );</code></pre>
+<h3 id="token-failure-handling">Token failure handling</h3>
+<p>If you pass a stored token to your new Egnyte instance and the token is invalid, you should initialize again and request a new token.
+To ease the handling of this situation you can pass <code>onInvalidToken</code> option containing a function that will be called instead of error callback whenever your acces token turns out invalid.</p>
+<pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;https://mydomain.egnyte.com&quot;, {
+        token: YOURAPITOKEN,
+        key: YOURAPIKEY,
+        mobile: true,
+        onInvalidToken: function(){
+            //try getting new
+            egnyte.API.auth.requestTokenPopup(
+                function(){
+                    //can work with API
+                },
+                function(){
+                    //request denied
+                },
+                &quot;https://127.0.0.1:9999/dist/resources/token.html&quot;
+            );
+            //get the app working again
+        }
+    });</code></pre>
 <h3 id="handling-requests">Handling requests</h3>
 <p><em>Request options</em></p>
 <table>
