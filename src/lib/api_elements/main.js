@@ -200,12 +200,12 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 body = JSON.parse(body);
             } catch (e) {}
             var retryAfter = response.getResponseHeader("Retry-After");
+            var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
             if (
                 self.options.handleQuota &&
                 response.statusCode === 403 &&
                 retryAfter
             ) {
-                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
                 if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
                     //retry
                     console && console.warn("develoer over QPS, retrying");
@@ -222,6 +222,23 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 }
 
             } else {
+
+                if (
+                    //Checking for failed auth responses
+                    //(ノಠ益ಠ)ノ彡┻━┻
+                    self.options.onInvalidToken &&
+                    (
+                        response.statusCode === 401 ||
+                        (
+                            response.statusCode === 403 &&
+                            masheryCode === "ERR_403_DEVELOPER_INACTIVE"
+                        )
+                    )
+                ) {
+                    self.dropToken();
+                    self.options.onInvalidToken();
+                }
+                
                 callback.call(this, error, response, body);
             }
         });
