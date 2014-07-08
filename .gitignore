@@ -4,3 +4,4 @@ npm-debug.log
 spec/conf/apiaccess.js
 .grunt
 _SpecRunner.html
+TEST*.xml

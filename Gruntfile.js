@@ -54,6 +54,10 @@ module.exports = function (grunt) {
             all: {
                 src: ["dist/egnyte.js", "spec/conf/apiaccess.js", "src/vendor/zenjungle.js"],
                 options: {
+                    junit:{
+                        path: ".",
+                        consolidate:true,
+                    },
                     keepRunner: true,
                     helpers: ["spec/helpers/*.js"],
                     specs: 'spec/*.js',
