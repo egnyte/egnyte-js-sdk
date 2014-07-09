@@ -2,10 +2,10 @@ beforeEach(function () {
     jasmine.addMatchers({
         toAutoFail: function () {
             return {
-                compare: function (actual, expected) {
+                compare: function (nothing, error) {
                     return {
                         pass: false,
-                        message: 'this not to happen. ' + expected
+                        message: (error.statusCode ? "[ HTTP" + error.statusCode+" ]" : "[ JS ]") + " " + error
                     };
                 }
             };

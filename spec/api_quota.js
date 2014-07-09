@@ -26,6 +26,7 @@
                t1 = +new Date();
            }).error(function (e) {
                expect(this).toAutoFail(e);
+               done();
            });
 
            eg.API.storage.exists("/jiberish").then(function (e) {
@@ -33,9 +34,10 @@
                //assuming 404 is quite stable in terms of response time
                //but the response can be cached and the second one is faster
                expect(t2 - t1).toBeGreaterThan(500);
-               setTimeout(done,1000); //wait for quota reset
+               setTimeout(done, 1000); //wait for quota reset
            }).error(function (e) {
                expect(this).toAutoFail(e);
+               done();
            });
 
        });
@@ -50,6 +52,7 @@
                t1 = +new Date();
            }).error(function (e) {
                expect(this).toAutoFail(e);
+               done();
            });
 
            eg.API.storage.exists("/jiberish").then(function (e) {
@@ -57,9 +60,10 @@
                //assuming 404 is quite stable in terms of response time
                //but the response can be cached and the second one is faster
                expect(!t1 || (t2 - t1) < 500).toBe(true);
-               setTimeout(done,1000); //wait for quota reset
+               setTimeout(done, 1000); //wait for quota reset
            }).error(function (e) {
                expect(this).toAutoFail(e);
+               done();
            });
 
        });
@@ -85,6 +89,7 @@
                    expect(t2 - t1).toBeLessThan(800);
                }).error(function (e) {
                    expect(this).toAutoFail(e);
+                   done();
                });
 
            }, 1001);
@@ -98,9 +103,10 @@
                    t2 = +new Date();
                    //assuming response comes in less than 800ms
                    expect(t2 - t1).toBeGreaterThan(800);
-                   setTimeout(done,1000); //wait for quota reset
+                   setTimeout(done, 1000); //wait for quota reset
                }).error(function (e) {
                    expect(this).toAutoFail(e);
+                   done();
                });
 
            }, 1050);

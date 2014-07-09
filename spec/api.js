@@ -56,6 +56,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -79,6 +80,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -88,6 +90,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -101,6 +104,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -117,6 +121,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -137,6 +142,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.exists(" foo")
                 .then(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 })
                 .error(function (e) {
                     console.log(e);
@@ -167,6 +173,7 @@ describe("API to JS (integration test)", function () {
                     }, 400);
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -180,6 +187,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -207,6 +215,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -239,6 +248,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -256,6 +266,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -270,6 +281,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
 
         });
@@ -289,6 +301,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
         });
 
@@ -313,6 +326,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -341,6 +355,7 @@ describe("API to JS (integration test)", function () {
                 }
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -354,6 +369,7 @@ describe("API to JS (integration test)", function () {
                 done();
             }).error(function (e) {
                 expect(this).toAutoFail(e);
+                done();
             });
 
         });
@@ -382,6 +398,7 @@ describe("API to JS (integration test)", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
         });
 

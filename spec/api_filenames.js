@@ -78,6 +78,7 @@ describe("Item names / ", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
             } else {
                 done();
@@ -109,6 +110,7 @@ describe("Item names / ", function () {
                         done();
                     }).error(function (e) {
                         expect(this).toAutoFail(e);
+                        done();
                     });
 
             });
@@ -129,6 +131,7 @@ describe("Item names / ", function () {
                         done();
                     }).error(function (e) {
                         expect(this).toAutoFail(e);
+                        done();
                     });
 
             });
@@ -146,6 +149,7 @@ describe("Item names / ", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
             } else {
                 done();
@@ -162,6 +166,7 @@ describe("Item names / ", function () {
                     })
                     .then(function (e) {
                         expect(this).toAutoFail(e);
+                        done();
                     }).error(function (e) {
                         console.log(e);
                         done();
@@ -181,6 +186,7 @@ describe("Item names / ", function () {
                     done();
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
+                    done();
                 });
             } else {
                 done();
@@ -196,6 +202,7 @@ describe("Item names / ", function () {
                     .then(function (e) {
                         eg.API.storage.remove(basePath + "/" + fname);
                         expect(this).toAutoFail(e);
+                        done();
                     }).error(function (e) {
                         done();
                     });
