@@ -1644,7 +1644,9 @@ function View(opts, txtOverride) {
     //bind events and store references to unbind later
     this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
     this.handleClick(myElements.back, self.goUp);
-    this.handleClick(myElements.close, self.handlers.close);
+    this.handleClick(myElements.close, function () {
+        self.handlers.close();
+    });
     this.handleClick(myElements.ok, self.confirmSelection);
     this.handleClick(myElements.crumb, self.crumbNav);
     this.handleClick(myElements.selectAll, function (e) {
@@ -1825,9 +1827,9 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
-            try{ //IE8 dies on this randomly :/
-            self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
-            }catch(e){};
+            try { //IE8 dies on this randomly :/
+                self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
+            } catch (e) {};
             //itemNode.scrollIntoView(false);
         }
     };
@@ -1878,12 +1880,14 @@ viewPrototypeMethods.renderLoading = function () {
 var msgs = require(5);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
+    message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
         this.els.list.appendChild(jungle([["div.eg-placeholder", ["div.eg-picker-error"], message]]));
     } else {
-        this.handlers.close();
+        this.handlers.close({
+            message: message
+        });
     }
 }
 viewPrototypeMethods.renderEmpty = function () {
