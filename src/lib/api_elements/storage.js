@@ -83,6 +83,14 @@ function createFolder(pathFromRoot) {
 }
 
 function move(pathFromRoot, newPath) {
+    return transfer(pathFromRoot, newPath, "move");
+}
+
+function copy(pathFromRoot, newPath) {
+    return transfer(pathFromRoot, newPath, "copy");
+}
+
+function transfer(pathFromRoot, newPath, action) {
     return promises.start(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
@@ -93,7 +101,7 @@ function move(pathFromRoot, newPath) {
             method: "POST",
             url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
-                "action": "move",
+                "action": action,
                 "destination": "/" + newPath,
             }
         });
@@ -106,6 +114,8 @@ function move(pathFromRoot, newPath) {
         }
     });
 }
+
+
 
 function storeFile(pathFromRoot, fileOrBlob) {
     return promises.start(true).then(function () {
@@ -191,6 +201,7 @@ module.exports = function (apihelper, opts) {
         download: download,
         createFolder: createFolder,
         move: move,
+        copy: copy,
         rename: move,
         remove: removeEntry,
 

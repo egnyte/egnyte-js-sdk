@@ -164,19 +164,18 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
 
-                    setTimeout(function () {
-                        eg.API.storage.exists(testpath2)
-                            .then(function (e) {
-                                expect(e).toBe(true);
-                                done();
-                            });
-                    }, 400);
+                    eg.API.storage.exists(testpath2)
+                        .then(function (e) {
+                            expect(e).toBe(true);
+                            done();
+                        });
                 }).error(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
 
         });
+
         it("Can remove a folder", function (done) {
             eg.API.storage.remove(testpath2)
                 .then(function () {

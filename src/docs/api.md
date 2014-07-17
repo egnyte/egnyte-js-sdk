@@ -220,6 +220,7 @@ API.storage.download | `path`, `isBinary` | Resolves to XHR object for the downl
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"<the given path>"` 
 API.storage.storeFile | `path`, `Blob_object` | Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob)
 API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
+API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
 API.storage.rename | `path`,  `new path` | alias for move
 API.storage.remove | `path` | Deletes a file or folder 
 API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file 
