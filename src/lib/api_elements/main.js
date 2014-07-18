@@ -199,8 +199,10 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            var retryAfter = response.getResponseHeader("Retry-After");
-            var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            if (response.getResponseHeader) {
+                var retryAfter = response.getResponseHeader("Retry-After");
+                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            }
             if (
                 self.options.handleQuota &&
                 response.statusCode === 403 &&
@@ -238,7 +240,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     self.dropToken();
                     self.options.onInvalidToken();
                 }
-                
+
                 callback.call(this, error, response, body);
             }
         });
@@ -331,7 +333,7 @@ function _quotaWaitTime(quota, QPS) {
 enginePrototypeMethods.getUserInfo = function () {
     var self = this;
     if (self.userInfo) {
-        promises.start(true).then(function () {
+        return promises.start(true).then(function () {
             return self.userInfo;
         });
     } else {

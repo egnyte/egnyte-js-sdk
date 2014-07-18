@@ -9,7 +9,7 @@
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
         var api = require("./lib/api")(options);
-
+      
         return {
             domain: options.egnyteDomainURL,
             filePicker: require("./lib/filepicker/byapi")(api),

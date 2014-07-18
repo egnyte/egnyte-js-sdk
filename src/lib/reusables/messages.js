@@ -4,6 +4,7 @@ var helpers = require('../reusables/helpers');
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
+        debugger;
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
@@ -29,11 +30,13 @@ function sendMessage(targetWindow, channel, action, dataString) {
     }
 
     try {
-        targetOrigin = targetWindow.location.origin || window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
+        targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
     } catch (E) {}
 
+    debugger;
     dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
+    debugger;
 }
 
 module.exports = {

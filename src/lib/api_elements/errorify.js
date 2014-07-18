@@ -31,7 +31,7 @@ function psychicMessageParser(mess, statusCode) {
             nice = mess;
         }
     } catch (e) {
-        nice = mess.replace(htmlMsgRegex, "$1");
+        nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
     }
     if (statusCode === 404 && mess.length > 300) {
         //server returned a dirty 404

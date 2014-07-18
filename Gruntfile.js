@@ -16,6 +16,7 @@ module.exports = function (grunt) {
                         fullPaths: false,
                         insertGlobals: false,
                         detectGlobals: false
+                        //,standalone: "Egnyte"
                     }
                 }
             }

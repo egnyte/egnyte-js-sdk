@@ -385,6 +385,7 @@ function once (fn) {
 module.exports = {
     handleQuota: true,
     QPS: 2,
+    forwarderAddress: "apiForwarder.html",
     filepickerViewAddress: "folderExplorer.do",
     channelMarker: "'E"
     
@@ -400,14 +401,28 @@ module.exports = function (options) {
     var main = APIMain(options);
     var storage = storageFacade(main, options);
     var link = linkFacade(main, options);
-
-    return {
+    var api = {
         auth: main,
         storage: storage,
         link: link
     };
+
+    if (options.acceptForwarding) {
+        //will handle incoming forwards
+        var responder = require(4);
+        responder(options, api);
+    } else {
+        //IE 8 and 9
+        if (window.XDomainRequest) { //true only in IE
+            var forwarder = require(5);
+            forwarder(options, api);
+
+        }
+    }
+
+    return api;
 };
-},{"1":9,"2":10,"3":11}],8:[function(require,module,exports){
+},{"1":9,"2":10,"3":11,"4":12,"5":13}],8:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -440,7 +455,7 @@ function psychicMessageParser(mess, statusCode) {
             nice = mess;
         }
     } catch (e) {
-        nice = mess.replace(htmlMsgRegex, "$1");
+        nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
     }
     if (statusCode === 404 && mess.length > 300) {
         //server returned a dirty 404
@@ -559,7 +574,7 @@ module.exports = function (apihelper, opts) {
         findOne: findOne
     };
 };
-},{"1":12,"2":14}],10:[function(require,module,exports){
+},{"1":14,"2":16}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 var quotaRegex = /^<h1>Developer Over Qps/i;
@@ -761,8 +776,10 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
-            var retryAfter = response.getResponseHeader("Retry-After");
-            var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            if (response.getResponseHeader) {
+                var retryAfter = response.getResponseHeader("Retry-After");
+                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            }
             if (
                 self.options.handleQuota &&
                 response.statusCode === 403 &&
@@ -800,7 +817,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     self.dropToken();
                     self.options.onInvalidToken();
                 }
-                
+
                 callback.call(this, error, response, body);
             }
         });
@@ -893,7 +910,7 @@ function _quotaWaitTime(quota, QPS) {
 enginePrototypeMethods.getUserInfo = function () {
     var self = this;
     if (self.userInfo) {
-        promises.start(true).then(function () {
+        return promises.start(true).then(function () {
             return self.userInfo;
         });
     } else {
@@ -912,7 +929,7 @@ Engine.prototype = enginePrototypeMethods;
 module.exports = function (opts) {
     return new Engine(opts);
 };
-},{"1":12,"2":13,"3":14,"4":15,"5":8,"6":3}],11:[function(require,module,exports){
+},{"1":14,"2":15,"3":16,"4":17,"5":8,"6":3}],11:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 
@@ -1116,6 +1133,7 @@ module.exports = function (apihelper, opts) {
         download: download,
         createFolder: createFolder,
         move: move,
+        copy: copy,
         rename: move,
         remove: removeEntry,
 
@@ -1123,7 +1141,162 @@ module.exports = function (apihelper, opts) {
         removeFileVersion: removeFileVersion
     };
 };
-},{"1":12,"2":14}],12:[function(require,module,exports){
+},{"1":14,"2":16}],12:[function(require,module,exports){
+var helpers = require(2);
+var dom = require(1);
+var messages = require(3);
+
+function init(options, api) {
+
+    var channel;
+
+    channel = {
+        marker: options.channelMarker,
+        sourceOrigin: options.egnyteDomainURL
+    };
+
+    function actionsHandler(message) {
+    debugger;
+        if (message.action && message.action === "call") {
+            var data = JSON.parse(message.data);
+            if (api[data.ns] && api[data.ns][data.name]) {
+                api.auth.setToken(data.token);
+                api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
+                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                        status: true,
+                        resolution: res,
+                        uid: data.uid
+                    }));
+                }, function (res) {
+                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                        status: false,
+                        resolution: res,
+                        uid: data.uid
+                    }));
+                })
+
+            } else {
+                //send something to clean up the caller
+                messages.sendMessage(window.parent, channel, "nomethod", JSON.stringify({
+                    uid: data.uid
+                }));
+            }
+        }
+    }
+
+debugger;
+    channel.handler = messages.createMessageHandler(null, channel.marker, actionsHandler);
+    channel._evListener = dom.addListener(window, "message", channel.handler);
+    dom.addListener(window, "message", function(){
+        debugger;
+    });
+
+}
+
+module.exports = init;
+},{"1":15,"2":16,"3":17}],13:[function(require,module,exports){
+var promises = require(1);
+var helpers = require(3);
+var dom = require(2);
+var messages = require(4);
+
+
+
+var pending = {};
+
+
+
+function actionsHandler(message) {
+    var data = JSON.parse(message.data);
+    if (message.action) {
+        if (message.action === "result") {
+            pending[data.uid](data.status, data.resolution);
+            pending[data.uid] = null;
+        }
+        if (message.action === "nomethod") {
+            pending[data.uid] = null;
+        }
+    }
+}
+
+
+
+function remoteCall(channel, namespaceName, methodName, token, args, callback) {
+    var uid = ~~ (Math.random() * 9999999) + "" + ~~(Math.random() * 9999999);
+    pending[uid] = callback;
+    debugger;
+    messages.sendMessage(channel.iframe.contentWindow, channel, "call", JSON.stringify({
+        ns: namespaceName,
+        name: methodName,
+        args: args,
+        token: token,
+        uid: uid
+    }));
+
+}
+
+function forwardMethod(namespaceName, methodName, channel, getToken) {
+    return function () {
+        var args = Array.prototype.slice.call(arguments, 0);
+        var defer = promises.defer();
+        channel.ready.promise.then(function () {
+            remoteCall(channel, namespaceName, methodName, getToken(), args, function (status, resolution) {
+                if (status) {
+                    defer.resolve(resolution);
+                } else {
+                    defer.reject(resolution);
+                }
+
+            });
+        });
+        return defer.promise;
+    }
+
+}
+
+
+function init(options, api) {
+
+    //comm setup
+    var iframe;
+    var channel;
+
+    channel = {
+        marker: options.channelMarker,
+        sourceOrigin: options.egnyteDomainURL,
+        ready: promises.defer()
+    };
+
+    channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, actionsHandler);
+    channel._evListener = dom.addListener(window, "message", channel.handler);
+
+    iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.forwarderAddress);
+    iframe.onload = function () {
+        debugger;
+        setTimeout(function () {
+            channel.ready.resolve();
+        }, 50);
+    };
+    var body = document.body || document.getElementsByTagName("body")[0];
+    body.appendChild(iframe);
+
+    channel.iframe = iframe;
+
+
+
+    //forwarding setup
+    helpers.each(api, function (apiNamespace, namespaceName) {
+        if (namespaceName !== "auth") {
+            for (var method in apiNamespace) {
+                apiNamespace[method] = forwardMethod(namespaceName, method, channel, api.auth.getToken);
+            }
+        }
+    });
+
+}
+
+module.exports = init;
+},{"1":14,"2":15,"3":16,"4":17}],14:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -1155,7 +1328,7 @@ module.exports = {
 
 }
 
-},{"1":1}],13:[function(require,module,exports){
+},{"1":1}],15:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1225,7 +1398,7 @@ module.exports = {
 
 }
 
-},{"1":2}],14:[function(require,module,exports){
+},{"1":2}],16:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1281,13 +1454,14 @@ module.exports = {
         return (name);
     }
 };
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var helpers = require(1);
 
 
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
+        debugger;
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
@@ -1313,11 +1487,13 @@ function sendMessage(targetWindow, channel, action, dataString) {
     }
 
     try {
-        targetOrigin = targetWindow.location.origin || window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
+        targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
     } catch (E) {}
 
+    debugger;
     dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
+    debugger;
 }
 
 module.exports = {
@@ -1325,7 +1501,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":14}],16:[function(require,module,exports){
+},{"1":16}],18:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -1348,4 +1524,4 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":7,"3":14}]},{},[16])
+},{"1":6,"2":7,"3":16}]},{},[18])
