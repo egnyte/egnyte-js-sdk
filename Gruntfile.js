@@ -48,6 +48,12 @@ module.exports = function (grunt) {
                 src: '*',
                 dest: 'dist/resources',
                 expand: true
+            },
+            ieProxy: {
+                cwd: 'src/lib/api_forwarder',
+                src: 'apiForwarder.html',
+                dest: 'dist',
+                expand: true
             }
         },
 
