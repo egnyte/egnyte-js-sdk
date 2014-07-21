@@ -22,9 +22,8 @@ module.exports = function (options) {
         if (window.XDomainRequest) { //true only in IE
             var forwarder = require("./api_forwarder/sender");
             forwarder(options, api);
-
         }
     }
-
+    
     return api;
 };

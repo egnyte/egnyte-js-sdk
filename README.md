@@ -19,8 +19,8 @@ This package contains:
 
 _File sizes_
 ```
-dist/egnyte.min.js minified: 33.71 kB gzipped: 7.69 kB
-dist/slim.min.js minified: 15.5 kB gzipped: 3.56 kB
+dist/egnyte.min.js minified: 37.27 kB gzipped: 8.5 kB
+dist/slim.min.js minified: 18.82 kB gzipped: 4.33 kB
 
 ```
 
@@ -33,6 +33,8 @@ See `docs/` or explore:
 [API](src/docs/api.md)  
 [File picker](src/docs/filepicker.md)  
 [Installation and tests](src/docs/installation.md)  
+
+If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to understand the cross-origin magic
 
 The `examples/` folder could also be helpful.
 

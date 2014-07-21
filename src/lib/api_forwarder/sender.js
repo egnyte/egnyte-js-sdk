@@ -27,7 +27,6 @@ function actionsHandler(message) {
 function remoteCall(channel, namespaceName, methodName, token, args, callback) {
     var uid = ~~ (Math.random() * 9999999) + "" + ~~(Math.random() * 9999999);
     pending[uid] = callback;
-    debugger;
     messages.sendMessage(channel.iframe.contentWindow, channel, "call", JSON.stringify({
         ns: namespaceName,
         name: methodName,
@@ -57,6 +56,37 @@ function forwardMethod(namespaceName, methodName, channel, getToken) {
 
 }
 
+function setupForwarding(api, channel) {
+
+    var mkForwarder = function (namespaceName, method) {
+        api[namespaceName][method] = forwardMethod(namespaceName, method, channel, function () {
+            return api.auth.getToken()
+        });
+    }
+
+    //forwarding setup
+    helpers.each(api, function (apiNamespace, namespaceName) {
+        if (namespaceName !== "auth") {
+            for (var method in apiNamespace) {
+                mkForwarder(namespaceName, method);
+            }
+        }
+    });
+    //manual forwarder, leave other auth methods be
+    mkForwarder("auth", "getUserInfo");
+
+    var parentDestroy = api.destroy;
+    api.destroy = function () {
+        channel._evListener.destroy();
+        channel.iframe.parentNode.removeChild(channel.iframe);
+        if (parentDestroy) {
+            return parentDestroy.apply(api, arguments)
+        }
+    }
+
+    return api;
+}
+
 
 function init(options, api) {
 
@@ -74,27 +104,25 @@ function init(options, api) {
     channel._evListener = dom.addListener(window, "message", channel.handler);
 
     iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.forwarderAddress);
-    iframe.onload = function () {
-        debugger;
+    iframe.style.display = "none";
+
+    //give IE time to get the iframe going
+    var onIframeLoad = function () {
         setTimeout(function () {
             channel.ready.resolve();
         }, 50);
-    };
+    }
+    if (iframe.addEventListener) {
+        iframe.addEventListener('load', onIframeLoad, false);
+    } else if (iframe.attachEvent) {
+        iframe.attachEvent('onload', onIframeLoad);
+    }
     var body = document.body || document.getElementsByTagName("body")[0];
     body.appendChild(iframe);
 
     channel.iframe = iframe;
 
-
-
-    //forwarding setup
-    helpers.each(api, function (apiNamespace, namespaceName) {
-        if (namespaceName !== "auth") {
-            for (var method in apiNamespace) {
-                apiNamespace[method] = forwardMethod(namespaceName, method, channel, api.auth.getToken);
-            }
-        }
-    });
+    return setupForwarding(api, channel);
 
 }
 

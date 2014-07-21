@@ -1,1 +1,0 @@
-../dist/slim.js

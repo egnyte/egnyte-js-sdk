@@ -12,7 +12,6 @@ function init(options, api) {
     };
 
     function actionsHandler(message) {
-    debugger;
         if (message.action && message.action === "call") {
             var data = JSON.parse(message.data);
             if (api[data.ns] && api[data.ns][data.name]) {
@@ -40,12 +39,8 @@ function init(options, api) {
         }
     }
 
-debugger;
     channel.handler = messages.createMessageHandler(null, channel.marker, actionsHandler);
     channel._evListener = dom.addListener(window, "message", channel.handler);
-    dom.addListener(window, "message", function(){
-        debugger;
-    });
 
 }
 

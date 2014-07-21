@@ -55,9 +55,9 @@ module.exports = function (grunt) {
             all: {
                 src: ["dist/egnyte.js", "spec/conf/apiaccess.js", "src/vendor/zenjungle.js"],
                 options: {
-                    junit:{
+                    junit: {
                         path: ".",
-                        consolidate:true,
+                        consolidate: true,
                     },
                     keepRunner: true,
                     helpers: ["spec/helpers/*.js"],
@@ -100,6 +100,41 @@ module.exports = function (grunt) {
                         return middlewares;
                     }
                 }
+            },
+            realAPI: {
+                options: {
+                    port: 9991,
+                    hostname: "0.0.0.0",
+                    base: "dist",
+                    protocol: "https",
+                    keepalive: true,
+                    middleware: function (connect, options) {
+                        var proxy = require("grunt-connect-proxy/lib/utils").proxyRequest;
+                        return [
+                        //static first, if not there, go to proxy
+                        connect.static(options.base[0]),
+                        function (req, res, next) {
+//                                req.headers["X-Egnyte-Subdomain"] = "subdomain0.egnyte.com";
+//                                req.headers["host"] = "subdomain0.egnyte.com";
+                                console.log(req.headers, req.url);
+                                next();
+                        },
+                        proxy
+                    ];
+                    }
+                },
+
+                proxies: [
+                    {
+                        context: "/",
+                        host: grunt.option("host") || "zb.qa-egnyte.com",
+                        port: 443,
+                        https: true,
+                        changeOrigin: true,
+                        xforward: false
+                    }
+                ]
+
             }
 
         },
@@ -134,6 +169,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-connect-proxy');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
 
@@ -142,6 +178,8 @@ module.exports = function (grunt) {
     grunt.registerTask("dist", ["clean", "markdown", "copy", "browserify", "unpathify", "uglify"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
+    grunt.registerTask("serve:API", ["serve:api"]);
+    grunt.registerTask("serve:api", ["dist", "configureProxies:realAPI", "connect:realAPI"]);
 
     grunt.registerTask("default", ["test"]);
 }

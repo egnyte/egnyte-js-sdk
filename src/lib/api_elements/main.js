@@ -26,6 +26,7 @@ function Engine(options) {
     this.queue = [];
 
     this.queueHandler = helpers.bindThis(this, _rollQueue);
+    this.getUserInfo = helpers.bindThis(this, this.getUserInfo);
 
 }
 

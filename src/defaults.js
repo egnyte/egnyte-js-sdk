@@ -1,7 +1,7 @@
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "apiForwarder.html",
+    forwarderAddress: "resources/apiForwarder.html",
     filepickerViewAddress: "folderExplorer.do",
     channelMarker: "'E"
     

@@ -385,7 +385,7 @@ function once (fn) {
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "apiForwarder.html",
+    forwarderAddress: "resources/apiForwarder.html",
     filepickerViewAddress: "folderExplorer.do",
     channelMarker: "'E"
     
@@ -416,10 +416,9 @@ module.exports = function (options) {
         if (window.XDomainRequest) { //true only in IE
             var forwarder = require(5);
             forwarder(options, api);
-
         }
     }
-
+    
     return api;
 };
 },{"1":9,"2":10,"3":11,"4":12,"5":13}],8:[function(require,module,exports){
@@ -603,6 +602,7 @@ function Engine(options) {
     this.queue = [];
 
     this.queueHandler = helpers.bindThis(this, _rollQueue);
+    this.getUserInfo = helpers.bindThis(this, this.getUserInfo);
 
 }
 
@@ -1156,7 +1156,6 @@ function init(options, api) {
     };
 
     function actionsHandler(message) {
-    debugger;
         if (message.action && message.action === "call") {
             var data = JSON.parse(message.data);
             if (api[data.ns] && api[data.ns][data.name]) {
@@ -1184,12 +1183,8 @@ function init(options, api) {
         }
     }
 
-debugger;
     channel.handler = messages.createMessageHandler(null, channel.marker, actionsHandler);
     channel._evListener = dom.addListener(window, "message", channel.handler);
-    dom.addListener(window, "message", function(){
-        debugger;
-    });
 
 }
 
@@ -1224,7 +1219,6 @@ function actionsHandler(message) {
 function remoteCall(channel, namespaceName, methodName, token, args, callback) {
     var uid = ~~ (Math.random() * 9999999) + "" + ~~(Math.random() * 9999999);
     pending[uid] = callback;
-    debugger;
     messages.sendMessage(channel.iframe.contentWindow, channel, "call", JSON.stringify({
         ns: namespaceName,
         name: methodName,
@@ -1254,6 +1248,37 @@ function forwardMethod(namespaceName, methodName, channel, getToken) {
 
 }
 
+function setupForwarding(api, channel) {
+
+    var mkForwarder = function (namespaceName, method) {
+        api[namespaceName][method] = forwardMethod(namespaceName, method, channel, function () {
+            return api.auth.getToken()
+        });
+    }
+
+    //forwarding setup
+    helpers.each(api, function (apiNamespace, namespaceName) {
+        if (namespaceName !== "auth") {
+            for (var method in apiNamespace) {
+                mkForwarder(namespaceName, method);
+            }
+        }
+    });
+    //manual forwarder, leave other auth methods be
+    mkForwarder("auth", "getUserInfo");
+
+    var parentDestroy = api.destroy;
+    api.destroy = function () {
+        channel._evListener.destroy();
+        channel.iframe.parentNode.removeChild(channel.iframe);
+        if (parentDestroy) {
+            return parentDestroy.apply(api, arguments)
+        }
+    }
+
+    return api;
+}
+
 
 function init(options, api) {
 
@@ -1271,27 +1296,25 @@ function init(options, api) {
     channel._evListener = dom.addListener(window, "message", channel.handler);
 
     iframe = dom.createFrame(options.egnyteDomainURL + "/" + options.forwarderAddress);
-    iframe.onload = function () {
-        debugger;
+    iframe.style.display = "none";
+
+    //give IE time to get the iframe going
+    var onIframeLoad = function () {
         setTimeout(function () {
             channel.ready.resolve();
         }, 50);
-    };
+    }
+    if (iframe.addEventListener) {
+        iframe.addEventListener('load', onIframeLoad, false);
+    } else if (iframe.attachEvent) {
+        iframe.attachEvent('onload', onIframeLoad);
+    }
     var body = document.body || document.getElementsByTagName("body")[0];
     body.appendChild(iframe);
 
     channel.iframe = iframe;
 
-
-
-    //forwarding setup
-    helpers.each(api, function (apiNamespace, namespaceName) {
-        if (namespaceName !== "auth") {
-            for (var method in apiNamespace) {
-                apiNamespace[method] = forwardMethod(namespaceName, method, channel, api.auth.getToken);
-            }
-        }
-    });
+    return setupForwarding(api, channel);
 
 }
 
@@ -1461,7 +1484,7 @@ var helpers = require(1);
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
-        debugger;
+
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
             if (message.substr(0, 2) === marker) {
@@ -1490,10 +1513,10 @@ function sendMessage(targetWindow, channel, action, dataString) {
         targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
     } catch (E) {}
 
-    debugger;
+
     dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
-    debugger;
+
 }
 
 module.exports = {
