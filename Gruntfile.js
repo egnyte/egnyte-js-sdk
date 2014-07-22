@@ -1,6 +1,8 @@
 module.exports = function (grunt) {
+    var package = grunt.file.readJSON("package.json");
+    var versionNoMinor = package.version.replace(/\.[0-9]+$/, '');
     grunt.initConfig({
-        pkg: grunt.file.readJSON("package.json"),
+        pkg: package,
         clean: ["dist"],
         browserify: {
             dist: {
@@ -49,11 +51,21 @@ module.exports = function (grunt) {
                 dest: 'dist/resources',
                 expand: true
             },
-            ieProxy: {
-                cwd: 'src/lib/api_forwarder',
-                src: 'apiForwarder.html',
-                dest: 'dist',
-                expand: true
+            ieProxy: { //forwarder folder is not cleaned to retain older versions
+                files: [
+                    {
+                        cwd: 'src/lib/api_forwarder',
+                        src: 'apiForwarder.html',
+                        dest: 'forwarder/' + versionNoMinor,
+                        expand: true
+                    },
+                    {
+                        cwd: 'dist',
+                        src: 'slim*',
+                        dest: 'forwarder/' + versionNoMinor,
+                        expand: true
+                    }
+                ]
             }
         },
 
@@ -91,7 +103,7 @@ module.exports = function (grunt) {
                 options: {
                     port: 9991,
                     hostname: "0.0.0.0",
-                    base: "mock/",
+                    base: "forwarder/",
                     protocol: "https",
                     keepalive: true,
                     middleware: function (connect, options, middlewares) {
@@ -120,8 +132,8 @@ module.exports = function (grunt) {
                         //static first, if not there, go to proxy
                         connect.static(options.base[0]),
                         function (req, res, next) {
-//                                req.headers["X-Egnyte-Subdomain"] = "subdomain0.egnyte.com";
-//                                req.headers["host"] = "subdomain0.egnyte.com";
+                                //                                req.headers["X-Egnyte-Subdomain"] = "subdomain0.egnyte.com";
+                                //                                req.headers["host"] = "subdomain0.egnyte.com";
                                 console.log(req.headers, req.url);
                                 next();
                         },
@@ -181,7 +193,7 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test", ["nodeunit", "dist", "jasmine:all"]);
-    grunt.registerTask("dist", ["clean", "markdown", "copy", "browserify", "unpathify", "uglify"]);
+    grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
     grunt.registerTask("serve:API", ["serve:api"]);
