@@ -4,12 +4,11 @@ var helpers = require('../reusables/helpers');
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
-
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
-            if (message.substr(0, 2) === marker) {
+            if (message.substr(0, marker.length) === marker) {
                 try {
-                    message = JSON.parse(message.substring(2));
+                    message = JSON.parse(message.substring(marker.length));
 
                 } catch (e) {
                     //broken? ignore
@@ -22,21 +21,20 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
-function sendMessage(targetWindow, channel, action, dataString) {
-    var targetOrigin = "*";
+function sendMessage(targetWindow, channel, action, data) {
+    var targetOrigin = "*", pkg;
 
-    if (typeof dataString !== "string" || typeof action !== "string") {
-        throw new TypeError("only string is acceptable as action and data");
+    if (typeof action !== "string") {
+        throw new TypeError("only string is acceptable as action");
     }
 
     try {
         targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
     } catch (E) {}
 
-
-    dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
-    targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
-
+    pkg = JSON.stringify({action:action,data:data});
+    pkg = pkg.replace(/(\r\n|\n|\r)/gm, "");
+    targetWindow.postMessage(channel.marker + pkg, targetOrigin);
 }
 
 module.exports = {

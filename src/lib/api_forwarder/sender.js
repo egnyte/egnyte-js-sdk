@@ -10,8 +10,8 @@ var pending = {};
 
 
 function actionsHandler(message) {
-    var data = JSON.parse(message.data);
-    if (message.action) {
+    var data = message.data;
+    if (message.action && pending[data.uid]) {
         if (message.action === "result") {
             pending[data.uid](data.status, data.resolution);
             pending[data.uid] = null;
@@ -22,18 +22,21 @@ function actionsHandler(message) {
     }
 }
 
+function guid() {
+    return ("" + ~~(Math.random() * 9999999) + ~~(Math.random() * 9999999))
+}
 
 
 function remoteCall(channel, namespaceName, methodName, token, args, callback) {
-    var uid = ~~ (Math.random() * 9999999) + "" + ~~(Math.random() * 9999999);
+    var uid = guid();
     pending[uid] = callback;
-    messages.sendMessage(channel.iframe.contentWindow, channel, "call", JSON.stringify({
+    messages.sendMessage(channel.iframe.contentWindow, channel, "call", {
         ns: namespaceName,
         name: methodName,
         args: args,
         token: token,
         uid: uid
-    }));
+    });
 
 }
 
@@ -112,6 +115,7 @@ function init(options, api) {
             channel.ready.resolve();
         }, 50);
     }
+  
     if (iframe.addEventListener) {
         iframe.addEventListener('load', onIframeLoad, false);
     } else if (iframe.attachEvent) {

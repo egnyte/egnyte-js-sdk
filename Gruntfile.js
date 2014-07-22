@@ -103,7 +103,7 @@ module.exports = function (grunt) {
                 options: {
                     port: 9991,
                     hostname: "0.0.0.0",
-                    base: "forwarder/",
+                    base: "mock/",
                     protocol: "https",
                     keepalive: true,
                     middleware: function (connect, options, middlewares) {
@@ -123,7 +123,7 @@ module.exports = function (grunt) {
                 options: {
                     port: 9991,
                     hostname: "0.0.0.0",
-                    base: "dist",
+                    base: "forwarder",
                     protocol: "https",
                     keepalive: true,
                     middleware: function (connect, options) {

@@ -385,7 +385,7 @@ function once (fn) {
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "apiForwarder.html",
+    forwarderAddress: "1.0/apiForwarder.html",
     filepickerViewAddress: "folderExplorer.do",
     channelMarker: "'E"
     
@@ -413,7 +413,7 @@ module.exports = function (options) {
         responder(options, api);
     } else {
         //IE 8 and 9
-        if (window.XDomainRequest) { //true only in IE
+        if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
             var forwarder = require(5);
             forwarder(options, api);
         }
@@ -1157,28 +1157,28 @@ function init(options, api) {
 
     function actionsHandler(message) {
         if (message.action && message.action === "call") {
-            var data = JSON.parse(message.data);
+            var data = message.data;
             if (api[data.ns] && api[data.ns][data.name]) {
                 api.auth.setToken(data.token);
                 api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
-                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                    messages.sendMessage(window.parent, channel, "result", {
                         status: true,
                         resolution: res,
                         uid: data.uid
-                    }));
+                    });
                 }, function (res) {
-                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                    messages.sendMessage(window.parent, channel, "result", {
                         status: false,
                         resolution: res,
                         uid: data.uid
-                    }));
+                    });
                 })
 
             } else {
                 //send something to clean up the caller
-                messages.sendMessage(window.parent, channel, "nomethod", JSON.stringify({
+                messages.sendMessage(window.parent, channel, "nomethod", {
                     uid: data.uid
-                }));
+                });
             }
         }
     }
@@ -1202,8 +1202,8 @@ var pending = {};
 
 
 function actionsHandler(message) {
-    var data = JSON.parse(message.data);
-    if (message.action) {
+    var data = message.data;
+    if (message.action && pending[data.uid]) {
         if (message.action === "result") {
             pending[data.uid](data.status, data.resolution);
             pending[data.uid] = null;
@@ -1214,18 +1214,21 @@ function actionsHandler(message) {
     }
 }
 
+function guid() {
+    return ("" + ~~(Math.random() * 9999999) + ~~(Math.random() * 9999999))
+}
 
 
 function remoteCall(channel, namespaceName, methodName, token, args, callback) {
-    var uid = ~~ (Math.random() * 9999999) + "" + ~~(Math.random() * 9999999);
+    var uid = guid();
     pending[uid] = callback;
-    messages.sendMessage(channel.iframe.contentWindow, channel, "call", JSON.stringify({
+    messages.sendMessage(channel.iframe.contentWindow, channel, "call", {
         ns: namespaceName,
         name: methodName,
         args: args,
         token: token,
         uid: uid
-    }));
+    });
 
 }
 
@@ -1304,6 +1307,7 @@ function init(options, api) {
             channel.ready.resolve();
         }, 50);
     }
+  
     if (iframe.addEventListener) {
         iframe.addEventListener('load', onIframeLoad, false);
     } else if (iframe.attachEvent) {
@@ -1484,12 +1488,11 @@ var helpers = require(1);
 //returns postMessage specific handler
 function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
-
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
-            if (message.substr(0, 2) === marker) {
+            if (message.substr(0, marker.length) === marker) {
                 try {
-                    message = JSON.parse(message.substring(2));
+                    message = JSON.parse(message.substring(marker.length));
 
                 } catch (e) {
                     //broken? ignore
@@ -1502,21 +1505,20 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
-function sendMessage(targetWindow, channel, action, dataString) {
-    var targetOrigin = "*";
+function sendMessage(targetWindow, channel, action, data) {
+    var targetOrigin = "*", pkg;
 
-    if (typeof dataString !== "string" || typeof action !== "string") {
-        throw new TypeError("only string is acceptable as action and data");
+    if (typeof action !== "string") {
+        throw new TypeError("only string is acceptable as action");
     }
 
     try {
         targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
     } catch (E) {}
 
-
-    dataString = dataString.replace(/"/gm, '\\"').replace(/(\r\n|\n|\r)/gm, "");
-    targetWindow.postMessage(channel.marker + '{"action":"' + action + '","data":"' + dataString + '"}', targetOrigin);
-
+    pkg = JSON.stringify({action:action,data:data});
+    pkg = pkg.replace(/(\r\n|\n|\r)/gm, "");
+    targetWindow.postMessage(channel.marker + pkg, targetOrigin);
 }
 
 module.exports = {

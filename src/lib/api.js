@@ -19,7 +19,7 @@ module.exports = function (options) {
         responder(options, api);
     } else {
         //IE 8 and 9
-        if (window.XDomainRequest) { //true only in IE
+        if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
             var forwarder = require("./api_forwarder/sender");
             forwarder(options, api);
         }

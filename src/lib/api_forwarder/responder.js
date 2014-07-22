@@ -13,28 +13,28 @@ function init(options, api) {
 
     function actionsHandler(message) {
         if (message.action && message.action === "call") {
-            var data = JSON.parse(message.data);
+            var data = message.data;
             if (api[data.ns] && api[data.ns][data.name]) {
                 api.auth.setToken(data.token);
                 api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
-                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                    messages.sendMessage(window.parent, channel, "result", {
                         status: true,
                         resolution: res,
                         uid: data.uid
-                    }));
+                    });
                 }, function (res) {
-                    messages.sendMessage(window.parent, channel, "result", JSON.stringify({
+                    messages.sendMessage(window.parent, channel, "result", {
                         status: false,
                         resolution: res,
                         uid: data.uid
-                    }));
+                    });
                 })
 
             } else {
                 //send something to clean up the caller
-                messages.sendMessage(window.parent, channel, "nomethod", JSON.stringify({
+                messages.sendMessage(window.parent, channel, "nomethod", {
                     uid: data.uid
-                }));
+                });
             }
         }
     }
