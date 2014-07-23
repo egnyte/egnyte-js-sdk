@@ -6,7 +6,7 @@ function serializablifyXHR(res) {
     var resClone = {};
     for (var key in res) {
         //purposefully getting items from prototype too
-        if (typeof res[key] !== "function") {
+        if (typeof res[key] !== "function" && key !== "headers") {
             resClone[key] = res[key];
         }
     };
