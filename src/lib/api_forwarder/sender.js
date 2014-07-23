@@ -6,12 +6,12 @@ var messages = require('../reusables/messages');
 
 
 var pending = {};
-
+var origin = "";
 
 
 function actionsHandler(message) {
     var data = message.data;
-    if (message.action && pending[data.uid]) {
+    if (message.action && message.data && pending[data.uid]) {
         if (message.action === "result") {
             pending[data.uid](data.status, data.resolution);
             pending[data.uid] = null;
@@ -36,7 +36,7 @@ function remoteCall(channel, namespaceName, methodName, token, args, callback) {
         args: args,
         token: token,
         uid: uid
-    });
+    }, origin);
 
 }
 
@@ -92,7 +92,7 @@ function setupForwarding(api, channel) {
 
 
 function init(options, api) {
-
+    origin = options.egnyteDomainURL;
     //comm setup
     var iframe;
     var channel;

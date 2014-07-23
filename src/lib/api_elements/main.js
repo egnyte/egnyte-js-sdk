@@ -178,21 +178,27 @@ enginePrototypeMethods.dropToken = function (externalToken) {
 //request handling
 function params(obj) {
     var str = [];
+    //cachebuster for IE
+    if (window.XDomainRequest) {
+        str.push("random=" + (~~(Math.random() * 9999)));
+    }
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
         }
     }
-    return str.join("&");
+    if (str.length) {
+        return "?" + str.join("&");
+    } else {
+        return "";
+    }
 }
 
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
     if (this.isAuthorized()) {
-        if (opts.params) {
-            opts.url += "?" + params(opts.params);
-        }
+        opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.getToken();
         return xhr(opts, function (error, response, body) {

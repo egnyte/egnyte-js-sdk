@@ -41,9 +41,9 @@ describe("Remote Filepicker", function () {
     });
 
     it('should react to postmessage', function (done) {
-
+        var targetOrigin = window.location.origin || window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
         //for matching origin
-        eg = Egnyte.init(window.location.origin);
+        eg = Egnyte.init(targetOrigin);
         eg.filePickerRemote(node, {
             cancel: function () {
                 //finishes the test successfully

@@ -21,18 +21,25 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
-function sendMessage(targetWindow, channel, action, data) {
-    var targetOrigin = "*", pkg;
+function sendMessage(targetWindow, channel, action, data, originOverride) {
+    var targetOrigin = "*",
+        pkg;
 
     if (typeof action !== "string") {
         throw new TypeError("only string is acceptable as action");
     }
 
-    try {
-        targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
-    } catch (E) {}
-
-    pkg = JSON.stringify({action:action,data:data});
+    if (originOverride) {
+        targetOrigin = originOverride;
+    } else {
+        try {
+            targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
+        } catch (E) {}
+    }
+    pkg = JSON.stringify({
+        action: action,
+        data: data
+    });
     pkg = pkg.replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + pkg, targetOrigin);
 }

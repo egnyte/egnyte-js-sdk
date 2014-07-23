@@ -754,21 +754,27 @@ enginePrototypeMethods.dropToken = function (externalToken) {
 //request handling
 function params(obj) {
     var str = [];
+    //cachebuster for IE
+    if (window.XDomainRequest) {
+        str.push("random=" + (~~(Math.random() * 9999)));
+    }
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
         }
     }
-    return str.join("&");
+    if (str.length) {
+        return "?" + str.join("&");
+    } else {
+        return "";
+    }
 }
 
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
     if (this.isAuthorized()) {
-        if (opts.params) {
-            opts.url += "?" + params(opts.params);
-        }
+        opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.getToken();
         return xhr(opts, function (error, response, body) {
@@ -1146,6 +1152,17 @@ var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
 
+function serializablifyXHR(res) {
+    var resClone = {};
+    for (var key in res) {
+        //purposefully getting items from prototype too
+        if (typeof res[key] !== "function") {
+            resClone[key] = res[key];
+        }
+    };
+    return resClone;
+}
+
 function init(options, api) {
 
     var channel;
@@ -1161,6 +1178,9 @@ function init(options, api) {
             if (api[data.ns] && api[data.ns][data.name]) {
                 api.auth.setToken(data.token);
                 api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
+                    if (res instanceof XMLHttpRequest) {
+                        res = serializablifyXHR(res);
+                    }
                     messages.sendMessage(window.parent, channel, "result", {
                         status: true,
                         resolution: res,
@@ -1198,12 +1218,12 @@ var messages = require(4);
 
 
 var pending = {};
-
+var origin = "";
 
 
 function actionsHandler(message) {
     var data = message.data;
-    if (message.action && pending[data.uid]) {
+    if (message.action && message.data && pending[data.uid]) {
         if (message.action === "result") {
             pending[data.uid](data.status, data.resolution);
             pending[data.uid] = null;
@@ -1228,7 +1248,7 @@ function remoteCall(channel, namespaceName, methodName, token, args, callback) {
         args: args,
         token: token,
         uid: uid
-    });
+    }, origin);
 
 }
 
@@ -1284,7 +1304,7 @@ function setupForwarding(api, channel) {
 
 
 function init(options, api) {
-
+    origin = options.egnyteDomainURL;
     //comm setup
     var iframe;
     var channel;
@@ -1505,18 +1525,25 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     };
 }
 
-function sendMessage(targetWindow, channel, action, data) {
-    var targetOrigin = "*", pkg;
+function sendMessage(targetWindow, channel, action, data, originOverride) {
+    var targetOrigin = "*",
+        pkg;
 
     if (typeof action !== "string") {
         throw new TypeError("only string is acceptable as action");
     }
 
-    try {
-        targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
-    } catch (E) {}
-
-    pkg = JSON.stringify({action:action,data:data});
+    if (originOverride) {
+        targetOrigin = originOverride;
+    } else {
+        try {
+            targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
+        } catch (E) {}
+    }
+    pkg = JSON.stringify({
+        action: action,
+        data: data
+    });
     pkg = pkg.replace(/(\r\n|\n|\r)/gm, "");
     targetWindow.postMessage(channel.marker + pkg, targetOrigin);
 }

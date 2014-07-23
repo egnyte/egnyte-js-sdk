@@ -2,6 +2,17 @@ var helpers = require('../reusables/helpers');
 var dom = require('../reusables/dom');
 var messages = require('../reusables/messages');
 
+function serializablifyXHR(res) {
+    var resClone = {};
+    for (var key in res) {
+        //purposefully getting items from prototype too
+        if (typeof res[key] !== "function") {
+            resClone[key] = res[key];
+        }
+    };
+    return resClone;
+}
+
 function init(options, api) {
 
     var channel;
@@ -17,6 +28,9 @@ function init(options, api) {
             if (api[data.ns] && api[data.ns][data.name]) {
                 api.auth.setToken(data.token);
                 api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
+                    if (res instanceof XMLHttpRequest) {
+                        res = serializablifyXHR(res);
+                    }
                     messages.sendMessage(window.parent, channel, "result", {
                         status: true,
                         resolution: res,
