@@ -8,4 +8,8 @@ The content of the iframe is loaded from a location in the Egnyte domain being u
 
 Every call is being sent with the access token, so the security of this solution depends on IE's `window.postmessage` implementation security. 
 
+## What will not work?
+
+`api.manual.sendRequest` and `api.manual.promiseRequest` are not forwarded, so they cannot be used.
+
 Uploading files or downloading anything containing binary data will obviously not work in IE8 nor IE9. It is possible to work with text files content to some extent.

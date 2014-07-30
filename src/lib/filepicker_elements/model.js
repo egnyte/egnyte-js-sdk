@@ -113,7 +113,7 @@ Model.prototype.fetch = function (path) {
     self.API.storage.get(self.path).then(function (m) {
         self.processing = false;
         self._set(m);
-    }).error(function (e) {
+    }).fail(function (e) {
         self.processing = false;
         self.onerror(e);
     });

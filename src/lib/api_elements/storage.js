@@ -1,20 +1,23 @@
 var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
-var api;
-var options;
-
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-function exists(pathFromRoot) {
-    return promises.start(true).then(function () {
+var Storage = function (requestEngine) {
+    this.requestEngine = requestEngine;
+}
+
+var storageProto = {};
+storageProto.exists = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "GET",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         });
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
@@ -31,44 +34,47 @@ function exists(pathFromRoot) {
     });
 }
 
-function get(pathFromRoot) {
-    return promises.start(true).then(function () {
+storageProto.get = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "GET",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         });
     }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
-function download(pathFromRoot, isBinary) {
-    return promises.start(true).then(function () {
+storageProto.download = function (pathFromRoot, isBinary) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
         var opts = {
             method: "GET",
-            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
         }
 
         if (isBinary) {
             opts.responseType = "arraybuffer";
         }
 
-        return api.promiseRequest(opts);
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.response;
     });
 }
 
-function createFolder(pathFromRoot) {
-    return promises.start(true).then(function () {
+storageProto.createFolder = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -82,24 +88,24 @@ function createFolder(pathFromRoot) {
     });
 }
 
-function move(pathFromRoot, newPath) {
-    return transfer(pathFromRoot, newPath, "move");
+storageProto.move = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, pathFromRoot, newPath, "move");
 }
 
-function copy(pathFromRoot, newPath) {
-    return transfer(pathFromRoot, newPath, "copy");
+storageProto.copy = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, pathFromRoot, newPath, "copy");
 }
 
-function transfer(pathFromRoot, newPath, action) {
-    return promises.start(true).then(function () {
+function transfer(requestEngine, pathFromRoot, newPath, action) {
+    return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
         }
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         newPath = helpers.encodeNameSafe(newPath);
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
@@ -117,14 +123,15 @@ function transfer(pathFromRoot, newPath, action) {
 
 
 
-function storeFile(pathFromRoot, fileOrBlob) {
-    return promises.start(true).then(function () {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
             body: file,
         });
     }).then(function (result) { //result.response result.body
@@ -137,7 +144,7 @@ function storeFile(pathFromRoot, fileOrBlob) {
 
 //currently not supported by back-end
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
-//    return promises.start(true).then(function () {
+//    return promises(true).then(function () {
 //        if (!window.FormData) {
 //            throw new Error("Unsupported browser");
 //        }
@@ -159,53 +166,42 @@ function storeFile(pathFromRoot, fileOrBlob) {
 //    });
 //}
 
-function remove(pathFromRoot, versionEntryId) {
-    return promises.start(true).then(function () {
+
+//private
+function remove(requestEngine, pathFromRoot, versionEntryId) {
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
                 "entry_id": versionEntryId
             };
         }
-        return api.promiseRequest(opts);
+        return requestEngine.promiseRequest(opts);
 
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-function removeFileVersion(pathFromRoot, versionEntryId) {
-    return promises.start(true).then(function () {
+storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(pathFromRoot, versionEntryId)
+        return remove(requestEngine, pathFromRoot, versionEntryId)
     });
 }
 
 
-function removeEntry(pathFromRoot) {
-    return remove(pathFromRoot);
+storageProto.remove = function (pathFromRoot) {
+    return remove(this.requestEngine, pathFromRoot);
 }
 
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        exists: exists,
-        get: get,
-        download: download,
-        createFolder: createFolder,
-        move: move,
-        copy: copy,
-        rename: move,
-        remove: removeEntry,
+Storage.prototype = storageProto;
 
-        storeFile: storeFile,
-        removeFileVersion: removeFileVersion
-    };
-};
+module.exports = Storage;

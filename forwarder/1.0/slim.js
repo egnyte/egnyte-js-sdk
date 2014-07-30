@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function(target) {
 	var undef;
-	
+
 	function isFunction(f) {
 		return typeof f == 'function';
 	}
@@ -9,13 +9,15 @@
 		return typeof f == 'object';
 	}
 	function defer(callback) {
-		if (typeof process != 'undefined' && process['nextTick'])
+		if (typeof setImmediate != 'undefined')
+			setImmediate(callback);
+		else if (typeof process != 'undefined' && process['nextTick'])
 			process['nextTick'](callback);
 		else
 			setTimeout(callback, 0);
 	}
-	
-	target[0][target[1]] = function pinkySwear() {
+
+	target[0][target[1]] = function pinkySwear(extend) {
 		var state;           // undefined/null = pending, true = fulfilled, false = rejected
 		var values = [];     // an array of values as arguments for the then() handlers
 		var deferred = [];   // functions to call when set() is invoked
@@ -32,9 +34,9 @@
 			}
 			return state;
 		};
-		
+
 		set['then'] = function (onFulfilled, onRejected) {
-			var promise2 = pinkySwear();
+			var promise2 = pinkySwear(extend);
 			var callCallbacks = function() {
 	    		try {
 	    			var f = (state ? onFulfilled : onRejected);
@@ -53,7 +55,7 @@
 				   					promise2(true, arguments);
 		   					}
 		   					catch(e) {
-		   						if (!cbCalled++) 
+		   						if (!cbCalled++)
 		   							promise2(false, [e]);
 		   					}
 		   				}
@@ -69,18 +71,15 @@
 			if (state != null)
 				defer(callCallbacks);
 			else
-				deferred.push(callCallbacks);    		
+				deferred.push(callCallbacks);
 			return promise2;
 		};
-
-		// always(func) is the same as then(func, func)
-		set['always'] = function(func) { return set['then'](func, func); };
-
-		// error(func) is the same as then(0, func)
-		set['error'] = function(func) { return set['then'](0, func); };
+        if(extend){
+            set = extend(set);
+        }
 		return set;
 	};
-})(typeof module === 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
+})(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
 },{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
@@ -392,36 +391,235 @@ module.exports = {
 }
 
 },{}],7:[function(require,module,exports){
-var APIMain = require(2);
-var storageFacade = require(3);
-var linkFacade = require(1);
+var RequestEngine = require(3);
+var AuthEngine = require(1);
+var StorageFacade = require(4);
+var LinkFacade = require(2);
 
 
 module.exports = function (options) {
-    var main = APIMain(options);
-    var storage = storageFacade(main, options);
-    var link = linkFacade(main, options);
+    var auth = new AuthEngine(options);
+    var requestEngine = new RequestEngine(auth, options);
+    
+    var storage = new StorageFacade(requestEngine);
+    var link = new LinkFacade(requestEngine);
     var api = {
-        auth: main,
+        auth: auth,
         storage: storage,
         link: link
     };
 
     if (options.acceptForwarding) {
         //will handle incoming forwards
-        var responder = require(4);
+        var responder = require(5);
         responder(options, api);
     } else {
         //IE 8 and 9
         if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
-            var forwarder = require(5);
+            var forwarder = require(6);
             forwarder(options, api);
         }
     }
     
+    api.manual = requestEngine;
+    
     return api;
 };
-},{"1":9,"2":10,"3":11,"4":12,"5":13}],8:[function(require,module,exports){
+},{"1":8,"2":10,"3":11,"4":12,"5":13,"6":14}],8:[function(require,module,exports){
+var oauthRegex = /access_token=([^&]+)/;
+var oauthDeniedRegex = /\?error=access_denied/;
+
+
+var promises = require(1);
+var helpers = require(3);
+var dom = require(2);
+var messages = require(4);
+var errorify = require(5);
+
+
+
+
+
+function Auth(options) {
+    this.options = options;
+    if (this.options.token) {
+        this.token = this.options.token;
+    }
+    this.userInfo = null;
+    this.getUserInfo = helpers.bindThis(this, this.getUserInfo);
+
+}
+
+var authPrototypeMethods = {};
+
+authPrototypeMethods._reloadForToken = function () {
+    window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+}
+
+authPrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
+    var win = overrideWindow || window;
+    if (!this.token) {
+        this.userInfo = null;
+        var access = oauthRegex.exec(win.location.hash);
+        if (access) {
+            if (access.length > 1) {
+                this.token = access[1];
+                //overrideWindow || (window.location.hash = "");
+                success && success();
+            } else {
+                //what now?
+            }
+        } else {
+            if (oauthDeniedRegex.test(win.location.href)) {
+                denied && denied();
+            } else {
+                notoken && notoken();
+            }
+        }
+    } else {
+        success && success();
+    }
+}
+
+authPrototypeMethods.requestTokenReload = function (callback, denied) {
+    this._checkTokenResponse(callback, denied, helpers.bindThis(this, this._reloadForToken));
+}
+
+authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
+    if (!this.token) {
+        var self = this;
+        var locationObject = window.location;
+        emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var iframe = dom.createFrame(url, !!"scrollbars please");
+        iframe.onload = function () {
+            try {
+                var location = iframe.contentWindow.location;
+                var override = {
+                    location: {
+                        hash: "" + location.hash,
+                        href: "" + location.href
+                    }
+                };
+
+                self._checkTokenResponse(function () {
+                    iframe.src = "";
+                    targetNode.removeChild(iframe);
+                    callback();
+                }, function () {
+                    iframe.src = "";
+                    targetNode.removeChild(iframe);
+                    denied();
+                }, null, override);
+            } catch (e) {}
+        }
+        targetNode.appendChild(iframe);
+    } else {
+        callback();
+    }
+
+}
+
+
+authPrototypeMethods._postTokenUp = function () {
+    var self = this;
+    if (!this.token && window.name === this.options.channelMarker) {
+        var channel = {
+            marker: this.options.channelMarker,
+            sourceOrigin: this.options.egnyteDomainURL
+        };
+
+        this._checkTokenResponse(function () {
+            messages.sendMessage(window.opener, channel, "token", self.token);
+        }, function () {
+            messages.sendMessage(window.opener, channel, "denied", "");
+        });
+
+    }
+}
+authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
+    var self = this;
+    if (!this.token) {
+        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var win = window.open(url);
+        win.name = this.options.channelMarker;
+        var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
+            listener.destroy();
+            win.close();
+            if (message.action === "token") {
+                self.token = message.data;
+                callback && callback();
+            }
+            if (message.action === "denied") {
+                denied && denied();
+            }
+        });
+        var listener = dom.addListener(window, "message", handler);
+    } else {
+        callback();
+    }
+
+}
+
+authPrototypeMethods.authorizeXHR = function (xhr) {
+    //assuming token_type was bearer, no use for XHR otherwise, right?
+    xhr.setRequestHeader("Authorization", "Bearer " + this.token);
+}
+
+authPrototypeMethods.getHeaders = function () {
+    return {
+        "Authorization": "Bearer " + this.token
+    };
+}
+
+
+authPrototypeMethods.isAuthorized = function () {
+    return !!this.token;
+}
+
+authPrototypeMethods.getToken = function () {
+    return this.token;
+}
+
+authPrototypeMethods.setToken = function (externalToken) {
+    this.token = externalToken;
+}
+
+
+authPrototypeMethods.dropToken = function (externalToken) {
+    this.token = null;
+}
+
+
+//======================================================================
+//api facade
+
+
+authPrototypeMethods.addRequestEngine = function (requestEngine) {
+    this.requestEngine = requestEngine;
+}
+
+authPrototypeMethods.getUserInfo = function () {
+    var self = this;
+    if (self.userInfo || !this.requestEngine) {
+        return promises(true).then(function () {
+            return self.userInfo;
+        });
+    } else {
+        return this.requestEngine.promiseRequest({
+            method: "GET",
+            url: this.requestEngine.getEndpoint() + "/userinfo",
+        }).then(function (result) { //result.response result.body
+            self.userInfo = result.body;
+            return result.body;
+        });
+    }
+}
+
+Auth.prototype = authPrototypeMethods;
+
+module.exports = Auth;
+},{"1":15,"2":16,"3":17,"4":18,"5":9}],9:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -479,25 +677,28 @@ module.exports = function (result) {
     return error;
 }
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
 
 
-var api;
-var options;
-
 
 var linksEndpoint = "/links";
 
+var Links = function (requestEngine) {
+    this.requestEngine = requestEngine;
+}
 
-function createLink(setup) {
+var linksProto = {};
+
+linksProto.createLink = function(setup) {
+    var requestEngine = this.requestEngine;
     var defaults = {
         path: null,
         type: "file",
         accessibility: "domain"
     };
-    return promises.start(true)
+    return promises(true)
         .then(function () {
             setup = helpers.extend(defaults, setup);
             setup.path = helpers.encodeNameSafe(setup.path);
@@ -506,9 +707,9 @@ function createLink(setup) {
                 throw new Error("Path attribute missing or incorrect");
             }
 
-            return api.promiseRequest({
+            return requestEngine.promiseRequest({
                 method: "POST",
-                url: api.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 json: setup
             });
         }).then(function (result) { //result.response result.body
@@ -517,33 +718,36 @@ function createLink(setup) {
 }
 
 
-function removeLink(id) {
-    return api.promiseRequest({
+linksProto.removeLink = function(id) {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
         method: "DELETE",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-function listLink(id) {
-    return api.promiseRequest({
+linksProto.listLink = function(id) {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
         method: "GET",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
     }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
 
-function listLinks(filters) {
-    return promises.start(true)
+linksProto.listLinks = function(filters) {
+    var requestEngine = this.requestEngine;
+    return promises(true)
         .then(function () {
             filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-            return api.promiseRequest({
+            return requestEngine.promiseRequest({
                 method: "get",
-                url: api.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 params: filters
             });
         }).then(function (result) { //result.response result.body
@@ -551,31 +755,21 @@ function listLinks(filters) {
         });
 }
 
-function findOne(filters) {
-    return listLinks(filters).then(function (list) {
+linksProto.findOne = function(filters) {
+    var self=this;
+    return self.listLinks(filters).then(function (list) {
         if (list.ids && list.ids.length > 0) {
-            return listLink(list.ids[0]);
+            return self.listLink(list.ids[0]);
         } else {
             return null;
         }
     });
 }
 
+Links.prototype = linksProto;
 
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        createLink: createLink,
-        removeLink: removeLink,
-        listLink: listLink,
-        listLinks: listLinks,
-        findOne: findOne
-    };
-};
-},{"1":14,"2":16}],10:[function(require,module,exports){
-var oauthRegex = /access_token=([^&]+)/;
-var oauthDeniedRegex = /\?error=access_denied/;
+module.exports = Links;
+},{"1":15,"2":17}],11:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -588,12 +782,9 @@ var xhr = require(6);
 
 
 
-function Engine(options) {
+function Engine(auth, options) {
+    this.auth = auth;
     this.options = options;
-    if (this.options.token) {
-        this.token = this.options.token;
-    }
-    this.userInfo = null;
     this.quota = {
         startOfTheSecond: 0,
         calls: 0,
@@ -602,152 +793,13 @@ function Engine(options) {
     this.queue = [];
 
     this.queueHandler = helpers.bindThis(this, _rollQueue);
-    this.getUserInfo = helpers.bindThis(this, this.getUserInfo);
+    
+    auth.addRequestEngine(this);
 
 }
 
 var enginePrototypeMethods = {};
 
-enginePrototypeMethods._reloadForToken = function () {
-    window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
-}
-
-enginePrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
-    var win = overrideWindow || window;
-    if (!this.token) {
-        this.userInfo = null;
-        var access = oauthRegex.exec(win.location.hash);
-        if (access) {
-            if (access.length > 1) {
-                this.token = access[1];
-                //overrideWindow || (window.location.hash = "");
-                success && success();
-            } else {
-                //what now?
-            }
-        } else {
-            if (oauthDeniedRegex.test(win.location.href)) {
-                denied && denied();
-            } else {
-                notoken && notoken();
-            }
-        }
-    } else {
-        success && success();
-    }
-}
-
-enginePrototypeMethods.requestTokenReload = function (callback, denied) {
-    this._checkTokenResponse(callback, denied, helpers.bindThis(this, this._reloadForToken));
-}
-
-enginePrototypeMethods.requestTokenIframe = function (targetNode, callback, denied, emptyPageURL) {
-    if (!this.token) {
-        var self = this;
-        var locationObject = window.location;
-        emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
-        var iframe = dom.createFrame(url, !!"scrollbars please");
-        iframe.onload = function () {
-            try {
-                var location = iframe.contentWindow.location;
-                var override = {
-                    location: {
-                        hash: "" + location.hash,
-                        href: "" + location.href
-                    }
-                };
-
-                self._checkTokenResponse(function () {
-                    iframe.src = "";
-                    targetNode.removeChild(iframe);
-                    callback();
-                }, function () {
-                    iframe.src = "";
-                    targetNode.removeChild(iframe);
-                    denied();
-                }, null, override);
-            } catch (e) {}
-        }
-        targetNode.appendChild(iframe);
-    } else {
-        callback();
-    }
-
-}
-
-
-enginePrototypeMethods._postTokenUp = function () {
-    var self = this;
-    if (!this.token && window.name === this.options.channelMarker) {
-        var channel = {
-            marker: this.options.channelMarker,
-            sourceOrigin: this.options.egnyteDomainURL
-        };
-
-        this._checkTokenResponse(function () {
-            messages.sendMessage(window.opener, channel, "token", self.token);
-        }, function () {
-            messages.sendMessage(window.opener, channel, "denied", "");
-        });
-
-    }
-}
-enginePrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
-    var self = this;
-    if (!this.token) {
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
-        var win = window.open(url);
-        win.name = this.options.channelMarker;
-        var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
-            listener.destroy();
-            win.close();
-            if (message.action === "token") {
-                self.token = message.data;
-                callback && callback();
-            }
-            if (message.action === "denied") {
-                denied && denied();
-            }
-        });
-        var listener = dom.addListener(window, "message", handler);
-    } else {
-        callback();
-    }
-
-}
-
-enginePrototypeMethods.authorizeXHR = function (xhr) {
-    //assuming token_type was bearer, no use for XHR otherwise, right?
-    xhr.setRequestHeader("Authorization", "Bearer " + this.token);
-}
-
-enginePrototypeMethods.getHeaders = function () {
-    return {
-        "Authorization": "Bearer " + this.token
-    };
-}
-
-enginePrototypeMethods.getEndpoint = function () {
-    return this.options.egnyteDomainURL + "/pubapi/v1";
-}
-
-enginePrototypeMethods.isAuthorized = function () {
-    return !!this.token;
-}
-
-enginePrototypeMethods.getToken = function () {
-    return this.token;
-}
-
-enginePrototypeMethods.setToken = function (externalToken) {
-    this.token = externalToken;
-}
-
-
-enginePrototypeMethods.dropToken = function (externalToken) {
-    this.token = null;
-}
 
 
 //======================================================================
@@ -770,13 +822,17 @@ function params(obj) {
     }
 }
 
+enginePrototypeMethods.getEndpoint = function () {
+    return this.options.egnyteDomainURL + "/pubapi/v1";
+}
+
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
-    if (this.isAuthorized()) {
+    if (this.auth.isAuthorized()) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
-        opts.headers["Authorization"] = "Bearer " + this.getToken();
+        opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
         return xhr(opts, function (error, response, body) {
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
@@ -820,7 +876,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                         )
                     )
                 ) {
-                    self.dropToken();
+                    self.auth.dropToken();
                     self.options.onInvalidToken();
                 }
 
@@ -910,49 +966,31 @@ function _quotaWaitTime(quota, QPS) {
     return 1001 - diff;
 }
 
-//======================================================================
-//api facade
-
-enginePrototypeMethods.getUserInfo = function () {
-    var self = this;
-    if (self.userInfo) {
-        return promises.start(true).then(function () {
-            return self.userInfo;
-        });
-    } else {
-        return this.promiseRequest({
-            method: "GET",
-            url: this.getEndpoint() + "/userinfo",
-        }).then(function (result) { //result.response result.body
-            self.userInfo = result.body;
-            return result.body;
-        });
-    }
-}
 
 Engine.prototype = enginePrototypeMethods;
 
-module.exports = function (opts) {
-    return new Engine(opts);
-};
-},{"1":14,"2":15,"3":16,"4":17,"5":8,"6":3}],11:[function(require,module,exports){
+module.exports = Engine;
+},{"1":15,"2":16,"3":17,"4":18,"5":9,"6":3}],12:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(2);
-
-var api;
-var options;
 
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-function exists(pathFromRoot) {
-    return promises.start(true).then(function () {
+var Storage = function (requestEngine) {
+    this.requestEngine = requestEngine;
+}
+
+var storageProto = {};
+storageProto.exists = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "GET",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         });
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
@@ -969,44 +1007,47 @@ function exists(pathFromRoot) {
     });
 }
 
-function get(pathFromRoot) {
-    return promises.start(true).then(function () {
+storageProto.get = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "GET",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         });
     }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
-function download(pathFromRoot, isBinary) {
-    return promises.start(true).then(function () {
+storageProto.download = function (pathFromRoot, isBinary) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
         var opts = {
             method: "GET",
-            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
         }
 
         if (isBinary) {
             opts.responseType = "arraybuffer";
         }
 
-        return api.promiseRequest(opts);
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.response;
     });
 }
 
-function createFolder(pathFromRoot) {
-    return promises.start(true).then(function () {
+storageProto.createFolder = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -1020,24 +1061,24 @@ function createFolder(pathFromRoot) {
     });
 }
 
-function move(pathFromRoot, newPath) {
-    return transfer(pathFromRoot, newPath, "move");
+storageProto.move = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, pathFromRoot, newPath, "move");
 }
 
-function copy(pathFromRoot, newPath) {
-    return transfer(pathFromRoot, newPath, "copy");
+storageProto.copy = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, pathFromRoot, newPath, "copy");
 }
 
-function transfer(pathFromRoot, newPath, action) {
-    return promises.start(true).then(function () {
+function transfer(requestEngine, pathFromRoot, newPath, action) {
+    return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
         }
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         newPath = helpers.encodeNameSafe(newPath);
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
@@ -1055,14 +1096,15 @@ function transfer(pathFromRoot, newPath, action) {
 
 
 
-function storeFile(pathFromRoot, fileOrBlob) {
-    return promises.start(true).then(function () {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-        return api.promiseRequest({
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
             body: file,
         });
     }).then(function (result) { //result.response result.body
@@ -1075,7 +1117,7 @@ function storeFile(pathFromRoot, fileOrBlob) {
 
 //currently not supported by back-end
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
-//    return promises.start(true).then(function () {
+//    return promises(true).then(function () {
 //        if (!window.FormData) {
 //            throw new Error("Unsupported browser");
 //        }
@@ -1097,57 +1139,46 @@ function storeFile(pathFromRoot, fileOrBlob) {
 //    });
 //}
 
-function remove(pathFromRoot, versionEntryId) {
-    return promises.start(true).then(function () {
+
+//private
+function remove(requestEngine, pathFromRoot, versionEntryId) {
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: api.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
                 "entry_id": versionEntryId
             };
         }
-        return api.promiseRequest(opts);
+        return requestEngine.promiseRequest(opts);
 
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-function removeFileVersion(pathFromRoot, versionEntryId) {
-    return promises.start(true).then(function () {
+storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(pathFromRoot, versionEntryId)
+        return remove(requestEngine, pathFromRoot, versionEntryId)
     });
 }
 
 
-function removeEntry(pathFromRoot) {
-    return remove(pathFromRoot);
+storageProto.remove = function (pathFromRoot) {
+    return remove(this.requestEngine, pathFromRoot);
 }
 
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        exists: exists,
-        get: get,
-        download: download,
-        createFolder: createFolder,
-        move: move,
-        copy: copy,
-        rename: move,
-        remove: removeEntry,
+Storage.prototype = storageProto;
 
-        storeFile: storeFile,
-        removeFileVersion: removeFileVersion
-    };
-};
-},{"1":14,"2":16}],12:[function(require,module,exports){
+module.exports = Storage;
+},{"1":15,"2":17}],13:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1156,7 +1187,7 @@ function serializablifyXHR(res) {
     var resClone = {};
     for (var key in res) {
         //purposefully getting items from prototype too
-        if (typeof res[key] !== "function" && key!=="headers") {
+        if (typeof res[key] !== "function" && key !== "headers") {
             resClone[key] = res[key];
         }
     };
@@ -1209,7 +1240,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":15,"2":16,"3":17}],13:[function(require,module,exports){
+},{"1":16,"2":17,"3":18}],14:[function(require,module,exports){
 var promises = require(1);
 var helpers = require(3);
 var dom = require(2);
@@ -1343,39 +1374,38 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":14,"2":15,"3":16,"4":17}],14:[function(require,module,exports){
+},{"1":15,"2":16,"3":17,"4":18}],15:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
-    promObj.error = function (func) {
+    promObj.fail = function (func) {
         return promObj.then(0, func);
     };
     return promObj;
 }
 
-module.exports = {
-    "defer": function () {
-        var promise = pinkySwear(createErrorAlias);
-        return {
-            promise: promise,
-            resolve: function (a) {
-                promise(true, [a]);
-            },
-            reject: function (a) {
-                promise(false, [a]);
-            }
-        };
-    },
-    "start": function (value) {
-        var promise = pinkySwear(createErrorAlias);
-        promise(value);
-        return promise;
-    }
-
+var Promises = function (value) {
+    var promise = pinkySwear(createErrorAlias);
+    promise(value);
+    return promise;
 }
 
-},{"1":1}],15:[function(require,module,exports){
+Promises.defer = function () {
+    var promise = pinkySwear(createErrorAlias);
+    return {
+        promise: promise,
+        resolve: function (a) {
+            promise(true, [a]);
+        },
+        reject: function (a) {
+            promise(false, [a]);
+        }
+    };
+}
+
+module.exports = Promises;
+},{"1":1}],16:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1445,7 +1475,7 @@ module.exports = {
 
 }
 
-},{"1":2}],16:[function(require,module,exports){
+},{"1":2}],17:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1501,7 +1531,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -1553,7 +1583,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":16}],18:[function(require,module,exports){
+},{"1":17}],19:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -1576,4 +1606,4 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":7,"3":16}]},{},[18])
+},{"1":6,"2":7,"3":17}]},{},[19])

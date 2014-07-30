@@ -10,25 +10,15 @@ module.exports = function (options) {
     
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
+    
+    
+    
     var api = {
+        manual: requestEngine,
         auth: auth,
         storage: storage,
         link: link
     };
 
-    if (options.acceptForwarding) {
-        //will handle incoming forwards
-        var responder = require("./api_forwarder/responder");
-        responder(options, api);
-    } else {
-        //IE 8 and 9
-        if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
-            var forwarder = require("./api_forwarder/sender");
-            forwarder(options, api);
-        }
-    }
-    
-    api.manual = requestEngine;
-    
     return api;
 };

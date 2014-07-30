@@ -12,7 +12,7 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "dependencies": {
-    "pinkyswear": "2.0.1",
+    "pinkyswear": "git://github.com/naugtur/PinkySwear.js.git#master",
     "vkey": "0.0.3",
     "xhr": "1.10.1"
   },

@@ -2,20 +2,23 @@ var promises = require('../promises');
 var helpers = require('../reusables/helpers');
 
 
-var api;
-var options;
-
 
 var linksEndpoint = "/links";
 
+var Links = function (requestEngine) {
+    this.requestEngine = requestEngine;
+}
 
-function createLink(setup) {
+var linksProto = {};
+
+linksProto.createLink = function(setup) {
+    var requestEngine = this.requestEngine;
     var defaults = {
         path: null,
         type: "file",
         accessibility: "domain"
     };
-    return promises.start(true)
+    return promises(true)
         .then(function () {
             setup = helpers.extend(defaults, setup);
             setup.path = helpers.encodeNameSafe(setup.path);
@@ -24,9 +27,9 @@ function createLink(setup) {
                 throw new Error("Path attribute missing or incorrect");
             }
 
-            return api.promiseRequest({
+            return requestEngine.promiseRequest({
                 method: "POST",
-                url: api.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 json: setup
             });
         }).then(function (result) { //result.response result.body
@@ -35,33 +38,36 @@ function createLink(setup) {
 }
 
 
-function removeLink(id) {
-    return api.promiseRequest({
+linksProto.removeLink = function(id) {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
         method: "DELETE",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-function listLink(id) {
-    return api.promiseRequest({
+linksProto.listLink = function(id) {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
         method: "GET",
-        url: api.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
     }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
 
-function listLinks(filters) {
-    return promises.start(true)
+linksProto.listLinks = function(filters) {
+    var requestEngine = this.requestEngine;
+    return promises(true)
         .then(function () {
             filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-            return api.promiseRequest({
+            return requestEngine.promiseRequest({
                 method: "get",
-                url: api.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 params: filters
             });
         }).then(function (result) { //result.response result.body
@@ -69,25 +75,17 @@ function listLinks(filters) {
         });
 }
 
-function findOne(filters) {
-    return listLinks(filters).then(function (list) {
+linksProto.findOne = function(filters) {
+    var self=this;
+    return self.listLinks(filters).then(function (list) {
         if (list.ids && list.ids.length > 0) {
-            return listLink(list.ids[0]);
+            return self.listLink(list.ids[0]);
         } else {
             return null;
         }
     });
 }
 
+Links.prototype = linksProto;
 
-module.exports = function (apihelper, opts) {
-    options = opts;
-    api = apihelper;
-    return {
-        createLink: createLink,
-        removeLink: removeLink,
-        listLink: listLink,
-        listLinks: listLinks,
-        findOne: findOne
-    };
-};
+module.exports = Links;

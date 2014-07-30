@@ -54,7 +54,7 @@ describe("API to JS (integration test)", function () {
                 expect(info.username).toBeDefined();
                 expect(info.username.length).toBeGreaterThan(1);
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -78,7 +78,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.exists("/Private").then(function (e) {
                 expect(e).toBe(true);
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -88,7 +88,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.exists("/jiberish").then(function (e) {
                 expect(e).toBe(false);
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -102,7 +102,7 @@ describe("API to JS (integration test)", function () {
                 testpath2 = e.folders[0].path + "/unicorn" + ~~(10000 * Math.random());
                 testpath3 = e.folders[0].path + "/candy" + ~~(10000 * Math.random());
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -119,7 +119,7 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(true);
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -131,7 +131,7 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(this).toAutoFail("was created");
                 })
-                .error(function (e) {
+                .fail(function (e) {
                     expect(e.response.statusCode).toEqual(409);
                     done();
                 });
@@ -144,7 +144,7 @@ describe("API to JS (integration test)", function () {
                     expect(this).toAutoFail(e);
                     done();
                 })
-                .error(function (e) {
+                .fail(function (e) {
                     console.log(e);
                     expect(e.response.statusCode).toEqual(596);
                     done();
@@ -169,7 +169,7 @@ describe("API to JS (integration test)", function () {
                             expect(e).toBe(true);
                             done();
                         });
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -184,7 +184,7 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -212,7 +212,7 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -245,7 +245,7 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -263,7 +263,7 @@ describe("API to JS (integration test)", function () {
 
                     recentFileObject = e;
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -278,7 +278,7 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     expect(e).toBe(false);
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -298,7 +298,7 @@ describe("API to JS (integration test)", function () {
                 .then(function (e) {
                     recentFile = e;
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -323,7 +323,7 @@ describe("API to JS (integration test)", function () {
             }).then(function (e) {
                 expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -346,13 +346,13 @@ describe("API to JS (integration test)", function () {
                     eg.API.link.listLink(other[0]).then(function (e) {
                         expect(e["path"]).toEqual(recentFile.path); //actually checking if it exists
                         done();
-                    }).error(function (e) {
+                    }).fail(function (e) {
                         throw new Error("Link from the list doesn't seem to exist at all");
                     });
                 } else {
                     done();
                 }
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -366,7 +366,7 @@ describe("API to JS (integration test)", function () {
             }).then(function (e) {
                 expect(e["path"]).toEqual(recentFile.path);
                 done();
-            }).error(function (e) {
+            }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -395,7 +395,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.remove(testpath3)
                 .then(function (e) {
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });

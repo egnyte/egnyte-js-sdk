@@ -162,21 +162,6 @@
 <td>Forgets the current token</td>
 </tr>
 <tr>
-<td>API.auth.getEndpoint</td>
-<td></td>
-<td>Returns the public API endpoint root URL</td>
-</tr>
-<tr>
-<td>API.auth.sendRequest</td>
-<td><code>options</code>, <code>callback</code></td>
-<td>Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
-</tr>
-<tr>
-<td>API.auth.promiseRequest</td>
-<td><code>options</code></td>
-<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
-</tr>
-<tr>
 <td>API.auth.getUserInfo</td>
 <td></td>
 <td>Returns promise that resolves to user info object</td>
@@ -232,7 +217,34 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
             //get the app working again
         }
     });</code></pre>
-<h3 id="handling-requests">Handling requests</h3>
+<h2 id="making-manual-requests">Making manual requests</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.manual.getEndpoint</td>
+<td></td>
+<td>Returns the public API endpoint root URL</td>
+</tr>
+<tr>
+<td>API.manual.sendRequest</td>
+<td><code>options</code>, <code>callback</code></td>
+<td>Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
+</tr>
+<tr>
+<td>API.manual.promiseRequest</td>
+<td><code>options</code></td>
+<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-make-a-request">How to make a request</h3>
 <p><em>Request options</em></p>
 <table>
 <thead>
@@ -286,7 +298,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </tbody>
 </table>
 <p><em>Examples</em></p>
-<pre><code class="lang-javascript">egnyte.API.auth.sendRequest({
+<pre><code class="lang-javascript">egnyte.API.manual.sendRequest({
         url:&quot;https://...&quot; //full URL address
         params:{ //query params to be added after the ? at the end of url 
             &quot;queryparam&quot;:&quot;param-value&quot;
@@ -302,15 +314,15 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
             //handle the error or rethrow
         }
     });</code></pre>
-<pre><code class="lang-javascript">egnyte.API.auth.promiseRequest({
+<pre><code class="lang-javascript">egnyte.API.manual.promiseRequest({
         ...
     }).then(function (response, body) {
         //response is the XHR object
         //body contains response JSON converted to object
-    }).error(function(error, response, body){
+    }).fail(function(error, response, body){
         //handle the error 
     });</code></pre>
-<pre><code class="lang-javascript">egnyte.API.auth.promiseRequest({
+<pre><code class="lang-javascript">egnyte.API.manual.promiseRequest({
        ...
     }).then(function (response, body) {
         //response is the XHR object

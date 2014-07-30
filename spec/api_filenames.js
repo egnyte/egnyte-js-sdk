@@ -76,7 +76,7 @@ describe("Item names / ", function () {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -108,7 +108,7 @@ describe("Item names / ", function () {
                     })
                     .then(function (e) {
                         done();
-                    }).error(function (e) {
+                    }).fail(function (e) {
                         expect(this).toAutoFail(e);
                         done();
                     });
@@ -129,7 +129,7 @@ describe("Item names / ", function () {
                     })
                     .then(function (e) {
                         done();
-                    }).error(function (e) {
+                    }).fail(function (e) {
                         expect(this).toAutoFail(e);
                         done();
                     });
@@ -147,7 +147,7 @@ describe("Item names / ", function () {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -167,7 +167,7 @@ describe("Item names / ", function () {
                     .then(function (e) {
                         expect(this).toAutoFail(e);
                         done();
-                    }).error(function (e) {
+                    }).fail(function (e) {
                         console.log(e);
                         done();
                     });
@@ -184,7 +184,7 @@ describe("Item names / ", function () {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
-                }).error(function (e) {
+                }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
@@ -203,7 +203,7 @@ describe("Item names / ", function () {
                         eg.API.storage.remove(basePath + "/" + fname);
                         expect(this).toAutoFail(e);
                         done();
-                    }).error(function (e) {
+                    }).fail(function (e) {
                         done();
                     });
 

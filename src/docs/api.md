@@ -77,9 +77,6 @@ API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR ob
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string
 API.auth.dropToken | | Forgets the current token
-API.auth.getEndpoint | | Returns the public API endpoint root URL
-API.auth.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
-API.auth.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
 API.auth.getUserInfo | | Returns promise that resolves to user info object
 
 ### Requesting tokens
@@ -149,7 +146,16 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
     });
 ```
 
-### Handling requests
+## Making manual requests
+
+
+Method | Arguments | Description
+--- | --- | ---
+API.manual.getEndpoint | | Returns the public API endpoint root URL
+API.manual.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
+API.manual.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
+
+### How to make a request
 
 _Request options_
 
@@ -167,7 +173,7 @@ json | Object | JSON serializable object to send as body, adds correct content-t
 _Examples_
 
 ```javascript
-egnyte.API.auth.sendRequest({
+egnyte.API.manual.sendRequest({
         url:"https://..." //full URL address
         params:{ //query params to be added after the ? at the end of url 
             "queryparam":"param-value"
@@ -187,18 +193,18 @@ egnyte.API.auth.sendRequest({
 
 
 ```javascript
-egnyte.API.auth.promiseRequest({
+egnyte.API.manual.promiseRequest({
         ...
     }).then(function (response, body) {
         //response is the XHR object
         //body contains response JSON converted to object
-    }).error(function(error, response, body){
+    }).fail(function(error, response, body){
         //handle the error 
     });
 ```
 
 ```javascript
-egnyte.API.auth.promiseRequest({
+egnyte.API.manual.promiseRequest({
        ...
     }).then(function (response, body) {
         //response is the XHR object
