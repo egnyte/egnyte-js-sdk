@@ -164,7 +164,7 @@
 <tr>
 <td>API.auth.getUserInfo</td>
 <td></td>
-<td>Returns promise that resolves to user info object</td>
+<td>Returns a promise that resolves to user info object</td>
 </tr>
 </tbody>
 </table>
@@ -240,7 +240,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <tr>
 <td>API.manual.promiseRequest</td>
 <td><code>options</code></td>
-<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
+<td>Performs the same task as <code>sendRequest</code> but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if it could go over QPS quota; Retries the call if server responds with &quot;Developer over QPS&quot;</td>
 </tr>
 </tbody>
 </table>

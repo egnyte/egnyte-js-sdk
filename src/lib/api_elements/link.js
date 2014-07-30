@@ -1,11 +1,11 @@
-var promises = require('../promises');
+var promises = require("q");
 var helpers = require('../reusables/helpers');
 
 
 
 var linksEndpoint = "/links";
 
-var Links = function (requestEngine) {
+function Links(requestEngine) {
     this.requestEngine = requestEngine;
 }
 

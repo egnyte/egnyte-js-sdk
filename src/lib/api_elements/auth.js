@@ -2,7 +2,7 @@ var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
 
-var promises = require('../promises');
+var promises = require("q");
 var helpers = require('../reusables/helpers');
 var dom = require('../reusables/dom');
 var messages = require('../reusables/messages');

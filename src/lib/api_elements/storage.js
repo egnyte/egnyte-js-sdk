@@ -1,11 +1,11 @@
-var promises = require('../promises');
+var promises = require("q");
 var helpers = require('../reusables/helpers');
 
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-var Storage = function (requestEngine) {
+function Storage(requestEngine) {
     this.requestEngine = requestEngine;
 }
 

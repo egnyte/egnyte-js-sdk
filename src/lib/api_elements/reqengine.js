@@ -1,12 +1,12 @@
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require('../promises');
+var promises = require("q");
 var helpers = require('../reusables/helpers');
 var dom = require('../reusables/dom');
 var messages = require('../reusables/messages');
 var errorify = require("./errorify");
-var xhr = require("xhr");
+var request = require("request");
 
 
 
@@ -54,6 +54,10 @@ enginePrototypeMethods.getEndpoint = function () {
     return this.options.egnyteDomainURL + "/pubapi/v1";
 }
 
+enginePrototypeMethods.promise = function (value) {
+    return promises(value);
+}
+
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
@@ -61,7 +65,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
-        return xhr(opts, function (error, response, body) {
+        return request(opts, function (error, response, body) {
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);

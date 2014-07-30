@@ -77,7 +77,7 @@ API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR ob
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string
 API.auth.dropToken | | Forgets the current token
-API.auth.getUserInfo | | Returns promise that resolves to user info object
+API.auth.getUserInfo | | Returns a promise that resolves to user info object
 
 ### Requesting tokens
 
@@ -153,7 +153,7 @@ Method | Arguments | Description
 --- | --- | ---
 API.manual.getEndpoint | | Returns the public API endpoint root URL
 API.manual.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
-API.manual.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if could go over QPS quota; Retries the call if server responds with "Developer over QPS"
+API.manual.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if it could go over QPS quota; Retries the call if server responds with "Developer over QPS"
 
 ### How to make a request
 

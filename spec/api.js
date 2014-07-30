@@ -45,7 +45,6 @@ describe("API to JS (integration test)", function () {
 
     describe("Auth", function () {
 
-
         var recentFileObject;
 
         it("Should provide userinfo", function (done) {

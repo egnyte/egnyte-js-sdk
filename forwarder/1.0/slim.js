@@ -430,11 +430,11 @@ var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
 
-var promises = require(1);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
-var errorify = require(5);
+var promises = require(5);
+var helpers = require(2);
+var dom = require(1);
+var messages = require(3);
+var errorify = require(4);
 
 
 
@@ -619,7 +619,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":15,"2":16,"3":17,"4":18,"5":9}],9:[function(require,module,exports){
+},{"1":16,"2":17,"3":18,"4":9,"5":15}],9:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -678,14 +678,14 @@ module.exports = function (result) {
 }
 
 },{}],10:[function(require,module,exports){
-var promises = require(1);
-var helpers = require(2);
+var promises = require(2);
+var helpers = require(1);
 
 
 
 var linksEndpoint = "/links";
 
-var Links = function (requestEngine) {
+function Links(requestEngine) {
     this.requestEngine = requestEngine;
 }
 
@@ -769,16 +769,16 @@ linksProto.findOne = function(filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":15,"2":17}],11:[function(require,module,exports){
+},{"1":17,"2":15}],11:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(1);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
-var errorify = require(5);
-var xhr = require(6);
+var promises = require(5);
+var helpers = require(2);
+var dom = require(1);
+var messages = require(3);
+var errorify = require(4);
+var request = require(6);
 
 
 
@@ -826,6 +826,10 @@ enginePrototypeMethods.getEndpoint = function () {
     return this.options.egnyteDomainURL + "/pubapi/v1";
 }
 
+enginePrototypeMethods.promise = function (value) {
+    return promises(value);
+}
+
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
@@ -833,7 +837,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
-        return xhr(opts, function (error, response, body) {
+        return request(opts, function (error, response, body) {
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
@@ -970,15 +974,15 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":15,"2":16,"3":17,"4":18,"5":9,"6":3}],12:[function(require,module,exports){
-var promises = require(1);
-var helpers = require(2);
+},{"1":16,"2":17,"3":18,"4":9,"5":15,"6":3}],12:[function(require,module,exports){
+var promises = require(2);
+var helpers = require(1);
 
 var fsmeta = "/fs";
 var fscontent = "/fs-content";
 
 
-var Storage = function (requestEngine) {
+function Storage(requestEngine) {
     this.requestEngine = requestEngine;
 }
 
@@ -1178,7 +1182,7 @@ storageProto.remove = function (pathFromRoot) {
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":15,"2":17}],13:[function(require,module,exports){
+},{"1":17,"2":15}],13:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1241,10 +1245,10 @@ function init(options, api) {
 
 module.exports = init;
 },{"1":16,"2":17,"3":18}],14:[function(require,module,exports){
-var promises = require(1);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
+var promises = require(4);
+var helpers = require(2);
+var dom = require(1);
+var messages = require(3);
 
 
 
@@ -1374,7 +1378,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":15,"2":16,"3":17,"4":18}],15:[function(require,module,exports){
+},{"1":16,"2":17,"3":18,"4":15}],15:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -1596,13 +1600,21 @@ module.exports = {
 
         return {
             domain: options.egnyteDomainURL,
-            API:  require(2)(options)
+            API: require(2)(options)
         }
 
     }
-
-    window.Egnyte = {
-        init: init
+    //for commonJS
+    if (module && module.exports) {
+        module.exports = {
+            init: init
+        }
+    }
+    //for browsers. AMD works better with shims anyway
+    if (window) {
+        window.Egnyte = {
+            init: init
+        }
     }
 
 })();
