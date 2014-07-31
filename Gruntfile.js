@@ -87,7 +87,8 @@ module.exports = function (grunt) {
             }
         },
         nodeunit: {
-            all: ['src/unittests/*.js']
+            units: ['src/unittests/*.js'],
+            integration: ['tests/*_test.js']
         },
         connect: {
             server: {
@@ -192,7 +193,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-markdown');
 
 
-    grunt.registerTask("test", ["nodeunit", "dist", "jasmine:all"]);
+    grunt.registerTask("test", ["nodeunit:units", "dist", "jasmine:all"]);
+    grunt.registerTask("test-node", ["nodeunit:integration"]);
     grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);

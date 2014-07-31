@@ -1605,13 +1605,13 @@ module.exports = {
 
     }
     //for commonJS
-    if (module && module.exports) {
+    if (typeof module !== "undefined" && module.exports) {
         module.exports = {
             init: init
         }
     }
     //for browsers. AMD works better with shims anyway
-    if (window) {
+    if (typeof window !== "undefined") {
         window.Egnyte = {
             init: init
         }
