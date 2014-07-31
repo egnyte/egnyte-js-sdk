@@ -86,9 +86,17 @@ module.exports = function (grunt) {
                 }
             }
         },
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec'
+                },
+                src: ['tests/*.js']
+            }
+        },
         nodeunit: {
-            units: ['src/unittests/*.js'],
-            integration: ['tests/*_test.js']
+            units: ['src/unittests/*.js']
+            //,integration: ['tests/*_test.js']
         },
         connect: {
             server: {
@@ -191,10 +199,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-connect-proxy');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
+    grunt.loadNpmTasks('grunt-mocha-test');
 
 
     grunt.registerTask("test", ["nodeunit:units", "dist", "jasmine:all"]);
-    grunt.registerTask("test-node", ["nodeunit:integration"]);
+    grunt.registerTask("test-node", ["mochaTest"]);
     grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);

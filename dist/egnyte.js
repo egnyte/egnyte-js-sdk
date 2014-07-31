@@ -228,8 +228,7 @@ var messages = {
 }
 
 var XHR = window.XMLHttpRequest || noop
-var XDR = "withCredentials" in (new XHR()) ?
-        window.XMLHttpRequest : window.XDomainRequest
+var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 
 module.exports = createXHR
 
@@ -243,10 +242,12 @@ function createXHR(options, callback) {
 
     var xhr = options.xhr || null
 
-    if (!xhr && options.cors) {
-        xhr = new XDR()
-    } else if (!xhr) {
-        xhr = new XHR()
+    if (!xhr) {
+        if (options.cors || options.useXDR) {
+            xhr = new XDR()
+        }else{
+            xhr = new XHR()
+        }
     }
 
     var uri = xhr.url = options.uri || options.url;
@@ -276,9 +277,11 @@ function createXHR(options, callback) {
     // hate IE
     xhr.ontimeout = noop
     xhr.open(method, uri, !sync)
-    if (options.cors) {
+                                    //backward compatibility
+    if (options.withCredentials || (options.cors && options.withCredentials !== false)) {
         xhr.withCredentials = true
     }
+
     // Cannot set timeout with sync request
     if (!sync) {
         xhr.timeout = "timeout" in options ? options.timeout : 5000
@@ -290,6 +293,8 @@ function createXHR(options, callback) {
                 xhr.setRequestHeader(key, headers[key])
             }
         }
+    } else if (options.headers) {
+        throw new Error("Headers cannot be set on an XDomainRequest object");
     }
 
     if ("responseType" in options) {
@@ -330,11 +335,12 @@ function createXHR(options, callback) {
 
         if (status === 0 || (status >= 400 && status < 600)) {
             var message = (typeof body === "string" ? body : false) ||
-                messages[String(xhr.status).charAt(0)]
+                messages[String(status).charAt(0)]
             error = new Error(message)
-
-            error.statusCode = xhr.status
+            error.statusCode = status
         }
+        
+        xhr.status = xhr.statusCode = status;
 
         if (isJson) {
             try {
@@ -820,7 +826,7 @@ function Engine(auth, options) {
     this.queue = [];
 
     this.queueHandler = helpers.bindThis(this, _rollQueue);
-    
+
     auth.addRequestEngine(this);
 
 }
@@ -834,7 +840,7 @@ var enginePrototypeMethods = {};
 function params(obj) {
     var str = [];
     //cachebuster for IE
-    if (window.XDomainRequest) {
+    if (typeof window !== "undefined" && window.XDomainRequest) {
         str.push("random=" + (~~(Math.random() * 9999)));
     }
     for (var p in obj) {
@@ -872,6 +878,9 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
             if (response.getResponseHeader) {
                 var retryAfter = response.getResponseHeader("Retry-After");
                 var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            } else {
+                var retryAfter = response.headers["retry-after"];
+                var masheryCode = response.headers["x-mashery-error-code"];
             }
             if (
                 self.options.handleQuota &&

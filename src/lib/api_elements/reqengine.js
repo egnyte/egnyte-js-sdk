@@ -21,7 +21,7 @@ function Engine(auth, options) {
     this.queue = [];
 
     this.queueHandler = helpers.bindThis(this, _rollQueue);
-    
+
     auth.addRequestEngine(this);
 
 }
@@ -35,7 +35,7 @@ var enginePrototypeMethods = {};
 function params(obj) {
     var str = [];
     //cachebuster for IE
-    if (window.XDomainRequest) {
+    if (typeof window !== "undefined" && window.XDomainRequest) {
         str.push("random=" + (~~(Math.random() * 9999)));
     }
     for (var p in obj) {
@@ -73,6 +73,9 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
             if (response.getResponseHeader) {
                 var retryAfter = response.getResponseHeader("Retry-After");
                 var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+            } else {
+                var retryAfter = response.headers["retry-after"];
+                var masheryCode = response.headers["x-mashery-error-code"];
             }
             if (
                 self.options.handleQuota &&
