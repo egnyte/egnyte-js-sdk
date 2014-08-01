@@ -139,6 +139,7 @@ describe("API to JS (integration test)", function () {
             eg.API.storage.createFolder("/foo")
                 .then(function (e) {
                     assert(false,"was created");
+                    done();
                 })
                 .fail(function (e) {
                     expect(e.response.statusCode).to.equal(409);

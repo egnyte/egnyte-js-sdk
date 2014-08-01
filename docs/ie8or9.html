@@ -58,6 +58,7 @@
 
         <h1 id="legacy-browsers-support">Legacy browsers support</h1>
 <p>IE8 and IE9 are mostly supported by this SDK. Even though they are incapable of making an authorized cross-origin request to the API endpoint.</p>
+<p>To get them to work, you need to enable forwarder by setting <code>oldIEForwarder</code> option to true.</p>
 <p>The API call is acheived by opening a copy of the SDK in an iframe on the same domain as the API endpoint it uses and forwarding all calls to the iframe. The forwarding is initiated automatically when an incapable browser is detected.</p>
 <p>The content of the iframe is loaded from a location in the Egnyte domain being used. The location is defined by <code>options.forwarderAddress</code>. The address will change with significant modifications to the SDK signature, you&#39;ll be able to switch between versions with this option. For now, the default will suffice. </p>
 <p>Every call is being sent with the access token, so the security of this solution depends on IE&#39;s <code>window.postmessage</code> implementation security. </p>

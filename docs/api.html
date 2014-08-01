@@ -640,6 +640,10 @@ Other limitations regarding domains are present as well. For details please refe
 </tbody>
 </table>
 <p>The &quot;Developer over QPS&quot; error is not returned at all, instead a call is repeated when appropriate.</p>
+<h2 id="providing-your-own-http-request-implementation">Providing your own http request implementation</h2>
+<p>You can provide a request function as the <code>httpRequest</code> option.</p>
+<p>It has to accept an <code>options</code> object and a result callback <code>function(error, responseObject, responseBody)</code></p>
+<p>It should be compatible with npm module called <em>xhr</em>.</p>
 
 
     </div>

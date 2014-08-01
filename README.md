@@ -34,7 +34,7 @@ See `docs/` or explore:
 [File picker](src/docs/filepicker.md)  
 [Installation and tests](src/docs/installation.md)  
 
-If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to understand the cross-origin magic
+If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to enable the cross-origin forwarder.
 
 The `examples/` folder could also be helpful.
 

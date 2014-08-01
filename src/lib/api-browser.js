@@ -7,7 +7,7 @@ var LinkFacade = require("./api_elements/link");
 module.exports = function (options) {
     var auth = new AuthEngine(options);
     var requestEngine = new RequestEngine(auth, options);
-    
+
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
     var api = {
@@ -16,19 +16,22 @@ module.exports = function (options) {
         link: link
     };
 
-    if (options.acceptForwarding) {
-        //will handle incoming forwards
-        var responder = require("./api_forwarder/responder");
-        responder(options, api);
-    } else {
-        //IE 8 and 9
-        if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
-            var forwarder = require("./api_forwarder/sender");
-            forwarder(options, api);
+    //onlt in IE8 and IE9
+    if (!("withCredentials" in (new window.XMLHttpRequest()))) {
+        if (options.acceptForwarding) {
+            //will handle incoming forwards
+            var responder = require("./api_forwarder/responder");
+            responder(options, api);
+        } else {
+            //IE 8 and 9 forwarding
+            if (options.oldIEForwarder) {
+                var forwarder = require("./api_forwarder/sender");
+                forwarder(options, api);
+            }
         }
     }
-    
+
     api.manual = requestEngine;
-    
+
     return api;
 };

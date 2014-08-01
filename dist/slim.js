@@ -392,7 +392,9 @@ module.exports = {
     QPS: 2,
     forwarderAddress: "1.0/apiForwarder.html",
     filepickerViewAddress: "folderExplorer.do",
-    channelMarker: "'E"
+    channelMarker: "'E",
+    httpRequest: null,
+    oldIEForwarder: false
     
 }
 
@@ -406,7 +408,7 @@ var LinkFacade = require(2);
 module.exports = function (options) {
     var auth = new AuthEngine(options);
     var requestEngine = new RequestEngine(auth, options);
-    
+
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
     var api = {
@@ -415,20 +417,23 @@ module.exports = function (options) {
         link: link
     };
 
-    if (options.acceptForwarding) {
-        //will handle incoming forwards
-        var responder = require(5);
-        responder(options, api);
-    } else {
-        //IE 8 and 9
-        if (!("withCredentials" in (new window.XMLHttpRequest()))) { 
-            var forwarder = require(6);
-            forwarder(options, api);
+    //onlt in IE8 and IE9
+    if (!("withCredentials" in (new window.XMLHttpRequest()))) {
+        if (options.acceptForwarding) {
+            //will handle incoming forwards
+            var responder = require(5);
+            responder(options, api);
+        } else {
+            //IE 8 and 9 forwarding
+            if (options.oldIEForwarder) {
+                var forwarder = require(6);
+                forwarder(options, api);
+            }
         }
     }
-    
+
     api.manual = requestEngine;
-    
+
     return api;
 };
 },{"1":8,"2":10,"3":11,"4":12,"5":13,"6":14}],8:[function(require,module,exports){
@@ -791,6 +796,9 @@ var request = require(6);
 function Engine(auth, options) {
     this.auth = auth;
     this.options = options;
+
+    this.requestHandler = (options.httpRequest) ? options.httpRequest : request;
+
     this.quota = {
         startOfTheSecond: 0,
         calls: 0,
@@ -843,17 +851,21 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
-        return request(opts, function (error, response, body) {
+        return self.requestHandler(opts, function (error, response, body) {
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
             } catch (e) {}
+            var retryAfter, masheryCode;
             if (response.getResponseHeader) {
-                var retryAfter = response.getResponseHeader("Retry-After");
-                var masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+                retryAfter = response.getResponseHeader("Retry-After");
+                masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
             } else {
-                var retryAfter = response.headers["retry-after"];
-                var masheryCode = response.headers["x-mashery-error-code"];
+                retryAfter = response.headers["retry-after"];
+                masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
             }
             if (
                 self.options.handleQuota &&
@@ -862,7 +874,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
             ) {
                 if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
                     //retry
-                    console && console.warn("develoer over QPS, retrying");
+                    console && console.warn("developer over QPS, retrying");
                     self.quota.retrying = 1000 * ~~(retryAfter);
                     setTimeout(function () {
                         self.quota.retrying = 0;

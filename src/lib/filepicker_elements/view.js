@@ -270,9 +270,11 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 
 
 viewPrototypeMethods.breadcrumbify = function (path) {
+    var currentPath = "/";
+    path = path || currentPath; //in case path was not provided, go for root
+    
     var list = path.split("/");
     var crumbItems = [];
-    var currentPath = "/";
     var maxSpace = ~~ (100 / list.length); //assigns maximum space for text
     helpers.each(list, function (folder, num) {
         if (folder) {

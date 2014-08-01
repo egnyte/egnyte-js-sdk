@@ -384,3 +384,11 @@ response | If the query happened, error.response is the xhr response object
 body | If the query happened, error.body contains the body of the response
 
 The "Developer over QPS" error is not returned at all, instead a call is repeated when appropriate.
+
+## Providing your own http request implementation
+
+You can provide a request function as the `httpRequest` option.
+
+It has to accept an `options` object and a result callback `function(error, responseObject, responseBody)`
+
+It should be compatible with npm module called *xhr*.
