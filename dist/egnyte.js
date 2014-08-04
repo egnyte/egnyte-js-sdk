@@ -879,6 +879,10 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
         return self.requestHandler(opts, function (error, response, body) {
+            //emulating the default XHR behavior
+            if (!error && response.statusCode >= 400 && response.statusCode < 600) {
+                error = new Error(body);
+            }
             try {
                 //this shouldn't be required, but server sometimes responds with content-type text/plain
                 body = JSON.parse(body);
@@ -943,12 +947,12 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
 
 }
 
-enginePrototypeMethods.promiseRequest = function (opts) {
+enginePrototypeMethods.promiseRequest = function (opts, requestHandler) {
     var defer = promises.defer();
     var self = this;
     var requestFunction = function () {
         try {
-            self.sendRequest(opts, function (error, response, body) {
+            var req = self.sendRequest(opts, function (error, response, body) {
                 if (error) {
                     defer.reject(errorify({
                         error: error,
@@ -962,6 +966,7 @@ enginePrototypeMethods.promiseRequest = function (opts) {
                     });
                 }
             });
+            requestHandler && requestHandler(req);
         } catch (error) {
             defer.reject(errorify({
                 error: error
