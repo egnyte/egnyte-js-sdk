@@ -390,8 +390,8 @@ function once (fn) {
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "1.0/apiForwarder.html",
-    filepickerViewAddress: "folderExplorer.do",
+    forwarderAddress: "app/integ/forwarder/1.0/apiForwarder.html",
+    filepickerViewAddress: "app/folderExplorer.html",
     channelMarker: "'E",
     httpRequest: null,
     oldIEForwarder: false
@@ -1260,7 +1260,7 @@ function init(options, api) {
             var data = message.data;
             if (api[data.ns] && api[data.ns][data.name]) {
                 api.auth.setToken(data.token);
-                api[data.ns][data.name].apply("whatever", data.args).then(function (res) {
+                api[data.ns][data.name].apply(api[data.ns], data.args).then(function (res) {
                     if (res instanceof XMLHttpRequest) {
                         res = serializablifyXHR(res);
                     }

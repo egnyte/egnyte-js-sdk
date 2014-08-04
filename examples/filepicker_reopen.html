@@ -33,7 +33,7 @@
 
 
         function openPickerR() {
-        
+
             var eg = Egnyte.init(egnyteDomain);
 
             //this line will use mock instead of real egnyte domain
@@ -56,7 +56,8 @@
         function openPickerA() {
 
             var eg = Egnyte.init(egnyteDomain, {
-                token: APIToken
+                token: APIToken,
+                oldIEForwarder: true //opt in for IE8/9 support
             });
 
             eg.filePicker(node, {
@@ -69,7 +70,7 @@
                         path: fileData[0].path
                     });
                 },
-                error: function(e){
+                error: function (e) {
                     console.log(e);
                 }
             });
