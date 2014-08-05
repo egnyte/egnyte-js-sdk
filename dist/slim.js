@@ -851,67 +851,71 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
-        return self.requestHandler(opts, function (error, response, body) {
-            //emulating the default XHR behavior
-            if (!error && response.statusCode >= 400 && response.statusCode < 600) {
-                error = new Error(body);
-            }
-            try {
-                //this shouldn't be required, but server sometimes responds with content-type text/plain
-                body = JSON.parse(body);
-            } catch (e) {}
-            var retryAfter, masheryCode;
-            if (response.getResponseHeader) {
-                retryAfter = response.getResponseHeader("Retry-After");
-                masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
-            } else {
-                retryAfter = response.headers["retry-after"];
-                masheryCode = response.headers["x-mashery-error-code"];
-                //in case headers get returned as arrays, we only expect one value
-                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-            }
-            if (
-                self.options.handleQuota &&
-                response.statusCode === 403 &&
-                retryAfter
-            ) {
-                if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
-                    //retry
-                    console && console.warn("developer over QPS, retrying");
-                    self.quota.retrying = 1000 * ~~(retryAfter);
-                    setTimeout(function () {
-                        self.quota.retrying = 0;
-                        self.sendRequest(originalOpts, callback);
-                    }, self.quota.retrying);
-
+        if (!callback) {
+            return self.requestHandler(opts);
+        } else {
+            return self.requestHandler(opts, function (error, response, body) {
+                //emulating the default XHR behavior
+                if (!error && response.statusCode >= 400 && response.statusCode < 600) {
+                    error = new Error(body);
                 }
-                if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
-                    error.RATE = true;
+                try {
+                    //this shouldn't be required, but server sometimes responds with content-type text/plain
+                    body = JSON.parse(body);
+                } catch (e) {}
+                var retryAfter, masheryCode;
+                if (response.getResponseHeader) {
+                    retryAfter = response.getResponseHeader("Retry-After");
+                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+                } else {
+                    retryAfter = response.headers["retry-after"];
+                    masheryCode = response.headers["x-mashery-error-code"];
+                    //in case headers get returned as arrays, we only expect one value
+                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+                }
+                if (
+                    self.options.handleQuota &&
+                    response.statusCode === 403 &&
+                    retryAfter
+                ) {
+                    if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
+                        //retry
+                        console && console.warn("developer over QPS, retrying");
+                        self.quota.retrying = 1000 * ~~(retryAfter);
+                        setTimeout(function () {
+                            self.quota.retrying = 0;
+                            self.sendRequest(originalOpts, callback);
+                        }, self.quota.retrying);
+
+                    }
+                    if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
+                        error.RATE = true;
+                        callback.call(this, error, response, body);
+                    }
+
+                } else {
+
+                    if (
+                        //Checking for failed auth responses
+                        //(ノಠ益ಠ)ノ彡┻━┻
+                        self.options.onInvalidToken &&
+                        (
+                            response.statusCode === 401 ||
+                            (
+                                response.statusCode === 403 &&
+                                masheryCode === "ERR_403_DEVELOPER_INACTIVE"
+                            )
+                        )
+                    ) {
+                        self.auth.dropToken();
+                        self.options.onInvalidToken();
+                    }
+
                     callback.call(this, error, response, body);
                 }
-
-            } else {
-
-                if (
-                    //Checking for failed auth responses
-                    //(ノಠ益ಠ)ノ彡┻━┻
-                    self.options.onInvalidToken &&
-                    (
-                        response.statusCode === 401 ||
-                        (
-                            response.statusCode === 403 &&
-                            masheryCode === "ERR_403_DEVELOPER_INACTIVE"
-                        )
-                    )
-                ) {
-                    self.auth.dropToken();
-                    self.options.onInvalidToken();
-                }
-
-                callback.call(this, error, response, body);
-            }
-        });
+            });
+        }
     } else {
         callback.call(this, new Error("Not authorized"), {
             statusCode: 0

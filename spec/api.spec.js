@@ -1,3 +1,12 @@
+var ImInBrowser = (typeof window !== "undefined");
+
+if (!ImInBrowser) {
+    var resumer = require('resumer')
+    var Egnyte = require("../src/slim");
+    require("./conf/apiaccess");
+    require("./helpers/matchers");
+}
+
 describe("API to JS (integration test)", function () {
 
     //our main testsubject
@@ -7,34 +16,39 @@ describe("API to JS (integration test)", function () {
     });
 
 
+
     function getTestBlob(txt) {
-        // JavaScript file-like object...
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-        //PhanthomJS has a broken Blob
-        try {
-            var blob = new Blob([content], {
-                type: "text/xml"
-            });
-        } catch (e) {
-            //napaeeee!
-            var blob = content;
+        if (ImInBrowser) {
+            // JavaScript file-like object...
+            //PhanthomJS has a broken Blob
+            try {
+                var blob = new Blob([content], {
+                    type: "text/xml"
+                });
+            } catch (e) {
+                //napaeeee!
+                var blob = content;
+            }
+            return blob;
+        } else {
+            return resumer().queue(content).end()
         }
-        return blob;
     }
 
-    it('BTW. The test should have a working matcher for errors', function () {
-        //token was passed in beforeEach
-        expect(expect(this).toAutoFail).toBeDefined();
-    });
-
-    if (!window.egnyteDomain || !window.APIToken) {
-        throw new Error("spec/conf/apiaccess.js is missing");
+    if (ImInBrowser) {
+        if (!window.egnyteDomain || !window.APIToken) {
+            throw new Error("spec/conf/apiaccess.js is missing");
+        }
+    } else {
+        if (!egnyteDomain || !APIToken) {
+            throw new Error("spec/conf/apiaccess.js is missing");
+        }
     }
 
     beforeEach(function () {
         jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
-
     });
 
     it('should accept an existing token', function () {
@@ -226,6 +240,24 @@ describe("API to JS (integration test)", function () {
                 done();
             });
         });
+
+        if (!ImInBrowser) {
+            it("Can get a file stream", function (done) {
+                var readable = eg.API.storage.getFileStream(testpath);
+                expect(readable.pipe).toBeDefined();
+                expect(readable.on).toBeDefined();
+                var body = "";
+                readable.on('data', function (chunk) {
+                    body += chunk;
+                });
+                readable.on('end', function () {
+                    expect(body).to.match(/^<a id="a"><b id="b">/);
+                    done();
+                });
+
+            });
+        }
+
 
         it("Can store another version of a file", function (done) {
             var blob = getTestBlob("hey again!");
