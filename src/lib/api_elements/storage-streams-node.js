@@ -50,16 +50,16 @@ function storeFile(pathFromRoot, stream, size /*optional*/ ) {
     });
 }
 
-function getFileStream(pathFromRoot, versionEntryId) {
-    //TODO
-    var queryParams = (versionEntryId) ? {
-        "entry_id": versionEntryId
-    } : undefined;
-    return sendRequest({
-        method: "GET",
-        qs: queryParams,
-        uri: egnyteOptions.contentAddress + egnyteOptions.jiveRoot + encodeURI(pathFromRoot),
-    });
+function getFileStream(pathFromRoot) {
+    var requestEngine = this.requestEngine;
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        }
+
+        return requestEngine.sendRequest(opts);
 }
 
 

@@ -1,16 +1,17 @@
-//port of Jasmine tests to nodejs 
+var ImInBrowser = (typeof window !== "undefined");
 
-var chai = require("chai");
-var expect = chai.expect;
-var assert = chai.assert;
+if (!ImInBrowser) {
+    var chai = require("chai");
+    var expect = chai.expect;
+    var assert = chai.assert;
 
-var resumer = require('resumer')
+    var resumer = require('resumer')
 
 
-var Egnyte = require("../src/slim");
+    var Egnyte = require("../src/slim");
 
-require("../spec/conf/apiaccess");
-
+    require("../spec/conf/apiaccess");
+}
 
 
 describe("API to JS (integration test)", function () {
@@ -24,7 +25,7 @@ describe("API to JS (integration test)", function () {
 
     function getTestBlob(txt) {
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-        if (typeof window !== "undefined") {
+        if (ImInBrowser) {
             // JavaScript file-like object...
             //PhanthomJS has a broken Blob
             try {
@@ -41,7 +42,7 @@ describe("API to JS (integration test)", function () {
         }
     }
 
-    if (typeof window !== "undefined") {
+    if (ImInBrowser) {
         if (!window.egnyteDomain || !window.APIToken) {
             throw new Error("spec/conf/apiaccess.js is missing");
         }
@@ -255,6 +256,23 @@ describe("API to JS (integration test)", function () {
                 done();
             });
         });
+        if (!ImInBrowser) {
+            it("Can get a file stream", function (done) {
+                this.timeout(5000);
+                var readable = eg.API.storage.getFileStream(testpath);
+                expect(readable.pipe).to.be.a("function");
+                expect(readable.on).to.be.a("function");
+                var body = "";
+                readable.on('data', function (chunk) {
+                    body += chunk;
+                });
+                readable.on('end', function () {
+                    expect(body).to.match(/^<a id="a"><b id="b">/);
+                    done();
+                });
+
+            });
+        }
 
         it("Can store another version of a file", function (done) {
             this.timeout(5000);
