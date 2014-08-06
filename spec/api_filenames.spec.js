@@ -1,3 +1,14 @@
+var ImInBrowser = (typeof window !== "undefined");
+
+if (!ImInBrowser) {
+    var stream = require('stream')
+    var Egnyte = require("../src/slim");
+    require("./conf/apiaccess");
+    require("./helpers/matchers");
+
+    process.setMaxListeners(0);
+}
+
 describe("Item names / ", function () {
 
     //our main testsubject
@@ -11,28 +22,42 @@ describe("Item names / ", function () {
         expect(expect(this).toAutoFail).toBeDefined();
     });
 
-    if (!window.egnyteDomain || !window.APIToken) {
-        throw new Error("spec/conf/apiaccess.js is missing");
-    }
 
     function getTestBlob(txt) {
-        // JavaScript file-like object...
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-        //PhanthomJS has a broken Blob
-        try {
-            var blob = new Blob([content], {
-                type: "text/xml"
-            });
-        } catch (e) {
-            //napaeeee!
-            var blob = content;
+        if (ImInBrowser) {
+            // JavaScript file-like object...
+            //PhanthomJS has a broken Blob
+            try {
+                var blob = new Blob([content], {
+                    type: "text/xml"
+                });
+            } catch (e) {
+                //napaeeee!
+                var blob = content;
+            }
+            return blob;
+        } else {
+            var s = new stream.Readable();
+            s.push(content);
+            s.push(null);
+            return s;
         }
-        return blob;
+    }
+
+    if (ImInBrowser) {
+        if (!window.egnyteDomain || !window.APIToken) {
+            throw new Error("spec/conf/apiaccess.js is missing");
+        }
+    } else {
+        if (!egnyteDomain || !APIToken) {
+            throw new Error("spec/conf/apiaccess.js is missing");
+        }
     }
 
     beforeEach(function () {
-        jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
+        jasmine.getEnv().defaultTimeoutInterval = 20000; //QA API can be laggy
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
     var goodTestNames = [
@@ -64,7 +89,7 @@ describe("Item names / ", function () {
     ];
 
     var basePath;
-    var blob = getTestBlob("foo");
+
 
 
 
@@ -116,7 +141,7 @@ describe("Item names / ", function () {
             });
 
             it("should store a file called " + fname, function (done) {
-
+                var blob = getTestBlob("foo");
                 eg.API.storage.storeFile(basePath + "/" + fname, blob)
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
@@ -161,7 +186,6 @@ describe("Item names / ", function () {
             it("should NOT create a folder called " + fname, function (done) {
                 eg.API.storage.createFolder(basePath + "/" + fname)
                     .then(function (e) {
-                        console.log(e);
                         return eg.API.storage.remove(basePath + "/" + fname);
                     })
                     .then(function (e) {

@@ -1,10 +1,12 @@
 var ImInBrowser = (typeof window !== "undefined");
 
 if (!ImInBrowser) {
-    var resumer = require('resumer')
+    var stream = require('stream')
     var Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    
+    process.setMaxListeners(0); 
 }
 
 describe("API to JS (integration test)", function () {
@@ -32,7 +34,10 @@ describe("API to JS (integration test)", function () {
             }
             return blob;
         } else {
-            return resumer().queue(content).end()
+            var s = new stream.Readable();
+            s.push(content);
+            s.push(null);
+            return s;
         }
     }
 
@@ -47,8 +52,8 @@ describe("API to JS (integration test)", function () {
     }
 
     beforeEach(function () {
-        jasmine.getEnv().defaultTimeoutInterval = 10000; //QA API can be laggy
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
+        jasmine.getEnv().defaultTimeoutInterval = 20000; //QA API can be laggy
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
     it('should accept an existing token', function () {
@@ -158,7 +163,6 @@ describe("API to JS (integration test)", function () {
                     done();
                 })
                 .fail(function (e) {
-                    console.log(e);
                     expect(e.response.statusCode).toEqual(596);
                     done();
                 });
@@ -234,9 +238,7 @@ describe("API to JS (integration test)", function () {
 
         it("Can download a file and use content", function (done) {
             eg.API.storage.download(testpath, false /*non binary*/ ).then(function (xhr) {
-
                 expect(xhr.body).toMatch(/^<a id="a"><b id="b">/);
-
                 done();
             });
         });
@@ -251,7 +253,7 @@ describe("API to JS (integration test)", function () {
                     body += chunk;
                 });
                 readable.on('end', function () {
-                    expect(body).to.match(/^<a id="a"><b id="b">/);
+                    expect(body).toMatch(/^<a id="a"><b id="b">/);
                     done();
                 });
 
