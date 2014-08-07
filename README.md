@@ -19,8 +19,8 @@ This package contains:
 
 _File sizes_
 ```
-dist/egnyte.min.js minified: 37.27 kB gzipped: 8.5 kB
-dist/slim.min.js minified: 18.82 kB gzipped: 4.33 kB
+dist/egnyte.min.js minified: 38.6 kB gzipped: 8.75 kB
+dist/slim.min.js minified: 20.23 kB gzipped: 4.6 kB
 
 ```
 
@@ -37,6 +37,8 @@ See `docs/` or explore:
 If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to enable the cross-origin forwarder.
 
 The `examples/` folder could also be helpful.
+
+To use the API in node.js see [Usage notes for node.js](src/docs/nodejs.md)
 
 
 ## License

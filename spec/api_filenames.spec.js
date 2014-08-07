@@ -192,7 +192,6 @@ describe("Item names / ", function () {
                         expect(this).toAutoFail(e);
                         done();
                     }).fail(function (e) {
-                        console.log(e);
                         done();
                     });
 

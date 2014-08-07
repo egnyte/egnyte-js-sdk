@@ -88,7 +88,6 @@ module.exports = function (grunt) {
         },
         jasmine_node: {
             options: {
-                forceExit: true,
                 match: '.',
                 matchall: false,
                 extensions: 'js',
@@ -206,6 +205,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test", ["nodeunit:units", "dist", "jasmine:all"]);
     grunt.registerTask("test-node", ["jasmine_node"]);
+    grunt.registerTask("test-all", ["jasmine_node","test"]);
     grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);

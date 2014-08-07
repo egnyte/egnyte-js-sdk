@@ -32,21 +32,6 @@ function storeFile(pathFromRoot, stream, size /*optional*/ ) {
                     path: pathFromRoot
                 });
             });
-        //            .then(function (result) {
-        //                if (result.response.statusCode === 200 || result.response.statusCode === 201) { //because our API doc is undecided
-        //                    logger.info("file uploaded");
-        //                    if (!result.response.headers.etag) {
-        //                        throw new Error("Etag header missing");
-        //                    }
-        //                    console.log(response.headers.etag, response.headers);
-        //                    defer.resolve(response.headers.etag);
-        //                    //replace this with passing on the returned value once API gets fixed
-        //
-        //                } else {
-        //                    logger.error("problem", response.statusCode, body);
-        //                    defer.reject(response.statusCode);
-        //                }
-        //            });
     });
 }
 
