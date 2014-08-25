@@ -812,7 +812,7 @@ module.exports = function (result) {
         code = ~~ (result.response.statusCode);
         error = result.error;
         error.statusCode = code;
-        error.message = psychicMessageParser(result.body, code);
+        error.message = psychicMessageParser(result.body||result.error.message, code);
         error.response = result.response;
         error.body = result.body;
     } else {
@@ -955,9 +955,9 @@ var enginePrototypeMethods = {};
 function params(obj) {
     var str = [];
     //cachebuster for IE
-//    if (typeof window !== "undefined" && window.XDomainRequest) {
-//        str.push("random=" + (~~(Math.random() * 9999)));
-//    }
+    //    if (typeof window !== "undefined" && window.XDomainRequest) {
+    //        str.push("random=" + (~~(Math.random() * 9999)));
+    //    }
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
@@ -981,8 +981,12 @@ enginePrototypeMethods.promise = function (value) {
 enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
+    //IE8/9 
+    if (typeof window !== "undefined" && window.XDomainRequest) {
+        opts.response = true;
+    }
+
     if (this.auth.isAuthorized()) {
-        opts.response = true; //xhr specific
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
@@ -999,11 +1003,16 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     body = JSON.parse(body);
                 } catch (e) {}
                 var retryAfter, masheryCode;
-                retryAfter = response.headers["retry-after"];
-                masheryCode = response.headers["x-mashery-error-code"];
-                //in case headers get returned as arrays, we only expect one value
-                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+                if (response.getResponseHeader) {
+                    retryAfter = response.getResponseHeader("Retry-After");
+                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
+                } else {
+                    retryAfter = response.headers["retry-after"];
+                    masheryCode = response.headers["x-mashery-error-code"];
+                    //in case headers get returned as arrays, we only expect one value
+                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+                }
                 if (
                     self.options.handleQuota &&
                     response.statusCode === 403 &&
@@ -1273,7 +1282,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
         });
     }).then(function (result) { //result.response result.body
         return ({
-            id: result.response.headers["etag"],
+            id: result.response.headers["etag"] || result.response.getResponseHeader("etag"),
             path: pathFromRoot
         });
     });
@@ -1297,7 +1306,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
 //        });
 //    }).then(function (result) { //result.response result.body
 //        return ({
-//            id: result.response.headers["etag"],
+//            id: result.response.getResponseHeader("etag"),
 //            path: pathFromRoot
 //        });
 //    });

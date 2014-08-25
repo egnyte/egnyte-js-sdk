@@ -39,6 +39,6 @@
     "grunt-markdown": "^0.6.1",
     "node-lessify": "0.0.3",
     "unpathify": "^0.1.1",
-      "grunt-jasmine-node": "fiznool/grunt-jasmine-node#v0.4.0"
+    "grunt-jasmine-node": "fiznool/grunt-jasmine-node#v0.4.0"
   }
 }

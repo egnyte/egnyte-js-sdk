@@ -136,7 +136,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
         });
     }).then(function (result) { //result.response result.body
         return ({
-            id: result.response.headers["etag"],
+            id: result.response.headers["etag"] || result.response.getResponseHeader("etag"),
             path: pathFromRoot
         });
     });
@@ -160,7 +160,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
 //        });
 //    }).then(function (result) { //result.response result.body
 //        return ({
-//            id: result.response.headers["etag"],
+//            id: result.response.getResponseHeader("etag"),
 //            path: pathFromRoot
 //        });
 //    });
