@@ -2,7 +2,7 @@ var ImInBrowser = (typeof window !== "undefined");
 
 if (!ImInBrowser) {
     var stream = require('stream')
-    var Egnyte = require("../src/slim");
+    Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
     
@@ -14,6 +14,7 @@ describe("API to JS (integration test)", function () {
     //our main testsubject
     var eg = Egnyte.init(egnyteDomain, {
         token: APIToken,
+        oldIEForwarder: true, //opt in for IE8/9 support
         QPS: 2
     });
 

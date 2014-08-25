@@ -169,7 +169,7 @@ To use the remote file picker call `filePickerRemote` instead of `filePicker` wi
     //simplified init
     var egnyte = Egnyte.init("http://mydomain.egnyte.com");
     
-    var picker = egnyte.filePicker(containerNode,options);
+    var picker = egnyte.filePickerRemote(containerNode,options);
 ```
 
 Only `path` `cancel` and `selection` options are available.

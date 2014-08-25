@@ -24,6 +24,7 @@ if (ImInBrowser) {
                 t2 = 0;
             var eg = Egnyte.init(egnyteDomain, {
                 token: APIToken,
+                oldIEForwarder: true, //opt in for IE8/9 support
                 QPS: 1
             });
             eg.API.storage.exists("/jiberish").then(function (e) {
@@ -50,6 +51,7 @@ if (ImInBrowser) {
                 t2 = 0;
             var eg = Egnyte.init(egnyteDomain, {
                 token: APIToken,
+                oldIEForwarder: true, //opt in for IE8/9 support
                 QPS: 2
             });
             eg.API.storage.exists("/jiberish").then(function (e) {
@@ -76,6 +78,7 @@ if (ImInBrowser) {
 
             var eg = Egnyte.init(egnyteDomain, {
                 token: APIToken,
+                oldIEForwarder: true, //opt in for IE8/9 support
                 QPS: 1
             });
 

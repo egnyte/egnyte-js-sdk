@@ -25,7 +25,8 @@ if (ImInBrowser) {
             });
 
             eg = Egnyte.init(egnyteDomain, {
-                token: APIToken
+                token: APIToken,
+                oldIEForwarder: true //opt in for IE8/9 support
             });
 
             node = document.createElement('div');

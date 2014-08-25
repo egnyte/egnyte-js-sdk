@@ -220,6 +220,7 @@ for(i = 112; i < 136; ++i) {
 },{}],3:[function(require,module,exports){
 var window = require(1)
 var once = require(2)
+var parseHeaders = require(3)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -257,6 +258,7 @@ function createXHR(options, callback) {
     var sync = !!options.sync
     var isJson = false
     var key
+    var load = options.response ? loadResponse : loadXhr
 
     if ("json" in options) {
         isJson = true
@@ -317,38 +319,66 @@ function createXHR(options, callback) {
         }
     }
 
-    function load() {
-        var error = null
-        var status = xhr.statusCode = xhr.status
+    function getBody() {
         // Chrome with requestType=blob throws errors arround when even testing access to responseText
         var body = null
 
         if (xhr.response) {
-            body = xhr.body = xhr.response
+            body = xhr.response
         } else if (xhr.responseType === 'text' || !xhr.responseType) {
-            body = xhr.body = xhr.responseText || xhr.responseXML
+            body = xhr.responseText || xhr.responseXML
         }
 
-        if (status === 1223) {
-            status = 204
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
         }
 
+        return body
+    }
+
+    function getStatusCode() {
+        return xhr.status === 1223 ? 204 : xhr.status
+    }
+
+    // if we're getting a none-ok statusCode, build & return an error
+    function errorFromStatusCode(status) {
+        var error = null
         if (status === 0 || (status >= 400 && status < 600)) {
             var message = (typeof body === "string" ? body : false) ||
                 messages[String(status).charAt(0)]
             error = new Error(message)
             error.statusCode = status
-        }
-        
+        };
+
+        return error;
+    }
+
+    // will load the data & process the response in a special response object
+    function loadResponse() {
+        var status = getStatusCode();
+        var error = errorFromStatusCode(status);
+        var response = {
+            body: getBody(),
+            statusCode: status,
+            statusText: xhr.statusText,
+            headers: parseHeaders(xhr.getAllResponseHeaders())
+        };
+
+        callback(error, response, response.body);
+    }
+
+    // will load the data and add some response properties to the source xhr
+    // and then respond with that
+    function loadXhr() {
+        var status = getStatusCode()
+        var error = errorFromStatusCode(status)
+
         xhr.status = xhr.statusCode = status;
+        xhr.body = getBody();
 
-        if (isJson) {
-            try {
-                body = xhr.body = JSON.parse(body)
-            } catch (e) {}
-        }
-
-        callback(error, xhr, body)
+        callback(error, xhr, xhr.body);
     }
 
     function error(evt) {
@@ -358,7 +388,7 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-},{"1":4,"2":5}],4:[function(require,module,exports){
+},{"1":4,"2":5,"3":9}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -387,6 +417,106 @@ function once (fn) {
   }
 }
 },{}],6:[function(require,module,exports){
+var isFunction = require(1)
+
+module.exports = forEach
+
+var toString = Object.prototype.toString
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
+function forEach(list, iterator, context) {
+    if (!isFunction(iterator)) {
+        throw new TypeError('iterator must be a function')
+    }
+
+    if (arguments.length < 3) {
+        context = this
+    }
+    
+    if (toString.call(list) === '[object Array]')
+        forEachArray(list, iterator, context)
+    else if (typeof list === 'string')
+        forEachString(list, iterator, context)
+    else
+        forEachObject(list, iterator, context)
+}
+
+function forEachArray(array, iterator, context) {
+    for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+            iterator.call(context, array[i], i, array)
+        }
+    }
+}
+
+function forEachString(string, iterator, context) {
+    for (var i = 0, len = string.length; i < len; i++) {
+        // no such thing as a sparse string.
+        iterator.call(context, string.charAt(i), i, string)
+    }
+}
+
+function forEachObject(object, iterator, context) {
+    for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+            iterator.call(context, object[k], k, object)
+        }
+    }
+}
+},{"1":7}],7:[function(require,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+},{}],8:[function(require,module,exports){
+exports = module.exports = trim;
+
+function trim(str){
+  return str.replace(/^\s*|\s*$/g, '');
+}
+
+exports.left = function(str){
+  return str.replace(/^\s*/, '');
+};
+
+exports.right = function(str){
+  return str.replace(/\s*$/, '');
+};
+},{}],9:[function(require,module,exports){
+var trim = require(2)
+  , forEach = require(1)
+
+module.exports = function (headers) {
+  if (!headers)
+    return {}
+
+  var result = {}
+
+  forEach(
+      trim(headers).split('\n')
+    , function (row) {
+        var index = row.indexOf(':')
+
+        result[trim(row.slice(0, index)).toLowerCase()] =
+          trim(row.slice(index + 1))
+      }
+  )
+
+  return result
+}
+
+},{"1":6,"2":8}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -398,7 +528,7 @@ module.exports = {
     
 }
 
-},{}],7:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -425,7 +555,7 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":8,"3":16,"4":17,"5":25}],8:[function(require,module,exports){
+},{"1":10,"2":12,"3":20,"4":21,"5":29}],12:[function(require,module,exports){
 var RequestEngine = require(3);
 var AuthEngine = require(1);
 var StorageFacade = require(4);
@@ -463,7 +593,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":9,"2":11,"3":12,"4":13,"5":14,"6":15}],9:[function(require,module,exports){
+},{"1":13,"2":15,"3":16,"4":17,"5":18,"6":19}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
@@ -657,7 +787,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":24,"2":25,"3":26,"4":10,"5":23}],10:[function(require,module,exports){
+},{"1":28,"2":29,"3":30,"4":14,"5":27}],14:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -683,18 +813,22 @@ function findMessage(obj) {
 //this should understand all the message formats from the server and translate to a nice message
 function psychicMessageParser(mess, statusCode) {
     var nice;
-    try {
-        nice = findMessage(JSON.parse(mess));
-        if (!nice) {
-            //fallback if nothing found - return raw JSON string anyway
-            nice = mess;
+    if (typeof mess === "string") {
+        try {
+            nice = findMessage(JSON.parse(mess));
+            if (!nice) {
+                //fallback if nothing found - return raw JSON string anyway
+                nice = mess;
+            }
+        } catch (e) {
+            nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
         }
-    } catch (e) {
-        nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
-    }
-    if (statusCode === 404 && mess.length > 300) {
-        //server returned a dirty 404
-        nice = "Not found";
+        if (statusCode === 404 && mess.length > 300) {
+            //server returned a dirty 404
+            nice = "Not found";
+        }
+    } else {
+        nice = findMessage(mess);
     }
     return nice;
 }
@@ -705,7 +839,7 @@ module.exports = function (result) {
         code = ~~ (result.response.statusCode);
         error = result.error;
         error.statusCode = code;
-        error.message = psychicMessageParser(result.error.message, code);
+        error.message = psychicMessageParser(result.body, code);
         error.response = result.response;
         error.body = result.body;
     } else {
@@ -715,7 +849,7 @@ module.exports = function (result) {
     return error;
 }
 
-},{}],11:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var promises = require(2);
 var helpers = require(1);
 
@@ -807,7 +941,7 @@ linksProto.findOne = function(filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":25,"2":23}],12:[function(require,module,exports){
+},{"1":29,"2":27}],16:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -848,9 +982,9 @@ var enginePrototypeMethods = {};
 function params(obj) {
     var str = [];
     //cachebuster for IE
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        str.push("random=" + (~~(Math.random() * 9999)));
-    }
+//    if (typeof window !== "undefined" && window.XDomainRequest) {
+//        str.push("random=" + (~~(Math.random() * 9999)));
+//    }
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
@@ -875,6 +1009,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
     if (this.auth.isAuthorized()) {
+        opts.response = true; //xhr specific
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
@@ -891,16 +1026,11 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     body = JSON.parse(body);
                 } catch (e) {}
                 var retryAfter, masheryCode;
-                if (response.getResponseHeader) {
-                    retryAfter = response.getResponseHeader("Retry-After");
-                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
-                } else {
-                    retryAfter = response.headers["retry-after"];
-                    masheryCode = response.headers["x-mashery-error-code"];
-                    //in case headers get returned as arrays, we only expect one value
-                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-                }
+                retryAfter = response.headers["retry-after"];
+                masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
                 if (
                     self.options.handleQuota &&
                     response.statusCode === 403 &&
@@ -1031,7 +1161,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":24,"2":25,"3":26,"4":10,"5":23,"6":3}],13:[function(require,module,exports){
+},{"1":28,"2":29,"3":30,"4":14,"5":27,"6":3}],17:[function(require,module,exports){
 var promises = require(2);
 var helpers = require(1);
 
@@ -1170,7 +1300,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
         });
     }).then(function (result) { //result.response result.body
         return ({
-            id: result.response.getResponseHeader("etag"),
+            id: result.response.headers["etag"],
             path: pathFromRoot
         });
     });
@@ -1194,7 +1324,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
 //        });
 //    }).then(function (result) { //result.response result.body
 //        return ({
-//            id: result.response.getResponseHeader("etag"),
+//            id: result.response.headers["etag"],
 //            path: pathFromRoot
 //        });
 //    });
@@ -1239,7 +1369,7 @@ storageProto.remove = function (pathFromRoot) {
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":25,"2":23}],14:[function(require,module,exports){
+},{"1":29,"2":27}],18:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1301,7 +1431,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":24,"2":25,"3":26}],15:[function(require,module,exports){
+},{"1":28,"2":29,"3":30}],19:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1435,7 +1565,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":24,"2":25,"3":26,"4":23}],16:[function(require,module,exports){
+},{"1":28,"2":29,"3":30,"4":27}],20:[function(require,module,exports){
 (function () {
 
     var helpers = require(4);
@@ -1512,7 +1642,7 @@ module.exports = init;
 
 
 })();
-},{"1":20,"2":21,"3":24,"4":25}],17:[function(require,module,exports){
+},{"1":24,"2":25,"3":28,"4":29}],21:[function(require,module,exports){
 (function () {
 
     var helpers = require(2);
@@ -1610,7 +1740,7 @@ module.exports = init;
 
 
 })();
-},{"1":24,"2":25,"3":26}],18:[function(require,module,exports){
+},{"1":28,"2":29,"3":30}],22:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -1624,7 +1754,7 @@ module.exports={
 }
 
 
-},{}],19:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var helpers = require(1);
 var mapping = {};
 helpers.each({
@@ -1679,7 +1809,7 @@ module.exports = {
     getExtensionFilter: getExtensionFilter
 }
 
-},{"1":25}],20:[function(require,module,exports){
+},{"1":29}],24:[function(require,module,exports){
 var helpers = require(1);
 var exts = require(2);
 
@@ -1861,7 +1991,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"1":25,"2":19}],21:[function(require,module,exports){
+},{"1":29,"2":23}],25:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -2249,10 +2379,10 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"1":28,"2":24,"3":25,"4":27,"5":18,"6":22}],22:[function(require,module,exports){
+},{"1":32,"2":28,"3":29,"4":31,"5":22,"6":26}],26:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 
-},{}],23:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -2283,7 +2413,7 @@ Promises.defer = function () {
 }
 
 module.exports = Promises;
-},{"1":1}],24:[function(require,module,exports){
+},{"1":1}],28:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -2353,7 +2483,7 @@ module.exports = {
 
 }
 
-},{"1":2}],25:[function(require,module,exports){
+},{"1":2}],29:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2409,7 +2539,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],26:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2461,7 +2591,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":25}],27:[function(require,module,exports){
+},{"1":29}],31:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -2474,7 +2604,7 @@ module.exports = function (overrides) {
         return txt;
     };
 };
-},{}],28:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {
@@ -2587,4 +2717,4 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[7])
+},{}]},{},[11])

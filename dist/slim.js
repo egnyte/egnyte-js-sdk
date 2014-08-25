@@ -220,6 +220,7 @@ for(i = 112; i < 136; ++i) {
 },{}],3:[function(require,module,exports){
 var window = require(1)
 var once = require(2)
+var parseHeaders = require(3)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -257,6 +258,7 @@ function createXHR(options, callback) {
     var sync = !!options.sync
     var isJson = false
     var key
+    var load = options.response ? loadResponse : loadXhr
 
     if ("json" in options) {
         isJson = true
@@ -317,38 +319,66 @@ function createXHR(options, callback) {
         }
     }
 
-    function load() {
-        var error = null
-        var status = xhr.statusCode = xhr.status
+    function getBody() {
         // Chrome with requestType=blob throws errors arround when even testing access to responseText
         var body = null
 
         if (xhr.response) {
-            body = xhr.body = xhr.response
+            body = xhr.response
         } else if (xhr.responseType === 'text' || !xhr.responseType) {
-            body = xhr.body = xhr.responseText || xhr.responseXML
+            body = xhr.responseText || xhr.responseXML
         }
 
-        if (status === 1223) {
-            status = 204
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
         }
 
+        return body
+    }
+
+    function getStatusCode() {
+        return xhr.status === 1223 ? 204 : xhr.status
+    }
+
+    // if we're getting a none-ok statusCode, build & return an error
+    function errorFromStatusCode(status) {
+        var error = null
         if (status === 0 || (status >= 400 && status < 600)) {
             var message = (typeof body === "string" ? body : false) ||
                 messages[String(status).charAt(0)]
             error = new Error(message)
             error.statusCode = status
-        }
-        
+        };
+
+        return error;
+    }
+
+    // will load the data & process the response in a special response object
+    function loadResponse() {
+        var status = getStatusCode();
+        var error = errorFromStatusCode(status);
+        var response = {
+            body: getBody(),
+            statusCode: status,
+            statusText: xhr.statusText,
+            headers: parseHeaders(xhr.getAllResponseHeaders())
+        };
+
+        callback(error, response, response.body);
+    }
+
+    // will load the data and add some response properties to the source xhr
+    // and then respond with that
+    function loadXhr() {
+        var status = getStatusCode()
+        var error = errorFromStatusCode(status)
+
         xhr.status = xhr.statusCode = status;
+        xhr.body = getBody();
 
-        if (isJson) {
-            try {
-                body = xhr.body = JSON.parse(body)
-            } catch (e) {}
-        }
-
-        callback(error, xhr, body)
+        callback(error, xhr, xhr.body);
     }
 
     function error(evt) {
@@ -358,7 +388,7 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-},{"1":4,"2":5}],4:[function(require,module,exports){
+},{"1":4,"2":5,"3":9}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window
 } else if (typeof global !== "undefined") {
@@ -387,6 +417,106 @@ function once (fn) {
   }
 }
 },{}],6:[function(require,module,exports){
+var isFunction = require(1)
+
+module.exports = forEach
+
+var toString = Object.prototype.toString
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
+function forEach(list, iterator, context) {
+    if (!isFunction(iterator)) {
+        throw new TypeError('iterator must be a function')
+    }
+
+    if (arguments.length < 3) {
+        context = this
+    }
+    
+    if (toString.call(list) === '[object Array]')
+        forEachArray(list, iterator, context)
+    else if (typeof list === 'string')
+        forEachString(list, iterator, context)
+    else
+        forEachObject(list, iterator, context)
+}
+
+function forEachArray(array, iterator, context) {
+    for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+            iterator.call(context, array[i], i, array)
+        }
+    }
+}
+
+function forEachString(string, iterator, context) {
+    for (var i = 0, len = string.length; i < len; i++) {
+        // no such thing as a sparse string.
+        iterator.call(context, string.charAt(i), i, string)
+    }
+}
+
+function forEachObject(object, iterator, context) {
+    for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+            iterator.call(context, object[k], k, object)
+        }
+    }
+}
+},{"1":7}],7:[function(require,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+},{}],8:[function(require,module,exports){
+exports = module.exports = trim;
+
+function trim(str){
+  return str.replace(/^\s*|\s*$/g, '');
+}
+
+exports.left = function(str){
+  return str.replace(/^\s*/, '');
+};
+
+exports.right = function(str){
+  return str.replace(/\s*$/, '');
+};
+},{}],9:[function(require,module,exports){
+var trim = require(2)
+  , forEach = require(1)
+
+module.exports = function (headers) {
+  if (!headers)
+    return {}
+
+  var result = {}
+
+  forEach(
+      trim(headers).split('\n')
+    , function (row) {
+        var index = row.indexOf(':')
+
+        result[trim(row.slice(0, index)).toLowerCase()] =
+          trim(row.slice(index + 1))
+      }
+  )
+
+  return result
+}
+
+},{"1":6,"2":8}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -398,7 +528,7 @@ module.exports = {
     
 }
 
-},{}],7:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var RequestEngine = require(3);
 var AuthEngine = require(1);
 var StorageFacade = require(4);
@@ -436,7 +566,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":8,"2":10,"3":11,"4":12,"5":13,"6":14}],8:[function(require,module,exports){
+},{"1":12,"2":14,"3":15,"4":16,"5":17,"6":18}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
@@ -630,7 +760,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":16,"2":17,"3":18,"4":9,"5":15}],9:[function(require,module,exports){
+},{"1":20,"2":21,"3":22,"4":13,"5":19}],13:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -656,18 +786,22 @@ function findMessage(obj) {
 //this should understand all the message formats from the server and translate to a nice message
 function psychicMessageParser(mess, statusCode) {
     var nice;
-    try {
-        nice = findMessage(JSON.parse(mess));
-        if (!nice) {
-            //fallback if nothing found - return raw JSON string anyway
-            nice = mess;
+    if (typeof mess === "string") {
+        try {
+            nice = findMessage(JSON.parse(mess));
+            if (!nice) {
+                //fallback if nothing found - return raw JSON string anyway
+                nice = mess;
+            }
+        } catch (e) {
+            nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
         }
-    } catch (e) {
-        nice = mess ? mess.replace(htmlMsgRegex, "$1") : "Unknown error";
-    }
-    if (statusCode === 404 && mess.length > 300) {
-        //server returned a dirty 404
-        nice = "Not found";
+        if (statusCode === 404 && mess.length > 300) {
+            //server returned a dirty 404
+            nice = "Not found";
+        }
+    } else {
+        nice = findMessage(mess);
     }
     return nice;
 }
@@ -678,7 +812,7 @@ module.exports = function (result) {
         code = ~~ (result.response.statusCode);
         error = result.error;
         error.statusCode = code;
-        error.message = psychicMessageParser(result.error.message, code);
+        error.message = psychicMessageParser(result.body, code);
         error.response = result.response;
         error.body = result.body;
     } else {
@@ -688,7 +822,7 @@ module.exports = function (result) {
     return error;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var promises = require(2);
 var helpers = require(1);
 
@@ -780,7 +914,7 @@ linksProto.findOne = function(filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":17,"2":15}],11:[function(require,module,exports){
+},{"1":21,"2":19}],15:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -821,9 +955,9 @@ var enginePrototypeMethods = {};
 function params(obj) {
     var str = [];
     //cachebuster for IE
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        str.push("random=" + (~~(Math.random() * 9999)));
-    }
+//    if (typeof window !== "undefined" && window.XDomainRequest) {
+//        str.push("random=" + (~~(Math.random() * 9999)));
+//    }
     for (var p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
@@ -848,6 +982,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
     if (this.auth.isAuthorized()) {
+        opts.response = true; //xhr specific
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
@@ -864,16 +999,11 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     body = JSON.parse(body);
                 } catch (e) {}
                 var retryAfter, masheryCode;
-                if (response.getResponseHeader) {
-                    retryAfter = response.getResponseHeader("Retry-After");
-                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
-                } else {
-                    retryAfter = response.headers["retry-after"];
-                    masheryCode = response.headers["x-mashery-error-code"];
-                    //in case headers get returned as arrays, we only expect one value
-                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-                }
+                retryAfter = response.headers["retry-after"];
+                masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
                 if (
                     self.options.handleQuota &&
                     response.statusCode === 403 &&
@@ -1004,7 +1134,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":16,"2":17,"3":18,"4":9,"5":15,"6":3}],12:[function(require,module,exports){
+},{"1":20,"2":21,"3":22,"4":13,"5":19,"6":3}],16:[function(require,module,exports){
 var promises = require(2);
 var helpers = require(1);
 
@@ -1143,7 +1273,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
         });
     }).then(function (result) { //result.response result.body
         return ({
-            id: result.response.getResponseHeader("etag"),
+            id: result.response.headers["etag"],
             path: pathFromRoot
         });
     });
@@ -1167,7 +1297,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
 //        });
 //    }).then(function (result) { //result.response result.body
 //        return ({
-//            id: result.response.getResponseHeader("etag"),
+//            id: result.response.headers["etag"],
 //            path: pathFromRoot
 //        });
 //    });
@@ -1212,7 +1342,7 @@ storageProto.remove = function (pathFromRoot) {
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":17,"2":15}],13:[function(require,module,exports){
+},{"1":21,"2":19}],17:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1274,7 +1404,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":16,"2":17,"3":18}],14:[function(require,module,exports){
+},{"1":20,"2":21,"3":22}],18:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1408,7 +1538,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":16,"2":17,"3":18,"4":15}],15:[function(require,module,exports){
+},{"1":20,"2":21,"3":22,"4":19}],19:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -1439,7 +1569,7 @@ Promises.defer = function () {
 }
 
 module.exports = Promises;
-},{"1":1}],16:[function(require,module,exports){
+},{"1":1}],20:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1509,7 +1639,7 @@ module.exports = {
 
 }
 
-},{"1":2}],17:[function(require,module,exports){
+},{"1":2}],21:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1565,7 +1695,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],18:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -1617,7 +1747,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":17}],19:[function(require,module,exports){
+},{"1":21}],23:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -1648,4 +1778,4 @@ module.exports = {
     }
 
 })();
-},{"1":6,"2":7,"3":17}]},{},[19])
+},{"1":10,"2":11,"3":21}]},{},[23])

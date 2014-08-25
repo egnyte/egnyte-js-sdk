@@ -16,7 +16,7 @@
     "q": "^1.0.1",
     "request": "^2.39.0",
     "vkey": "0.0.3",
-    "xhr": "1.14.1"
+    "xhr": "1.15.0"
   },
   "browser": {
     "q": "./src/lib/promises-browser.js",

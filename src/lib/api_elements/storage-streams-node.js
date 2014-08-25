@@ -28,7 +28,7 @@ function storeFile(pathFromRoot, stream, size /*optional*/ ) {
             })
             .then(function (result) { //result.response result.body
                 return ({
-                    id: (result.response.getResponseHeader ? result.response.getResponseHeader("etag") : result.response.headers["etag"]),
+                    id: result.response.headers["etag"],
                     path: pathFromRoot
                 });
             });

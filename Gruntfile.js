@@ -139,7 +139,6 @@ module.exports = function (grunt) {
                     middleware: function (connect, options) {
                         var proxy = require("grunt-connect-proxy/lib/utils").proxyRequest;
                         return [
-                        //static first, if not there, go to proxy
                         connect.static(options.base[0]),
                         function (req, res, next) {
                                 //                                req.headers["X-Egnyte-Subdomain"] = "subdomain0.egnyte.com";
