@@ -65,7 +65,7 @@ if (ImInBrowser) {
                 t2 = +new Date();
                 //assuming 404 is quite stable in terms of response time
                 //but the response can be cached and the second one is faster
-                expect(!t1 || (t2 - t1) < 500).toBe(true);
+                expect((t1)? (t2 - t1) : 0).toBeLessThan(500);
                 setTimeout(done, 1000); //wait for quota reset
             }).fail(function (e) {
                 expect(this).toAutoFail(e);

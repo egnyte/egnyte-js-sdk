@@ -12,9 +12,9 @@ module.exports = function (grunt) {
                 },
                 options: {
                     transform: [
-                        'grunt-less-browserify'
+                        'node-lessify'
                     ],
-                    bundleOptions: {
+                    browserifyOptions: {
                         fullPaths: false,
                         insertGlobals: false,
                         detectGlobals: false
@@ -114,7 +114,7 @@ module.exports = function (grunt) {
                     port: 9991,
                     hostname: "0.0.0.0",
                     base: "mock/",
-                    protocol: "https",
+                    protocol: "http",
                     keepalive: true,
                     middleware: function (connect, options, middlewares) {
                         // inject a custom middleware 
