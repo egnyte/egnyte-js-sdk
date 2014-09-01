@@ -85,17 +85,13 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     //this shouldn't be required, but server sometimes responds with content-type text/plain
                     body = JSON.parse(body);
                 } catch (e) {}
-                var retryAfter, masheryCode;
-                if (response.getResponseHeader) {
-                    retryAfter = response.getResponseHeader("Retry-After");
-                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
-                } else {
-                    retryAfter = response.headers["retry-after"];
-                    masheryCode = response.headers["x-mashery-error-code"];
-                    //in case headers get returned as arrays, we only expect one value
-                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-                }
+
+                var retryAfter = response.headers["retry-after"];
+                var masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+
                 if (
                     self.options.handleQuota &&
                     response.statusCode === 403 &&

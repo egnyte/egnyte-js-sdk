@@ -214,6 +214,8 @@ egnyte.API.manual.promiseRequest({
     });
 ```
 
+Anywhere a response object is returned (except IE8/9, see Legacy support page) it is an XMLHttpRequest object extended with `statusCode` field and `headers` object (so you don't have to query headers individually)
+
 ## File System API helpers
 
 All API helpers return promises.

@@ -30,9 +30,9 @@
 
          //this line will use mock instead of real egnyte domain
          //doesn't work with file:// protocol
-        var eg = Egnyte.init(window.location.origin, {
-            filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock/mock_filepicker.html"
-        });
+//        var eg = Egnyte.init(window.location.origin, {
+//            filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock/mock_filepicker.html"
+//        });
 
          //proper usage:
          var eg = Egnyte.init(egnyteDomain);

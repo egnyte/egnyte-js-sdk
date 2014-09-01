@@ -251,7 +251,7 @@ function createXHR(options, callback) {
         }
     }
 
-    var uri = xhr.url = options.uri || options.url;
+    var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
     var headers = xhr.headers = options.headers || {}
@@ -296,7 +296,7 @@ function createXHR(options, callback) {
             }
         }
     } else if (options.headers) {
-        throw new Error("Headers cannot be set on an XDomainRequest object");
+        throw new Error("Headers cannot be set on an XDomainRequest object")
     }
 
     if ("responseType" in options) {
@@ -350,23 +350,28 @@ function createXHR(options, callback) {
                 messages[String(status).charAt(0)]
             error = new Error(message)
             error.statusCode = status
-        };
+        }
 
-        return error;
+        return error
     }
 
     // will load the data & process the response in a special response object
     function loadResponse() {
-        var status = getStatusCode();
-        var error = errorFromStatusCode(status);
+        var status = getStatusCode()
+        var error = errorFromStatusCode(status)
         var response = {
             body: getBody(),
             statusCode: status,
             statusText: xhr.statusText,
-            headers: parseHeaders(xhr.getAllResponseHeaders())
-        };
+            raw: xhr
+        }
+        if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
+            response.headers = parseHeaders(xhr.getAllResponseHeaders())
+        } else {
+            response.headers = {}
+        }
 
-        callback(error, response, response.body);
+        callback(error, response, response.body)
     }
 
     // will load the data and add some response properties to the source xhr
@@ -375,10 +380,11 @@ function createXHR(options, callback) {
         var status = getStatusCode()
         var error = errorFromStatusCode(status)
 
-        xhr.status = xhr.statusCode = status;
-        xhr.body = getBody();
+        xhr.status = xhr.statusCode = status
+        xhr.body = getBody()
+        xhr.headers = parseHeaders(xhr.getAllResponseHeaders())
 
-        callback(error, xhr, xhr.body);
+        callback(error, xhr, xhr.body)
     }
 
     function error(evt) {
@@ -496,6 +502,9 @@ exports.right = function(str){
 },{}],9:[function(require,module,exports){
 var trim = require(2)
   , forEach = require(1)
+  , isArray = function(arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    }
 
 module.exports = function (headers) {
   if (!headers)
@@ -507,9 +516,16 @@ module.exports = function (headers) {
       trim(headers).split('\n')
     , function (row) {
         var index = row.indexOf(':')
+          , key = trim(row.slice(0, index)).toLowerCase()
+          , value = trim(row.slice(index + 1))
 
-        result[trim(row.slice(0, index)).toLowerCase()] =
-          trim(row.slice(index + 1))
+        if (typeof(result[key]) === 'undefined') {
+          result[key] = value
+        } else if (isArray(result[key])) {
+          result[key].push(value)
+        } else {
+          result[key] = [ result[key], value ]
+        }
       }
   )
 
@@ -521,7 +537,7 @@ module.exports = {
     handleQuota: true,
     QPS: 2,
     forwarderAddress: "app/integ/forwarder/1.0/apiForwarder.html",
-    filepickerViewAddress: "app/folderExplorer.html",
+    filepickerViewAddress: "register.do?ref=folder-explorer",
     channelMarker: "'E",
     httpRequest: null,
     oldIEForwarder: false
@@ -1002,17 +1018,13 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
                     //this shouldn't be required, but server sometimes responds with content-type text/plain
                     body = JSON.parse(body);
                 } catch (e) {}
-                var retryAfter, masheryCode;
-                if (response.getResponseHeader) {
-                    retryAfter = response.getResponseHeader("Retry-After");
-                    masheryCode = response.getResponseHeader("X-Mashery-Error-Code")
-                } else {
-                    retryAfter = response.headers["retry-after"];
-                    masheryCode = response.headers["x-mashery-error-code"];
-                    //in case headers get returned as arrays, we only expect one value
-                    retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                    masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-                }
+
+                var retryAfter = response.headers["retry-after"];
+                var masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+
                 if (
                     self.options.handleQuota &&
                     response.statusCode === 403 &&
@@ -1282,7 +1294,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
         });
     }).then(function (result) { //result.response result.body
         return ({
-            id: result.response.headers["etag"] || result.response.getResponseHeader("etag"),
+            id: result.response.headers["etag"],
             path: pathFromRoot
         });
     });

@@ -23,18 +23,13 @@ if (ImInBrowser) {
 
         it('should use xhr for http in the browser', function () {
             var xhr = eg.API.manual.sendRequest({
-                url: "http://localhost/",
+                url: "/",
                 headers: {
                     "X-foo": "bar"
                 },
                 method: "GET"
             }, function (error, response, body) {
-                if (error === null) {
-                    //response is the XHR object
-                    //body contains response JSON converted to object
-                } else {
-                    //handle the error or rethrow
-                }
+                
             });
 
             expect(xhr.headers).toBeDefined();

@@ -330,6 +330,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
     },function(error, response, body){
         //handle the error 
     });</code></pre>
+<p>Anywhere a response object is returned (except IE8/9, see Legacy support page) it is an XMLHttpRequest object extended with <code>statusCode</code> field and <code>headers</code> object (so you don&#39;t have to query headers individually)</p>
 <h2 id="file-system-api-helpers">File System API helpers</h2>
 <p>All API helpers return promises.</p>
 <table>
