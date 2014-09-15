@@ -35,16 +35,21 @@ function storeFile(pathFromRoot, stream, size /*optional*/ ) {
     });
 }
 
-function getFileStream(pathFromRoot) {
+function getFileStream(pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-        }
+    var opts = {
+        method: "GET",
+        url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+    }
+    if (versionEntryId) {
+        opts.params = opts.qs = { //xhr and request differ here
+            "entry_id": versionEntryId
+        };
+    }
 
-        return requestEngine.sendRequest(opts);
+    return requestEngine.sendRequest(opts);
 }
 
 

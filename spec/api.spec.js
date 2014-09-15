@@ -238,7 +238,7 @@ describe("API to JS (integration test)", function () {
         });
 
         it("Can download a file and use content", function (done) {
-            eg.API.storage.download(testpath, false /*non binary*/ ).then(function (xhr) {
+            eg.API.storage.download(testpath,null, false /*non binary*/ ).then(function (xhr) {
                 expect(xhr.body).toMatch(/^<a id="a"><b id="b">/);
                 done();
             });

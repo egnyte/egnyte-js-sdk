@@ -222,15 +222,15 @@ All API helpers return promises.
 
 Method | Arguments | Description
 --- | --- | ---
-API.storage.exists | `path` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404
-API.storage.get | `path` | Resolves to file or folder definition object
-API.storage.download | `path`, `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`)
+API.storage.exists | `path`,`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version
+API.storage.get | `path`,`entryID(optional)` | Resolves to file or folder definition object. `entryID` is the identifier of the version of the file if the operation should be performed on a version
+API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"...",id:"<version ID>"}` 
 API.storage.storeFile | `path`, `Blob_object` | Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob)
 API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
 API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
 API.storage.rename | `path`,  `new path` | alias for move
-API.storage.remove | `path` | Deletes a file or folder 
+API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version
 API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file 
 
 ### Storing a file

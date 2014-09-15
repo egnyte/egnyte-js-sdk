@@ -1195,15 +1195,22 @@ function Storage(requestEngine) {
 }
 
 var storageProto = {};
-storageProto.exists = function (pathFromRoot) {
+storageProto.exists = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "GET",
             url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
-        });
+        };
+
+        if (versionEntryId) {
+            opts.params = opts.qs = { //xhr and request differ here
+                "entry_id": versionEntryId
+            };
+        }
+
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return true;
@@ -1219,21 +1226,28 @@ storageProto.exists = function (pathFromRoot) {
     });
 }
 
-storageProto.get = function (pathFromRoot) {
+storageProto.get = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "GET",
             url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
-        });
+        };
+
+        if (versionEntryId) {
+            opts.params = opts.qs = { //xhr and request differ here
+                "entry_id": versionEntryId
+            };
+        }
+
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
-storageProto.download = function (pathFromRoot, isBinary) {
+storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
@@ -1241,6 +1255,11 @@ storageProto.download = function (pathFromRoot, isBinary) {
         var opts = {
             method: "GET",
             url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        }
+        if (versionEntryId) {
+            opts.params = opts.qs = { //xhr and request differ here
+                "entry_id": versionEntryId
+            };
         }
 
         if (isBinary) {
@@ -1362,7 +1381,7 @@ function remove(requestEngine, pathFromRoot, versionEntryId) {
             url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
-            opts.params = {
+            opts.params = opts.qs = { //xhr and request differ here
                 "entry_id": versionEntryId
             };
         }
