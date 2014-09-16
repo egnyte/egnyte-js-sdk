@@ -1293,7 +1293,7 @@ storageProto.createFolder = function (pathFromRoot) {
     });
 }
 
-storageProto.move = function (pathFromRoot, newPath) {
+storageProto.move = storageProto.rename = function (pathFromRoot, newPath) {
     return transfer(this.requestEngine, pathFromRoot, newPath, "move");
 }
 
