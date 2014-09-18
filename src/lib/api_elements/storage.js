@@ -143,7 +143,7 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
 
 
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */, size /* optional */) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         var file = fileOrBlob;
