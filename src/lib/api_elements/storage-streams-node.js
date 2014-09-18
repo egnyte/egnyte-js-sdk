@@ -2,7 +2,7 @@ var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
 
-var fscontent = "/fs-content/";
+var fscontent = "/fs-content";
 
 function StreamsExtendedStorage() {
     StreamsExtendedStorage.super_.apply(this, arguments);
@@ -22,7 +22,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optiona
         if (size >= 0) {
             opts.headers["Content-Length"] = size;
         }
-        if (mimeType.length > 0) {
+        if (mimeType) {
             opts.headers["Content-Type"] = mimeType;
         }
 
