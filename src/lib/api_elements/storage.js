@@ -143,17 +143,24 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
 
 
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */, size /* optional */) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
             body: file,
-        });
+        }
+        
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],

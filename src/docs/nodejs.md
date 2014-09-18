@@ -4,11 +4,11 @@ The authorization flow has to be done in the browser, so you'll need to get the 
 
 All API methods work as described in main docs, with the following exceptions:
 
-`API.storage.storeFile` accepts a data stream instead of a blob
+`API.storage.storeFile` accepts a data stream instead of a blob. It also takes two optional arguments which are MIME type and size (in bytes) of stream.
 
 ```javascript
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.storeFile(pathFromRoot, fileStream)
+egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
     .then(function(filemeta){
         //
     })

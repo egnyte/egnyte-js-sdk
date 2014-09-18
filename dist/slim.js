@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function(target) {
 	var undef;
 
@@ -396,11 +396,11 @@ function createXHR(options, callback) {
 function noop() {}
 },{"1":4,"2":5,"3":9}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
-    module.exports = window
+    module.exports = window;
 } else if (typeof global !== "undefined") {
-    module.exports = global
+    module.exports = global;
 } else {
-    module.exports = {}
+    module.exports = {};
 }
 },{}],5:[function(require,module,exports){
 module.exports = once
@@ -1301,17 +1301,24 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
 
 
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */, size /* optional */) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
             body: file,
-        });
+        }
+        
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
@@ -1819,4 +1826,4 @@ module.exports = {
     }
 
 })();
-},{"1":10,"2":11,"3":21}]},{},[23])
+},{"1":10,"2":11,"3":21}]},{},[23]);

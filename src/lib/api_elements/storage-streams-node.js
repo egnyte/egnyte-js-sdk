@@ -9,7 +9,7 @@ function StreamsExtendedStorage() {
 };
 
 
-function storeFile(pathFromRoot, stream, size /*optional*/ ) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optional*/) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
@@ -17,10 +17,13 @@ function storeFile(pathFromRoot, stream, size /*optional*/ ) {
             method: "POST",
             uri: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot)
         }
+        
+        opts.headers = {};
         if (size >= 0) {
-            opts.headers = {
-                "Content-Length": size
-            }
+            opts.headers["Content-Length"] = size;
+        }
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
         }
 
         return requestEngine.promiseRequest(opts, function (req) {
