@@ -159,9 +159,6 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
         if (mimeType) {
             opts.headers["Content-Type"] = mimeType;
         }
-        if (size >= 0) {
-            opts.headers["Content-Length"] = size;
-        }
 
         return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
