@@ -15,7 +15,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optiona
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            uri: requestEngine.getEndpoint() + fscontent + encodeURIComponent(pathFromRoot)
+            uri: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot)
         }
         
         opts.headers = {};
