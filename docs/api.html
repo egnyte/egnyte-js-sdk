@@ -364,8 +364,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </tr>
 <tr>
 <td>API.storage.storeFile</td>
-<td><code>path</code>, <code>Blob_object</code></td>
-<td>Uploads a file and stores at the given path, resolves to <code>{path:&quot;...&quot;,id:&quot;&lt;version ID&gt;&quot;}</code> (see below for details on Blob)</td>
+<td><code>path</code>, <code>Blob_object</code>, <code>mimeType (optional)</code>, <code>size (optional)</code></td>
+<td>Uploads a file and stores at the given path, resolves to <code>{path:&quot;...&quot;,id:&quot;&lt;version ID&gt;&quot;}</code> (see below for details on Blob). There are two optional arguments as well. These are MIME type and size (in bytes) of file to get stored.</td>
 </tr>
 <tr>
 <td>API.storage.move</td>
@@ -402,7 +402,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 
     var file = $(&quot;input.avatarfile&quot;)[0].files[0]
 
-    egnyte.API.storage.storeFile(&quot;/Private/mydata/avatar.png&quot;, file)
+    egnyte.API.storage.storeFile(&quot;/Private/mydata/avatar.png&quot;, file, &quot;image/png&quot;)
        .then(function (response, body) {
             //upload successful
         },function(error, response, body){
