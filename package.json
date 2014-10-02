@@ -16,7 +16,8 @@
     "q": "^1.0.1",
     "request": "^2.40.0",
     "vkey": "1.0.0",
-    "xhr": "1.16.1"
+    "xhr": "1.16.1",
+    "pause-stream": "0.0.11"
   },
   "browser": {
     "q": "./src/lib/promises-browser.js",
