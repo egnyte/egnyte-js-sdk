@@ -5,8 +5,8 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
-    
-    process.setMaxListeners(0); 
+
+    process.setMaxListeners(0);
 }
 
 describe("API to JS (integration test)", function () {
@@ -238,7 +238,7 @@ describe("API to JS (integration test)", function () {
         });
 
         it("Can download a file and use content", function (done) {
-            eg.API.storage.download(testpath,null, false /*non binary*/ ).then(function (xhr) {
+            eg.API.storage.download(testpath, null, false /*non binary*/ ).then(function (xhr) {
                 expect(xhr.body).toMatch(/^<a id="a"><b id="b">/);
                 done();
             });
@@ -246,20 +246,29 @@ describe("API to JS (integration test)", function () {
 
         if (!ImInBrowser) {
             it("Can get a file stream", function (done) {
-                var readable = eg.API.storage.getFileStream(testpath);
-                expect(readable.pipe).toBeDefined();
-                expect(readable.on).toBeDefined();
-                var body = "";
-                readable.on('data', function (chunk) {
-                    body += chunk;
-                });
-                readable.on('end', function () {
-                    expect(body).toMatch(/^<a id="a"><b id="b">/);
-                    done();
-                });
+                eg.API.storage.getFileStream(testpath)
+                    .then(function (result) {
+                        console.log(result)
+                        var readable = result.stream;
+
+                        expect(readable.pipe).toBeDefined();
+                        expect(readable.on).toBeDefined();
+                        var body = "";
+                        readable.on('data', function (chunk) {
+                            console.log(chunk);
+                            body += chunk;
+                        });
+                        readable.on('end', function () {
+                            expect(body).toMatch(/^<a id="a"><b id="b">/);
+                            done();
+                        });
+
+                    });
 
             });
         }
+
+        return;
 
 
         it("Can store another version of a file", function (done) {
@@ -320,6 +329,8 @@ describe("API to JS (integration test)", function () {
         });
 
     });
+
+    return;
 
     describe("Link", function () {
         var recentFile;

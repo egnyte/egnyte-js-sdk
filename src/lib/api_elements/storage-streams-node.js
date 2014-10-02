@@ -10,7 +10,7 @@ function StreamsExtendedStorage() {
 };
 
 
-function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optional*/) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional*/ ) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
@@ -18,7 +18,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optiona
             method: "POST",
             uri: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot)
         }
-        
+
         opts.headers = {};
         if (size >= 0) {
             opts.headers["Content-Length"] = size;
@@ -54,24 +54,26 @@ function getFileStream(pathFromRoot, versionEntryId) {
         };
     }
 
-    function oneTry(){
+
+    function oneTry() {
+        function handleResponse(error, resp, body) {
+            defer.resolve({
+                statusCode: resp.statusCode,
+                headers: resp.headers,
+                stream: stream
+            });
+            stream.resume();
+
+        }
         var stream = new pauseStream();
         requestEngine.retrieveStreamFromRequest(opts)
-            .then(function(requestObject) {
+            .then(function (requestObject) {
 
-
-                requestObject.on('response', function(resp) {
-                    if (resp.statusCode == 200) {
-                        defer.resolve({statusCode: resp.statusCode, headers: resp.headers, stream: stream});
-                        stream.resume();
-                    } else {
+                requestObject.on('response', function (resp) {
+                    requestEngine.retryHandler(handleResponse, function () {
                         stream.destroy();
                         setImmediate(oneTry);
-                    }
-                });
-                requestObject.on('error', function(err) {
-                    stream.destroy();
-                    setImmediate(oneTry);
+                    })(null, resp, resp.body);
                 });
 
                 requestObject.pipe(stream);
@@ -79,7 +81,7 @@ function getFileStream(pathFromRoot, versionEntryId) {
             });
     }
     oneTry();
-        
+
     return defer.promise;
 }
 
