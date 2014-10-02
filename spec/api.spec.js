@@ -2,6 +2,7 @@ var ImInBrowser = (typeof window !== "undefined");
 
 if (!ImInBrowser) {
     var stream = require('stream')
+    var concat = require('concat-stream')
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
@@ -247,21 +248,17 @@ describe("API to JS (integration test)", function () {
         if (!ImInBrowser) {
             it("Can get a file stream", function (done) {
                 eg.API.storage.getFileStream(testpath)
-                    .then(function (result) {
-                        console.log(result)
-                        var readable = result.stream;
+                    .then(function (readable) {
 
                         expect(readable.pipe).toBeDefined();
                         expect(readable.on).toBeDefined();
-                        var body = "";
-                        readable.on('data', function (chunk) {
-                            console.log(chunk);
-                            body += chunk;
-                        });
-                        readable.on('end', function () {
-                            expect(body).toMatch(/^<a id="a"><b id="b">/);
+
+                        var writeSink = concat(function (data) {
+                            expect(data).toMatch(/^<a id="a"><b id="b">/);
                             done();
                         });
+                        readable.pipe(writeSink);
+                        readable.resume();
 
                     });
 

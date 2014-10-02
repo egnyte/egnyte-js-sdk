@@ -1,7 +1,6 @@
 var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
-var pauseStream = require("pause-stream");
 
 var fscontent = "/fs-content";
 
@@ -54,30 +53,19 @@ function getFileStream(pathFromRoot, versionEntryId) {
         };
     }
 
+    function handleResponse(error, resp, body) {
+        defer.resolve(resp);
+    }
 
     function oneTry() {
-        function handleResponse(error, resp, body) {
-            defer.resolve({
-                statusCode: resp.statusCode,
-                headers: resp.headers,
-                stream: stream
-            });
-            stream.resume();
-
-        }
-        var stream = new pauseStream();
         requestEngine.retrieveStreamFromRequest(opts)
             .then(function (requestObject) {
-
+                requestObject.pause();
                 requestObject.on('response', function (resp) {
                     requestEngine.retryHandler(handleResponse, function () {
-                        stream.destroy();
                         setImmediate(oneTry);
                     })(null, resp, resp.body);
                 });
-
-                requestObject.pipe(stream);
-
             });
     }
     oneTry();
