@@ -15,11 +15,17 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
 
 ```
 
-`API.storage.getFileStream` a new method for node to get a stream instead of a promise. Use it instead of `API.storage.download`
+`API.storage.getFileStream` a new method for node to get a response that can be used with streams. Use it instead of `API.storage.download`
+This method resolves its promise to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently.
+
 
 ```javascript
-egnyte.API.storage.getFileStream(pathFromRoot).pipe(whereverYouWant)
+egnyte.API.storage.getFileStream(pathFromRoot)
+    .then(function(pausedResponse){
+        pausedResponse.pipe(whereverYouWant);
+        pausedResponse.resume(); //Be sure to resume the paused stream
+    });
 
 ```
 
-The streams are handled by the `request` npm module. 
+The streams are handled by the `request` npm module. The functionality of pausing and resuming streams was introduced in nodejsv0.10 and will not work in older versions.
