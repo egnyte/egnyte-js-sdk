@@ -1,6 +1,7 @@
 var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
+var pauseStream = require("pause-stream");
 
 var fscontent = "/fs-content";
 
@@ -41,7 +42,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optiona
 function getFileStream(pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-    var defer = q.defer();
+    var defer = promises.defer();
 
     var opts = {
         method: "GET",
@@ -57,10 +58,11 @@ function getFileStream(pathFromRoot, versionEntryId) {
         var stream = new pauseStream();
         requestEngine.retrieveStreamFromRequest(opts)
             .then(function(requestObject) {
-                
-                    requestObject.on('response', function(resp) {
+
+
+                requestObject.on('response', function(resp) {
                     if (resp.statusCode == 200) {
-                        defer.resolve(stream);
+                        defer.resolve({statusCode: resp.statusCode, headers: resp.headers, stream: stream});
                         stream.resume();
                     } else {
                         stream.destroy();
@@ -71,13 +73,16 @@ function getFileStream(pathFromRoot, versionEntryId) {
                     stream.destroy();
                     setImmediate(oneTry);
                 });
+
                 requestObject.pipe(stream);
 
             });
     }
+    oneTry();
         
     return defer.promise;
 }
+
 
 module.exports = function (Storage) {
 
