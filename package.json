@@ -5,7 +5,7 @@
     "main": "src/slim.js",
     "engines": {
         "node": ">=0.10.28"
-    }
+    },
     "keywords": [
     "egnyte",
     "storage",
