@@ -41,6 +41,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */, size /*optiona
 function getFileStream(pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+    var defer = q.defer();
 
     var opts = {
         method: "GET",
@@ -52,9 +53,31 @@ function getFileStream(pathFromRoot, versionEntryId) {
         };
     }
 
-    return requestEngine.sendRequest(opts);
-}
+    function oneTry(){
+        var stream = new pauseStream();
+        requestEngine.retrieveStreamFromRequest(opts)
+            .then(function(requestObject) {
+                
+                    requestObject.on('response', function(resp) {
+                    if (resp.statusCode == 200) {
+                        defer.resolve(stream);
+                        stream.resume();
+                    } else {
+                        stream.destroy();
+                        setImmediate(oneTry);
+                    }
+                });
+                requestObject.on('error', function(err) {
+                    stream.destroy();
+                    setImmediate(oneTry);
+                });
+                requestObject.pipe(stream);
 
+            });
+    }
+        
+    return defer.promise;
+}
 
 module.exports = function (Storage) {
 

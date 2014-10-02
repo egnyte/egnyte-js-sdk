@@ -1036,63 +1036,10 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         if (!callback) {
             return self.requestHandler(opts);
         } else {
-            return self.requestHandler(opts, function (error, response, body) {
-                //emulating the default XHR behavior
-                if (!error && response.statusCode >= 400 && response.statusCode < 600) {
-                    error = new Error(body);
-                }
-                try {
-                    //this shouldn't be required, but server sometimes responds with content-type text/plain
-                    body = JSON.parse(body);
-                } catch (e) {}
-
-                var retryAfter = response.headers["retry-after"];
-                var masheryCode = response.headers["x-mashery-error-code"];
-                //in case headers get returned as arrays, we only expect one value
-                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-
-                if (
-                    self.options.handleQuota &&
-                    response.statusCode === 403 &&
-                    retryAfter
-                ) {
-                    if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
-                        //retry
-                        console && console.warn("developer over QPS, retrying");
-                        self.quota.retrying = 1000 * ~~(retryAfter);
-                        setTimeout(function () {
-                            self.quota.retrying = 0;
-                            self.sendRequest(originalOpts, callback);
-                        }, self.quota.retrying);
-
-                    }
-                    if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
-                        error.RATE = true;
-                        callback.call(this, error, response, body);
-                    }
-
-                } else {
-
-                    if (
-                        //Checking for failed auth responses
-                        //(ノಠ益ಠ)ノ彡┻━┻
-                        self.options.onInvalidToken &&
-                        (
-                            response.statusCode === 401 ||
-                            (
-                                response.statusCode === 403 &&
-                                masheryCode === "ERR_403_DEVELOPER_INACTIVE"
-                            )
-                        )
-                    ) {
-                        self.auth.dropToken();
-                        self.options.onInvalidToken();
-                    }
-
-                    callback.call(this, error, response, body);
-                }
-            });
+            var retry = function(){
+                self.sendRequest(originalOpts, self.retryHandler(callback, retry));
+            };
+            return self.requestHandler(opts, self.retryHandler(callback, retry));
         }
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -1100,6 +1047,96 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         }, null);
     }
 
+}
+
+enginePrototypeMethods.retryHandler = function(callback, retry){
+    var self = this;
+    return function (error, response, body) {
+        //emulating the default XHR behavior
+        if (!error && response.statusCode >= 400 && response.statusCode < 600) {
+            error = new Error(body);
+        }
+        try {
+            //this shouldn't be required, but server sometimes responds with content-type text/plain
+            body = JSON.parse(body);
+        } catch (e) {}
+
+        var retryAfter = response.headers["retry-after"];
+        var masheryCode = response.headers["x-mashery-error-code"];
+        //in case headers get returned as arrays, we only expect one value
+        retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+        masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+
+        if (
+            self.options.handleQuota &&
+            response.statusCode === 403 &&
+            retryAfter
+        ) {
+            if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
+                //retry
+                console && console.warn("developer over QPS, retrying");
+                self.quota.retrying = 1000 * ~~(retryAfter);
+                setTimeout(function () {
+                    self.quota.retrying = 0;
+                    retry();
+
+                }, self.quota.retrying);
+
+            }
+            if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
+                error.RATE = true;
+                callback.call(this, error, response, body);
+            }
+
+        } else {
+
+            if (
+                //Checking for failed auth responses
+                //(ノಠ益ಠ)ノ彡┻━┻
+                self.options.onInvalidToken &&
+                (
+                    response.statusCode === 401 ||
+                    (
+                        response.statusCode === 403 &&
+                        masheryCode === "ERR_403_DEVELOPER_INACTIVE"
+                    )
+                )
+            ) {
+                self.auth.dropToken();
+                self.options.onInvalidToken();
+            }
+
+            callback.call(this, error, response, body);
+        }
+    };
+}
+
+enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
+    var defer = promises.defer();
+    var self = this;
+    var requestFunction = function () {
+        
+        try {
+            var req = self.sendRequest(opts);
+            defer.resolve(req);
+        } catch (error) {
+            defer.reject(errorify({
+                error: error
+            }));
+        }
+    }
+    
+    if (!this.options.handleQuota) {
+        requestFunction();
+    } else {
+        //add to queue
+        this.queue.push(requestFunction);
+        //stop previous queue processing if any
+        clearTimeout(this.quota.to);
+        //start queue processing
+        this.queueHandler();
+    }
+    return defer.promise;
 }
 
 enginePrototypeMethods.promiseRequest = function (opts, requestHandler) {
