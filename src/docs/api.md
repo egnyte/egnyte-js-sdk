@@ -232,6 +232,10 @@ API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, re
 API.storage.rename | `path`,  `new path` | alias for move
 API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version
 API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file 
+API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` 
+API.storage.getNote | `node_id` | Resolves to a note object
+API.storage.removeNote | `node_id` | Removes the note
+API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)
 
 ### Storing a file
 

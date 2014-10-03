@@ -1,8 +1,11 @@
 var promises = require("q");
 var helpers = require('../reusables/helpers');
 
-var fsmeta = "/fs";
-var fscontent = "/fs-content";
+var APIROOTS = {
+    fsmeta: "/fs",
+    fscontent: "/fs-content",
+    notes: "/notes"
+};
 
 
 function Storage(requestEngine) {
@@ -16,7 +19,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -47,7 +50,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -69,7 +72,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = opts.qs = { //xhr and request differ here
@@ -93,7 +96,7 @@ storageProto.createFolder = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         return requestEngine.promiseRequest({
             method: "POST",
-            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -125,7 +128,7 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
         newPath = helpers.encodeNameSafe(newPath);
         return requestEngine.promiseRequest({
             method: "POST",
-            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
@@ -143,7 +146,7 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
 
 
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         var file = fileOrBlob;
@@ -151,10 +154,10 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
             body: file,
         }
-        
+
         opts.headers = {};
         if (mimeType) {
             opts.headers["Content-Type"] = mimeType;
@@ -200,7 +203,7 @@ function remove(requestEngine, pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = opts.qs = { //xhr and request differ here
@@ -228,6 +231,70 @@ storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
 storageProto.remove = function (pathFromRoot) {
     return remove(this.requestEngine, pathFromRoot);
 }
+
+storageProto.addNote = function (pathFromRoot, body) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        return requestEngine.promiseRequest({
+            method: "POST",
+            url: requestEngine.getEndpoint() + APIROOTS.notes,
+            json: {
+                "path": pathFromRoot,
+                "body": body,
+            }
+        });
+    }).then(function (result) { //result.response result.body
+        return {
+            id: result.response.headers.location.replace(/^.*\/([^/]+)$/, "$1")
+        };
+    });
+
+}
+storageProto.listNotes = function (pathFromRoot, params) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + APIROOTS.notes
+        };
+
+        //xhr and request differ here
+        opts.params = opts.qs = helpers.extend({
+            "file": encodeURI(pathFromRoot)
+        }, params);
+
+        return requestEngine.promiseRequest(opts);
+    });
+
+}
+
+storageProto.getNote = function (id) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
+        return requestEngine.promiseRequest({
+            method: "POST",
+            url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
+        });
+    });
+
+}
+storageProto.removeNote = function (id) {
+    var requestEngine = this.requestEngine;
+    return promises(true).then(function () {
+        return requestEngine.promiseRequest({
+            method: "DELETE",
+            url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
+        });
+    });
+
+}
+
+
+
+
+
 
 Storage.prototype = storageProto;
 

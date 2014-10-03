@@ -93,6 +93,7 @@ describe("API to JS (integration test)", function () {
 
 
         var recentFileObject;
+        var recentNoteId;
 
         it("Should claim that root exists", function (done) {
             eg.API.storage.exists("/Private").then(function (e) {
@@ -265,8 +266,6 @@ describe("API to JS (integration test)", function () {
             });
         }
 
-        return;
-
 
         it("Can store another version of a file", function (done) {
             var blob = getTestBlob("hey again!");
@@ -325,9 +324,39 @@ describe("API to JS (integration test)", function () {
 
         });
 
+        it("Can add a note to a file", function (done) {
+            var words = "Tradition enforces enforcing tradition";
+            eg.API.storage.addNote(testpath, words)
+                .then(function (result) {
+                    recentNoteId = result.id;
+                    expect(result.id).toBeTruthy();
+                })
+                .then(function () {
+                    return eg.API.storage.getNote(recentNoteId);
+                })
+                .then(function (noteObj) {
+                    expect(noteObj.message).toBe(words);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
+        it("Can delete the note", function (done) {
+            eg.API.storage.removeNote(recentNoteId)
+                .then(function (result) {
+                    expect(result.response.statusCode).toEqual(200);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
+
     });
 
-    return;
 
     describe("Link", function () {
         var recentFile;
