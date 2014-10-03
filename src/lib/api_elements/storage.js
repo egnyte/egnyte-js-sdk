@@ -1,5 +1,6 @@
 var promises = require("q");
 var helpers = require('../reusables/helpers');
+var decorators = require("./decorators");
 
 var APIROOTS = {
     fsmeta: "/fs",
@@ -10,11 +11,13 @@ var APIROOTS = {
 
 function Storage(requestEngine) {
     this.requestEngine = requestEngine;
+    decorators.decorate(this);
 }
 
 var storageProto = {};
 storageProto.exists = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -28,7 +31,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
             };
         }
 
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return true;
@@ -94,13 +97,14 @@ storageProto.createFolder = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
-        });
+        };
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 201) {
             return {
@@ -126,14 +130,15 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
         }
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         newPath = helpers.encodeNameSafe(newPath);
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
             }
-        });
+        };
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return {
@@ -172,7 +177,8 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
-//currently not supported by back-end
+//currently not supported by back - end
+//
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
 //    return promises(true).then(function () {
 //        if (!window.FormData) {
@@ -182,12 +188,12 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 //        var formData = new window.FormData();
 //        formData.append('file', file);
 //        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-//
-//        return api.promiseRequest({
+//        var opts = {
 //            method: "POST",
 //            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
 //            body: formData,
-//        });
+//        };
+//        return api.promiseRequest(opts);
 //    }).then(function (result) { //result.response result.body
 //        return ({
 //            id: result.response.getResponseHeader("etag"),
@@ -236,14 +242,15 @@ storageProto.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + APIROOTS.notes,
             json: {
                 "path": pathFromRoot,
                 "body": body,
             }
-        });
+        };
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return {
             id: result.response.headers.location.replace(/^.*\/([^/]+)$/, "$1")
@@ -273,20 +280,22 @@ storageProto.listNotes = function (pathFromRoot, params) {
 storageProto.getNote = function (id) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
-        });
+        };
+        return requestEngine.promiseRequest(opts);
     });
 
 }
 storageProto.removeNote = function (id) {
     var requestEngine = this.requestEngine;
     return promises(true).then(function () {
-        return requestEngine.promiseRequest({
+        var opts = {
             method: "DELETE",
             url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
-        });
+        };
+        return requestEngine.promiseRequest(opts);
     });
 
 }
