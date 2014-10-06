@@ -2,6 +2,7 @@ var RequestEngine = require("./api_elements/reqengine");
 var AuthEngine = require("./api_elements/auth");
 var StorageFacade = require("./api_elements/storage");
 var LinkFacade = require("./api_elements/link");
+var PermFacade = require("./api_elements/permissions");
 
 
 module.exports = function (options) {
@@ -10,10 +11,12 @@ module.exports = function (options) {
 
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
+    var perms = new PermFacade(requestEngine);
     var api = {
         auth: auth,
         storage: storage,
-        link: link
+        link: link,
+        perms: perms
     };
 
     //onlt in IE8 and IE9

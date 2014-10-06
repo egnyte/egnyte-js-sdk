@@ -26,7 +26,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
         };
 
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -58,7 +58,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         };
 
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -80,7 +80,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
             url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -216,7 +216,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
             url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }

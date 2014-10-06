@@ -545,10 +545,11 @@ module.exports = {
 }
 
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(3);
+var RequestEngine = require(4);
 var AuthEngine = require(1);
-var StorageFacade = require(4);
+var StorageFacade = require(5);
 var LinkFacade = require(2);
+var PermFacade = require(3);
 
 
 module.exports = function (options) {
@@ -557,22 +558,24 @@ module.exports = function (options) {
 
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
+    var perms = new PermFacade(requestEngine);
     var api = {
         auth: auth,
         storage: storage,
-        link: link
+        link: link,
+        perms: perms
     };
 
     //onlt in IE8 and IE9
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(5);
+            var responder = require(6);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(6);
+                var forwarder = require(7);
                 forwarder(options, api);
             }
         }
@@ -582,7 +585,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":12,"2":15,"3":16,"4":17,"5":18,"6":19}],12:[function(require,module,exports){
+},{"1":12,"2":15,"3":16,"4":17,"5":18,"6":19,"7":20}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
@@ -776,10 +779,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":21,"2":22,"3":23,"4":14,"5":20}],13:[function(require,module,exports){
+},{"1":22,"2":23,"3":24,"4":14,"5":21}],13:[function(require,module,exports){
 var helpers = require(1);
 
-var decorators = {
+var defaultDecorators = {
 
     "impersonate": function (opts, data) {
         if (!opts.headers) {
@@ -793,18 +796,29 @@ var decorators = {
 
 module.exports = {
     install: function (self) {
+
+        function exposeDecorators() {
+            helpers.each(self._decorators, function (decor, name) {
+                self[name] = function (data) {
+                    self._decorations[name] = data;
+                    return self;
+                }
+            });
+        }
+
         self._decorations = {};
-        helpers.each(decorators, function (decor, name) {
-            self[name] = function (data) {
-                self._decorations[name] = data;
-                return self;
-            }
-        });
+        self._decorators = helpers.extend({}, defaultDecorators);
+        exposeDecorators();
+
+        self.addDecorator = function (name, action) {
+            self._decorators[name] = action;
+            exposeDecorators();
+        };
         self.getDecorator = function () {
             var decorations = self._decorations;
             self._decorations = {};
             return function (opts) {
-                helpers.each(decorators, function (decor, name) {
+                helpers.each(self._decorators, function (decor, name) {
                     if (decorations[name] !== undefined) {
                         opts = decor(opts, decorations[name]);
                     }
@@ -818,7 +832,7 @@ module.exports = {
     }
 }
 
-},{"1":22}],14:[function(require,module,exports){
+},{"1":23}],14:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -979,7 +993,101 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":22,"2":13,"3":20}],16:[function(require,module,exports){
+},{"1":23,"2":13,"3":21}],16:[function(require,module,exports){
+var promises = require(3);
+var helpers = require(1);
+var decorators = require(2);
+
+
+
+
+var permsEndpointFolder = "/perms/folder";
+
+function Perms(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
+
+    this.addDecorator("users", enlist("users"))
+    this.addDecorator("groups", enlist("groups"))
+
+}
+
+function enlist(what) {
+    return function (opts, data) {
+        switch (opts.method) {
+        case 'GET':
+            opts.params || (opts.params = {});
+            opts.params[what] = data.join("|");
+            break;
+        case 'POST':
+            opts.json[what] = data;
+            break;
+        }
+        return opts;
+    }
+}
+
+
+var permsProto = {};
+
+permsProto.disallow = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "None");
+}
+permsProto.allowView = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Viewer");
+}
+permsProto.allowEdit = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Editor");
+}
+permsProto.allowFullAccess = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Full");
+}
+permsProto.allowOwnership = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Owner");
+}
+
+permsProto.allow = function (pathFromRoot, permission) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+
+    return promises(true)
+        .then(function () {
+            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+            var opts = {
+                method: "POST",
+                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot,
+                json: {
+                    "permission": permission
+                }
+            };
+            return requestEngine.promiseRequest(decorate(opts));
+        }).then(function (result) { //result.response result.body
+            return result.response;
+        });
+};
+
+permsProto.getPerms = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+
+    return promises(true)
+        .then(function () {
+            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+            var opts = {
+                method: "GET",
+                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot
+            };
+            return requestEngine.promiseRequest(decorate(opts));
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+};
+
+
+Perms.prototype = permsProto;
+
+module.exports = Perms;
+},{"1":23,"2":13,"3":21}],17:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1241,7 +1349,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":21,"2":22,"3":23,"4":14,"5":20,"6":3}],17:[function(require,module,exports){
+},{"1":22,"2":23,"3":24,"4":14,"5":21,"6":3}],18:[function(require,module,exports){
 var promises = require(3);
 var helpers = require(1);
 var decorators = require(2);
@@ -1270,7 +1378,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
         };
 
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -1302,7 +1410,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         };
 
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -1324,7 +1432,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
             url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -1460,7 +1568,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
             url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
-            opts.params = opts.qs = { //xhr and request differ here
+            opts.params = {
                 "entry_id": versionEntryId
             };
         }
@@ -1562,7 +1670,7 @@ storageProto.removeNote = function (id) {
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":22,"2":13,"3":20}],18:[function(require,module,exports){
+},{"1":23,"2":13,"3":21}],19:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1624,7 +1732,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":21,"2":22,"3":23}],19:[function(require,module,exports){
+},{"1":22,"2":23,"3":24}],20:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1758,7 +1866,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":21,"2":22,"3":23,"4":20}],20:[function(require,module,exports){
+},{"1":22,"2":23,"3":24,"4":21}],21:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -1789,7 +1897,7 @@ Promises.defer = function () {
 }
 
 module.exports = Promises;
-},{"1":1}],21:[function(require,module,exports){
+},{"1":1}],22:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1859,7 +1967,7 @@ module.exports = {
 
 }
 
-},{"1":2}],22:[function(require,module,exports){
+},{"1":2}],23:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -1893,6 +2001,7 @@ module.exports = {
         return target;
     },
     noop: function () {},
+    id: function (a) {return a},
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
@@ -1915,7 +2024,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -1967,7 +2076,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":22}],24:[function(require,module,exports){
+},{"1":23}],25:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -1998,4 +2107,4 @@ module.exports = {
     }
 
 })();
-},{"1":10,"2":11,"3":22}]},{},[24]);
+},{"1":10,"2":11,"3":23}]},{},[25]);

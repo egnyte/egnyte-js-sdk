@@ -386,6 +386,10 @@ body | If the query happened, error.body contains the body of the response
 
 The "Developer over QPS" error is not returned at all, instead a call is repeated when appropriate.
 
+## Impersonation
+
+//TODO document impersonation
+
 ## Providing your own http request implementation
 
 You can provide a request function as the `httpRequest` option.

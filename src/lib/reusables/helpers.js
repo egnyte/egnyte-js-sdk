@@ -31,6 +31,7 @@ module.exports = {
         return target;
     },
     noop: function () {},
+    id: function (a) {return a},
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
