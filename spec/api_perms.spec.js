@@ -67,7 +67,6 @@ describe("Permissions API facade integration", function () {
             //would be nice to create the user first...
             eg.API.perms.users(["test","banana"]).allowEdit(testpath)
                 .then(function (e) {
-                    console.log(e, e.statusCode, e.body);
                     expect(e.statusCode).toEqual(200); //actually checking if it exists
                     return eg.API.perms.users(["test"]).getPerms(testpath);
                 }).then(function (e) {

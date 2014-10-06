@@ -36,15 +36,52 @@ describe("Impersonation", function () {
         jasmine.getEnv().defaultTimeoutInterval = 20000; //QA API can be laggy
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
-    var recentFileObject;
 
-    it("Should remember impersonation for just one call", function (done) {
-        var storageAPI = eg.API.storage.impersonate("dude");
-        expect(storageAPI._decorations["impersonate"]).toBe('dude');
-        storageAPI.exists("/Private").then(done,done);
-        setTimeout(function(){
-        expect(storageAPI._decorations["impersonate"]).not.toBeTruthy();
-        },1);
+    it("Should maintain impersonation scope", function (done) {
+        var impersonatedStorageAPI = eg.API.storage.impersonate("inexistentdude");
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+        expect(eg.API.storage._decorations).not.toBeDefined();
+        var after = function () {
+            expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+            expect(eg.API.storage._decorations).not.toBeDefined();
+            done();
+        }
+        impersonatedStorageAPI.exists("/Private").then(after, after);
+
+    });
+
+    it("Should extend impersonation scope correctly", function (done) {
+        var impersonatedStorageAPI = eg.API.storage.impersonate("inexistentdude");
+        var reImpersonatedStorageAPI = impersonatedStorageAPI.impersonate("someotherdude");
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+        expect(reImpersonatedStorageAPI._decorations["impersonate"]).toBe('someotherdude');
+        expect(eg.API.storage._decorations).not.toBeDefined();
+        var after = function () {
+            expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+            expect(reImpersonatedStorageAPI._decorations["impersonate"]).toBe('someotherdude');
+            expect(eg.API.storage._decorations).not.toBeDefined();
+            done();
+        }
+        impersonatedStorageAPI.exists("/Private").then(after, after);
+
+    });
+
+    //this actually tests decorators
+    it("Should not collide with other decorators", function (done) {
+        eg.API.storage.addDecorator("fooD", function (opts, data) {
+            expect(data).toBe('barD');
+            return opts;
+        })
+
+        var fooDedStorageAPI = eg.API.storage.fooD("barD");
+        var impersonatedStorageAPI = fooDedStorageAPI.impersonate("inexistentdude");
+        var anotherLayerOhNo = impersonatedStorageAPI.fooD("bazD");
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+        expect(impersonatedStorageAPI._decorations["fooD"]).toBe('barD');
+        expect(fooDedStorageAPI._decorations["impersonate"]).not.toBe('inexistentdude');
+        expect(fooDedStorageAPI._decorations["fooD"]).toBe('barD');
+        
+        done();
 
     });
 
@@ -57,5 +94,5 @@ describe("Impersonation", function () {
 
     });
 
-    
+
 });

@@ -794,37 +794,47 @@ var defaultDecorators = {
 
 }
 
+
+
+function getDecorator() {
+    var self = this;
+    return function (opts) {
+        helpers.each(self._decorators, function (decor, name) {
+            if (self._decorations[name] !== undefined) {
+                opts = decor(opts, self._decorations[name]);
+            }
+        });
+        return opts;
+    }
+}
+
 module.exports = {
     install: function (self) {
 
-        function exposeDecorators() {
-            helpers.each(self._decorators, function (decor, name) {
-                self[name] = function (data) {
-                    self._decorations[name] = data;
-                    return self;
+        function exposeDecorators(that) {
+            helpers.each(that._decorators, function (decor, name) {
+                that[name] = function (data) {
+                    var Decorated = function () {};
+                    Decorated.prototype = this;
+                    Decorated.prototype.getDecorator = getDecorator;
+                    var instance = new Decorated;
+                    instance._decorations = helpers.extend({}, this._decorations)
+                    instance._decorations[name] = data;
+                    exposeDecorators(instance);
+                    return instance;
                 }
             });
         }
 
-        self._decorations = {};
         self._decorators = helpers.extend({}, defaultDecorators);
-        exposeDecorators();
+        exposeDecorators(self);
 
         self.addDecorator = function (name, action) {
-            self._decorators[name] = action;
-            exposeDecorators();
+            this._decorators[name] = action;
+            exposeDecorators(this);
         };
         self.getDecorator = function () {
-            var decorations = self._decorations;
-            self._decorations = {};
-            return function (opts) {
-                helpers.each(self._decorators, function (decor, name) {
-                    if (decorations[name] !== undefined) {
-                        opts = decor(opts, decorations[name]);
-                    }
-                });
-                return opts;
-            }
+            return helpers.id;
         }
 
 
