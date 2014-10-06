@@ -819,7 +819,7 @@ var decorators = {
 }
 
 module.exports = {
-    decorate: function (self) {
+    install: function (self) {
         self._decorations = {};
         helpers.each(decorators, function (decor, name) {
             self[name] = function (data) {
@@ -832,7 +832,9 @@ module.exports = {
             self._decorations = {};
             return function (opts) {
                 helpers.each(decorators, function (decor, name) {
-                    opts = decor(opts, decorations[name]);
+                    if (decorations[name] !== undefined) {
+                        opts = decor(opts, decorations[name]);
+                    }
                 });
                 return opts;
             }
@@ -906,8 +908,10 @@ module.exports = function (result) {
 }
 
 },{}],16:[function(require,module,exports){
-var promises = require(2);
+var promises = require(3);
 var helpers = require(1);
+var decorators = require(2);
+
 
 
 
@@ -915,12 +919,14 @@ var linksEndpoint = "/links";
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
+    decorators.install(this);
 }
 
 var linksProto = {};
 
-linksProto.createLink = function(setup) {
+linksProto.createLink = function (setup) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     var defaults = {
         path: null,
         type: "file",
@@ -935,56 +941,59 @@ linksProto.createLink = function(setup) {
                 throw new Error("Path attribute missing or incorrect");
             }
 
-            return requestEngine.promiseRequest({
+            return requestEngine.promiseRequest(decorate({
                 method: "POST",
                 url: requestEngine.getEndpoint() + linksEndpoint,
                 json: setup
-            });
+            }));
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
 
-linksProto.removeLink = function(id) {
+linksProto.removeLink = function (id) {
     var requestEngine = this.requestEngine;
-    return requestEngine.promiseRequest({
+    var decorate = this.getDecorator();
+    return requestEngine.promiseRequest(decorate({
         method: "DELETE",
         url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
-    }).then(function (result) { //result.response result.body
+    })).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-linksProto.listLink = function(id) {
+linksProto.listLink = function (id) {
     var requestEngine = this.requestEngine;
-    return requestEngine.promiseRequest({
+    var decorate = this.getDecorator();
+    return requestEngine.promiseRequest(decorate({
         method: "GET",
         url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
-    }).then(function (result) { //result.response result.body
+    })).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
 
-linksProto.listLinks = function(filters) {
+linksProto.listLinks = function (filters) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true)
         .then(function () {
             filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-            return requestEngine.promiseRequest({
+            return requestEngine.promiseRequest(decorate({
                 method: "get",
                 url: requestEngine.getEndpoint() + linksEndpoint,
                 params: filters
-            });
+            }));
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
-linksProto.findOne = function(filters) {
-    var self=this;
+linksProto.findOne = function (filters) {
+    var self = this;
     return self.listLinks(filters).then(function (list) {
         if (list.ids && list.ids.length > 0) {
             return self.listLink(list.ids[0]);
@@ -997,7 +1006,7 @@ linksProto.findOne = function(filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":30,"2":28}],17:[function(require,module,exports){
+},{"1":30,"2":14,"3":28}],17:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1273,7 +1282,7 @@ var APIROOTS = {
 
 function Storage(requestEngine) {
     this.requestEngine = requestEngine;
-    decorators.decorate(this);
+    decorators.install(this);
 }
 
 var storageProto = {};
@@ -1311,6 +1320,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
 
 storageProto.get = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -1324,7 +1334,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
             };
         }
 
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return result.body;
     });
@@ -1332,6 +1342,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
 
 storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
@@ -1349,7 +1360,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
             opts.responseType = "arraybuffer";
         }
 
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return result.response;
     });
@@ -1357,6 +1368,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
 storageProto.createFolder = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -1366,7 +1378,7 @@ storageProto.createFolder = function (pathFromRoot) {
                 "action": "add_folder"
             }
         };
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 201) {
             return {
@@ -1378,14 +1390,14 @@ storageProto.createFolder = function (pathFromRoot) {
 }
 
 storageProto.move = storageProto.rename = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, pathFromRoot, newPath, "move");
+    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "move");
 }
 
 storageProto.copy = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, pathFromRoot, newPath, "copy");
+    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "copy");
 }
 
-function transfer(requestEngine, pathFromRoot, newPath, action) {
+function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
@@ -1400,7 +1412,7 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
                 "destination": "/" + newPath,
             }
         };
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return {
@@ -1415,6 +1427,7 @@ function transfer(requestEngine, pathFromRoot, newPath, action) {
 
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
@@ -1430,7 +1443,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
             opts.headers["Content-Type"] = mimeType;
         }
 
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
@@ -1455,7 +1468,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 //            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
 //            body: formData,
 //        };
-//        return api.promiseRequest(opts);
+//        return api.promiseRequest(decorate(opts));
 //    }).then(function (result) { //result.response result.body
 //        return ({
 //            id: result.response.getResponseHeader("etag"),
@@ -1466,7 +1479,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
 
 //private
-function remove(requestEngine, pathFromRoot, versionEntryId) {
+function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
@@ -1478,7 +1491,7 @@ function remove(requestEngine, pathFromRoot, versionEntryId) {
                 "entry_id": versionEntryId
             };
         }
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
 
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
@@ -1487,21 +1500,24 @@ function remove(requestEngine, pathFromRoot, versionEntryId) {
 
 storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(requestEngine, pathFromRoot, versionEntryId)
+        return remove(requestEngine, decorate, pathFromRoot, versionEntryId)
     });
 }
 
 
 storageProto.remove = function (pathFromRoot) {
-    return remove(this.requestEngine, pathFromRoot);
+    var decorate = this.getDecorator();
+    return remove(this.requestEngine, decorate, pathFromRoot);
 }
 
 storageProto.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -1512,7 +1528,7 @@ storageProto.addNote = function (pathFromRoot, body) {
                 "body": body,
             }
         };
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return {
             id: result.response.headers.location.replace(/^.*\/([^/]+)$/, "$1")
@@ -1522,6 +1538,7 @@ storageProto.addNote = function (pathFromRoot, body) {
 }
 storageProto.listNotes = function (pathFromRoot, params) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -1534,30 +1551,32 @@ storageProto.listNotes = function (pathFromRoot, params) {
             "file": encodeURI(pathFromRoot)
         }, params);
 
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     });
 
 }
 
 storageProto.getNote = function (id) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
         };
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     });
 
 }
 storageProto.removeNote = function (id) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         var opts = {
             method: "DELETE",
             url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
         };
-        return requestEngine.promiseRequest(opts);
+        return requestEngine.promiseRequest(decorate(opts));
     });
 
 }

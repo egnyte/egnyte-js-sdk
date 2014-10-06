@@ -1,5 +1,7 @@
 var promises = require("q");
 var helpers = require('../reusables/helpers');
+var decorators = require("./decorators");
+
 
 
 
@@ -7,12 +9,14 @@ var linksEndpoint = "/links";
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
+    decorators.install(this);
 }
 
 var linksProto = {};
 
-linksProto.createLink = function(setup) {
+linksProto.createLink = function (setup) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     var defaults = {
         path: null,
         type: "file",
@@ -27,56 +31,59 @@ linksProto.createLink = function(setup) {
                 throw new Error("Path attribute missing or incorrect");
             }
 
-            return requestEngine.promiseRequest({
+            return requestEngine.promiseRequest(decorate({
                 method: "POST",
                 url: requestEngine.getEndpoint() + linksEndpoint,
                 json: setup
-            });
+            }));
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
 
-linksProto.removeLink = function(id) {
+linksProto.removeLink = function (id) {
     var requestEngine = this.requestEngine;
-    return requestEngine.promiseRequest({
+    var decorate = this.getDecorator();
+    return requestEngine.promiseRequest(decorate({
         method: "DELETE",
         url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
-    }).then(function (result) { //result.response result.body
+    })).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-linksProto.listLink = function(id) {
+linksProto.listLink = function (id) {
     var requestEngine = this.requestEngine;
-    return requestEngine.promiseRequest({
+    var decorate = this.getDecorator();
+    return requestEngine.promiseRequest(decorate({
         method: "GET",
         url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
-    }).then(function (result) { //result.response result.body
+    })).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
 
-linksProto.listLinks = function(filters) {
+linksProto.listLinks = function (filters) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true)
         .then(function () {
             filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-            return requestEngine.promiseRequest({
+            return requestEngine.promiseRequest(decorate({
                 method: "get",
                 url: requestEngine.getEndpoint() + linksEndpoint,
                 params: filters
-            });
+            }));
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
-linksProto.findOne = function(filters) {
-    var self=this;
+linksProto.findOne = function (filters) {
+    var self = this;
     return self.listLinks(filters).then(function (list) {
         if (list.ids && list.ids.length > 0) {
             return self.listLink(list.ids[0]);

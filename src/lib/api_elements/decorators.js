@@ -13,7 +13,7 @@ var decorators = {
 }
 
 module.exports = {
-    decorate: function (self) {
+    install: function (self) {
         self._decorations = {};
         helpers.each(decorators, function (decor, name) {
             self[name] = function (data) {
@@ -26,7 +26,9 @@ module.exports = {
             self._decorations = {};
             return function (opts) {
                 helpers.each(decorators, function (decor, name) {
-                    opts = decor(opts, decorations[name]);
+                    if (decorations[name] !== undefined) {
+                        opts = decor(opts, decorations[name]);
+                    }
                 });
                 return opts;
             }

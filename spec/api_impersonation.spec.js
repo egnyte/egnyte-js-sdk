@@ -38,7 +38,7 @@ describe("Impersonation", function () {
     });
     var recentFileObject;
 
-    it("Should store impersonation for just one call", function (done) {
+    it("Should remember impersonation for just one call", function (done) {
         var storageAPI = eg.API.storage.impersonate("dude");
         expect(storageAPI._decorations["impersonate"]).toBe('dude');
         storageAPI.exists("/Private").then(done,done);
@@ -49,12 +49,9 @@ describe("Impersonation", function () {
     });
 
     it("Should add a header to the call", function (done) {
-        eg.API.storage.impersonate("dude").exists("/Private")
-            .then(function (resp) {
-                console.log(resp);
-                done();
-            }).fail(function (e) {
-                expect(this).toAutoFail(e);
+        eg.API.storage.impersonate("inexistentdude").exists("/Private")
+            .fail(function (e) {
+                expect(e.statusCode).toEqual(400);
                 done();
             });
 

@@ -2,15 +2,18 @@ var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
 
+
 var fscontent = "/fs-content";
 
 function StreamsExtendedStorage() {
     StreamsExtendedStorage.super_.apply(this, arguments);
+    //already has a decorator
 };
 
 
 function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional*/ ) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
@@ -26,7 +29,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
             opts.headers["Content-Type"] = mimeType;
         }
 
-        return requestEngine.promiseRequest(opts, function (req) {
+        return requestEngine.promiseRequest(decorate(opts), function (req) {
                 stream.pipe(req);
             })
             .then(function (result) { //result.response result.body
@@ -40,6 +43,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
 
 function getFileStream(pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
     pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
     var defer = promises.defer();
 
@@ -58,7 +62,7 @@ function getFileStream(pathFromRoot, versionEntryId) {
     }
 
     function oneTry() {
-        requestEngine.retrieveStreamFromRequest(opts)
+        requestEngine.retrieveStreamFromRequest(decorate(opts))
             .then(function (requestObject) {
                 requestObject.pause();
                 requestObject.on('response', function (resp) {
