@@ -34,8 +34,8 @@ module.exports = {
                 that[name] = function (data) {
                     var Decorated = function () {};
                     Decorated.prototype = this;
-                    Decorated.prototype.getDecorator = getDecorator;
                     var instance = new Decorated;
+                    instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
                     instance._decorations[name] = data;
                     exposeDecorators(instance);

@@ -47,7 +47,7 @@ describe("Permissions API facade integration", function () {
     describe("Permissions methods", function () {
 
         it("Needs a folder to set permissions to", function (done) {
-            eg.API.storage.get("/Private")
+            eg.API.storage.get("/Shared")
                 .then(function (e) {
                     expect(e["folders"]).toBeDefined();
                     //this test suite has unicorns and bacon, it can't get any better/
@@ -65,7 +65,7 @@ describe("Permissions API facade integration", function () {
 
         it("Can set basic permissions", function (done) {
             //would be nice to create the user first...
-            eg.API.perms.users(["test","banana"]).allowEdit(testpath)
+            eg.API.perms.users(["test", "banana"]).allowEdit(testpath)
                 .then(function (e) {
                     expect(e.statusCode).toEqual(200); //actually checking if it exists
                     return eg.API.perms.users(["test"]).getPerms(testpath);

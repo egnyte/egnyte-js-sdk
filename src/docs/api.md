@@ -373,6 +373,91 @@ _Example response to listLinks_
 ```
 
 
+
+## Permissions API helpers
+
+All API helpers return promises.
+
+All the methods below can be scoped to users or groups.
+
+Method | Arguments | Description
+--- | --- | ---
+API.perms.users| `users[]` | Returns `API.perms` instance scoped to a certain set of users.
+API.perms.groups| `groups[]` | Returns `API.perms` instance scoped to a certain set of groups.
+API.perms.allow | `folderPath`, `accessLevel` | Sets certain permissions on the given folder for the users/groups it's scoped to. Second argument is one of "None", "Viewer", "Editor", "Full", "Owner"
+API.perms.disallow| `folderPath` | Sets permissions on the given folder to "None"  for the users/groups it's scoped to.
+API.perms.allowView| `folderPath` | Sets permissions on the given folder to "Viewer" for the users/groups it's scoped to.
+API.perms.allowEdit| `folderPath` | Sets permissions on the given folder to "Editor" for the users/groups it's scoped to.
+API.perms.allowFullAccess| `folderPath` | Sets permissions on the given folder to "Full" for the users/groups it's scoped to.
+API.perms.allowOwnership| `folderPath` | Sets permissions on the given folder to "Owner" for the users/groups it's scoped to.
+API.perms.getPerms| `folderPath` | Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.
+
+
+### Setting permissions for users and groups
+ 
+Scoping to users and groups can be merged 
+ 
+```javascript
+egnyte.API.perms.users(["tommy","margaret"]).groups("All Power Users").allowEdit("/Shared/marketing/events")
+       
+```
+
+Scoping again will override the previous setting, so the example below will only set permissions for "andy".
+
+```javascript
+egnyte.API.perms.users(["tommy","margaret"]).users(["andy"]).allowEdit("/Shared/marketing/events")
+       
+```
+
+### Getting permissions for users and groups
+
+All permissions for folder:
+ 
+```javascript
+egnyte.API.perms.getPerms("/Shared/marketing/events")
+       
+```
+Returns
+```
+{
+    "users": [{
+            "subject": "admin",
+            "permission": "Owner"
+        }, {
+            "subject": "tommy",
+            "permission": "Editor"
+        }, {
+            "subject": "margaret",
+            "permission": "Editor"
+        }],
+    "groups": [{
+            "subject": "All Power Users",
+            "permission": "Editor"
+        }]
+}
+
+```
+
+FIltered permissions information:
+
+
+```javascript
+egnyte.API.perms.users(["tommy"]).getPerms("/Shared/marketing/events")
+       
+```
+Returns
+```
+{
+    "users": [{
+            "subject": "tommy",
+            "permission": "Editor"
+        }],
+    "groups": []
+}
+
+```
+
+
 ## Error handling
 
 All errors are returned in common format of a JavaScript error enhanced with additional fields
@@ -388,7 +473,20 @@ The "Developer over QPS" error is not returned at all, instead a call is repeate
 
 ## Impersonation
 
-//TODO document impersonation
+Egnyte Public API accepts a `X-Egnyte-Act-As` header that can be set to perform an action on behalf of another user (if you are an admin). 
+Every method call to `egnyte.API.*` can be preceded by impersonation like so:
+
+```javascript
+egnyte.API.link.impersonate("username").createLink(...
+```
+
+You can store an impersonated facade to use multiple times or pass it along to other components that don't need to have access to username, but need to perform on behalf of that user.
+
+```javascript
+var impersonatedStorage = egnyte.API.storage.impersonate("username");
+
+impersonatedStorage.exists("/path...");
+```
 
 ## Providing your own http request implementation
 
