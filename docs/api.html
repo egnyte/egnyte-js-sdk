@@ -713,7 +713,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
             &quot;permission&quot;: &quot;Editor&quot;
         }]
 }</code></pre>
-<p>FIltered permissions information:</p>
+<p>Filtered permissions information:</p>
 <pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).getPerms(&quot;/Shared/marketing/events&quot;)</code></pre>
 <p>Returns</p>
 <pre><code>{
@@ -755,9 +755,10 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <h2 id="impersonation">Impersonation</h2>
 <p>Egnyte Public API accepts a <code>X-Egnyte-Act-As</code> header that can be set to perform an action on behalf of another user (if you are an admin). 
 Every method call to <code>egnyte.API.*</code> can be preceded by impersonation like so:</p>
-<pre><code class="lang-javascript">egnyte.API.link.impersonate(&quot;username&quot;).createLink(...</code></pre>
+<pre><code class="lang-javascript">egnyte.API.link.impersonate({username:&quot;username&quot;}).createLink(...
+egnyte.API.link.impersonate({email:&quot;username@example.com&quot;}).createLink(...</code></pre>
 <p>You can store an impersonated facade to use multiple times or pass it along to other components that don&#39;t need to have access to username, but need to perform on behalf of that user.</p>
-<pre><code class="lang-javascript">var impersonatedStorage = egnyte.API.storage.impersonate(&quot;username&quot;);
+<pre><code class="lang-javascript">var impersonatedStorage = egnyte.API.storage.impersonate({username:&quot;username&quot;});
 
 impersonatedStorage.exists(&quot;/path...&quot;);</code></pre>
 <h2 id="providing-your-own-http-request-implementation">Providing your own http request implementation</h2>

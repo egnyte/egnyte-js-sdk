@@ -38,11 +38,17 @@ describe("Impersonation", function () {
     });
 
     it("Should maintain impersonation scope", function (done) {
-        var impersonatedStorageAPI = eg.API.storage.impersonate("inexistentdude");
-        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+        var impersonatedStorageAPI = eg.API.storage.impersonate({
+            username: "inexistentdude"
+        });
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toEqual({
+            username: "inexistentdude"
+        });
         expect(eg.API.storage._decorations).not.toBeDefined();
         var after = function () {
-            expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+            expect(impersonatedStorageAPI._decorations["impersonate"]).toEqual({
+                username: "inexistentdude"
+            });
             expect(eg.API.storage._decorations).not.toBeDefined();
             done();
         }
@@ -51,14 +57,26 @@ describe("Impersonation", function () {
     });
 
     it("Should extend impersonation scope correctly", function (done) {
-        var impersonatedStorageAPI = eg.API.storage.impersonate("inexistentdude");
-        var reImpersonatedStorageAPI = impersonatedStorageAPI.impersonate("someotherdude");
-        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
-        expect(reImpersonatedStorageAPI._decorations["impersonate"]).toBe('someotherdude');
+        var impersonatedStorageAPI = eg.API.storage.impersonate({
+            username: "inexistentdude"
+        });
+        var reImpersonatedStorageAPI = impersonatedStorageAPI.impersonate({
+            username: "someotherdude"
+        });
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toEqual({
+            username: "inexistentdude"
+        });
+        expect(reImpersonatedStorageAPI._decorations["impersonate"]).toEqual({
+            username: "someotherdude"
+        });
         expect(eg.API.storage._decorations).not.toBeDefined();
         var after = function () {
-            expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
-            expect(reImpersonatedStorageAPI._decorations["impersonate"]).toBe('someotherdude');
+            expect(impersonatedStorageAPI._decorations["impersonate"]).toEqual({
+                username: "inexistentdude"
+            });
+            expect(reImpersonatedStorageAPI._decorations["impersonate"]).toEqual({
+                username: "someotherdude"
+            });
             expect(eg.API.storage._decorations).not.toBeDefined();
             done();
         }
@@ -74,19 +92,27 @@ describe("Impersonation", function () {
         })
 
         var fooDedStorageAPI = eg.API.storage.fooD("barD");
-        var impersonatedStorageAPI = fooDedStorageAPI.impersonate("inexistentdude");
+        var impersonatedStorageAPI = fooDedStorageAPI.impersonate({
+            username: "inexistentdude"
+        });
         var anotherLayerOhNo = impersonatedStorageAPI.fooD("bazD");
-        expect(impersonatedStorageAPI._decorations["impersonate"]).toBe('inexistentdude');
+        expect(impersonatedStorageAPI._decorations["impersonate"]).toEqual({
+            username: "inexistentdude"
+        });
         expect(impersonatedStorageAPI._decorations["fooD"]).toBe('barD');
-        expect(fooDedStorageAPI._decorations["impersonate"]).not.toBe('inexistentdude');
+        expect(fooDedStorageAPI._decorations["impersonate"]).not.toEqual({
+            username: "inexistentdude"
+        });
         expect(fooDedStorageAPI._decorations["fooD"]).toBe('barD');
-        
+
         done();
 
     });
 
     it("Should add a header to the call", function (done) {
-        eg.API.storage.impersonate("inexistentdude").exists("/Private")
+        eg.API.storage.impersonate({
+            username: "inexistentdude"
+        }).exists("/Private")
             .fail(function (e) {
                 expect(e.statusCode).toEqual(400);
                 done();

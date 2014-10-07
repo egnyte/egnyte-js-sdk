@@ -438,7 +438,7 @@ Returns
 
 ```
 
-FIltered permissions information:
+Filtered permissions information:
 
 
 ```javascript
@@ -477,13 +477,14 @@ Egnyte Public API accepts a `X-Egnyte-Act-As` header that can be set to perform 
 Every method call to `egnyte.API.*` can be preceded by impersonation like so:
 
 ```javascript
-egnyte.API.link.impersonate("username").createLink(...
+egnyte.API.link.impersonate({username:"username"}).createLink(...
+egnyte.API.link.impersonate({email:"username@example.com"}).createLink(...
 ```
 
 You can store an impersonated facade to use multiple times or pass it along to other components that don't need to have access to username, but need to perform on behalf of that user.
 
 ```javascript
-var impersonatedStorage = egnyte.API.storage.impersonate("username");
+var impersonatedStorage = egnyte.API.storage.impersonate({username:"username"});
 
 impersonatedStorage.exists("/path...");
 ```

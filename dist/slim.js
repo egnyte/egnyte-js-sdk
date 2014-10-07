@@ -788,7 +788,12 @@ var defaultDecorators = {
         if (!opts.headers) {
             opts.headers = {}
         }
-        opts.headers["X-Egnyte-Act-As"] = data;
+        if (data.username) {
+            opts.headers["X-Egnyte-Act-As"] = data.username;
+        }
+        if (data.email) {
+            opts.headers["X-Egnyte-Act-As-Email"] = data.email;
+        }
         return opts;
     }
 
