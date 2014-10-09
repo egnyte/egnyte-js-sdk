@@ -690,7 +690,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </table>
 <h3 id="setting-permissions-for-users-and-groups">Setting permissions for users and groups</h3>
 <p>Scoping to users and groups can be merged </p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups(&quot;All Power Users&quot;).allowEdit(&quot;/Shared/marketing/events&quot;)</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).allowEdit(&quot;/Shared/marketing/events&quot;)</code></pre>
 <p>Scoping again will override the previous setting, so the example below will only set permissions for &quot;andy&quot;.</p>
 <pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).allowEdit(&quot;/Shared/marketing/events&quot;)</code></pre>
 <h3 id="getting-permissions-for-users-and-groups">Getting permissions for users and groups</h3>

@@ -398,7 +398,7 @@ API.perms.getPerms| `folderPath` | Resolves to a permissions object of the folde
 Scoping to users and groups can be merged 
  
 ```javascript
-egnyte.API.perms.users(["tommy","margaret"]).groups("All Power Users").allowEdit("/Shared/marketing/events")
+egnyte.API.perms.users(["tommy","margaret"]).groups(["All Power Users"]).allowEdit("/Shared/marketing/events")
        
 ```
 
