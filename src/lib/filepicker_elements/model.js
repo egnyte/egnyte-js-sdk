@@ -14,7 +14,7 @@ function Item(data, parent) {
         this.ext = "";
         this.mime = "unknown"
     }
-    this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder));
+    this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
     this.parent = parent;
     this.isCurrent = false;
 }
@@ -44,8 +44,8 @@ function Model(API, opts) {
     this.API = API;
     this.page = 1;
     this.pageSize = 200;
-    
-    if(opts.filterExtensions){
+
+    if (opts.filterExtensions) {
         this.fileFilter = exts.getExtensionFilter(opts.filterExtensions);
     }
     // no defaults needed
@@ -70,11 +70,13 @@ Model.prototype._set = function (m) {
     //ignore files if they're not selectable
     if (this.opts.select.file) {
         helpers.each(m.files, function (f) {
-            if(!self.fileFilter || self.fileFilter(f)){
+            if (!self.fileFilter || self.fileFilter(f)) {
                 self.rawItems.push(f);
             }
         });
     }
+    //force disabled selection on root
+    this.forbidSelection = !(-1 === this.opts.select.forbidden.indexOf(this.path));
     this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
     this.isMultiselectable = (this.opts.select.multiple);
     this._buildItems();

@@ -36,7 +36,8 @@ The options are:
  select: {
    folder: true, //should folders be selectable
    file: true,   //should files be selectable (files are hidden when not selectable)
-   multiple: true   //should allow multiselection
+   multiple: true,   //should allow multiselection
+   forbidden: []  //array of folder paths that selection is forbidden in
  }
  ```
  - `texts` _Map_ of labels in the filepicker to replace with given replacements, optional

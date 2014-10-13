@@ -1618,8 +1618,11 @@ storageProto.addNote = function (pathFromRoot, body) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
+            headers: {
+                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
+            },
             url: requestEngine.getEndpoint() + APIROOTS.notes,
-            json: {
+            body: {
                 "path": pathFromRoot,
                 "body": body,
             }
@@ -1670,7 +1673,7 @@ storageProto.removeNote = function (id) {
     return promises(true).then(function () {
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
+            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
         };
         return requestEngine.promiseRequest(decorate(opts));
     });

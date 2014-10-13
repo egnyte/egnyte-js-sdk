@@ -20,7 +20,8 @@
                 defaults = {
                     folder: true,
                     file: true,
-                    multiple: true
+                    multiple: true,
+                    forbidden: []
                 };
             var selectOpts = helpers.extend(defaults, setup.select);
 

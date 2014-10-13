@@ -94,7 +94,8 @@
 <li><code>select</code> <em>Map</em> of selectables configuration<pre><code class="lang-javascript">select: {
 folder: true, //should folders be selectable
 file: true,   //should files be selectable (files are hidden when not selectable)
-multiple: true   //should allow multiselection
+multiple: true,   //should allow multiselection
+forbidden: []  //array of folder paths that selection is forbidden in
 }</code></pre>
 </li>
 <li><p><code>texts</code> <em>Map</em> of labels in the filepicker to replace with given replacements, optional</p>
