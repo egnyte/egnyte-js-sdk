@@ -1649,15 +1649,15 @@ storageProto.addNote = function (pathFromRoot, body) {
                 "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
             },
             url: requestEngine.getEndpoint() + APIROOTS.notes,
-            body: {
+            body: JSON.stringify({
                 "path": pathFromRoot,
                 "body": body,
-            }
+            })
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return {
-            id: result.response.headers.location.replace(/^.*\/([^/]+)$/, "$1")
+            id: result.body.id
         };
     });
 
@@ -1673,11 +1673,13 @@ storageProto.listNotes = function (pathFromRoot, params) {
         };
 
         //xhr and request differ here
-        opts.params = opts.qs = helpers.extend({
+        opts.params = helpers.extend({
             "file": encodeURI(pathFromRoot)
         }, params);
 
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
+            return result.body;
+        });
     });
 
 }
@@ -1687,10 +1689,12 @@ storageProto.getNote = function (id) {
     var decorate = this.getDecorator();
     return promises(true).then(function () {
         var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + encodeURI(id)
+            method: "GET",
+            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
         };
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
+            return result.body;
+        });
     });
 
 }

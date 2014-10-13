@@ -309,20 +309,6 @@ describe("Storage API facade integration", function () {
 
         });
 
-        it("Can remove a stored file", function (done) {
-            eg.API.storage.remove(testpath)
-                .then(function () {
-                    return eg.API.storage.exists(testpath);
-                })
-                .then(function (e) {
-                    expect(e).toBe(false);
-                    done();
-                }).fail(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                });
-
-        });
 
         it("Can add a note to a file", function (done) {
             var words = "Tradition enforces enforcing tradition";
@@ -330,6 +316,7 @@ describe("Storage API facade integration", function () {
                 .then(function (result) {
                     recentNoteId = result.id;
                     expect(result.id).toBeTruthy();
+                    return eg.API.storage.addNote(testpath, words); //adding another one for funzies
                 })
                 .then(function () {
                     return eg.API.storage.getNote(recentNoteId);
@@ -343,10 +330,41 @@ describe("Storage API facade integration", function () {
                 });
 
         });
+
+//        it("Can list notes", function (done) {
+//            eg.API.storage.listNotes(testpath, {
+//                count: 1,
+//                offset: 1
+//            })
+//                .then(function (result) {
+//                    console.log(result);
+//                    done();
+//                }).fail(function (e) {
+//                    expect(this).toAutoFail(e);
+//                    done();
+//                });
+//
+//        });
+
         it("Can delete the note", function (done) {
             eg.API.storage.removeNote(recentNoteId)
                 .then(function (result) {
                     expect(result.response.statusCode).toEqual(200);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
+
+        it("Can remove a stored file", function (done) {
+            eg.API.storage.remove(testpath)
+                .then(function () {
+                    return eg.API.storage.exists(testpath);
+                })
+                .then(function (e) {
+                    expect(e).toBe(false);
                     done();
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);
