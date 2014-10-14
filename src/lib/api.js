@@ -1,7 +1,7 @@
 var RequestEngine = require("./api_elements/reqengine");
 var AuthEngine = require("./api_elements/auth");
 var StorageFacade = require("./api_elements/storage");
-var streamsExtension = require("./api_elements/storage-streams-node");
+var streamsExtension = require("./api_elements/storageStreamsNode");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
 

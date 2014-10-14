@@ -1,6 +1,7 @@
 {
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
+    "fschunked": "/fs-content-chunked",
     "notes": "/notes",
     "links": "/links",
     "perms":"/perms/folder",
