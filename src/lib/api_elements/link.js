@@ -2,10 +2,7 @@ var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
 
-
-
-
-var linksEndpoint = "/links";
+var ENDPOINTS_links = require("../enum/endpoints").links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -33,7 +30,7 @@ linksProto.createLink = function (setup) {
 
             return requestEngine.promiseRequest(decorate({
                 method: "POST",
-                url: requestEngine.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + ENDPOINTS_links,
                 json: setup
             }));
         }).then(function (result) { //result.response result.body
@@ -47,7 +44,7 @@ linksProto.removeLink = function (id) {
     var decorate = this.getDecorator();
     return requestEngine.promiseRequest(decorate({
         method: "DELETE",
-        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
     })).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
@@ -58,7 +55,7 @@ linksProto.listLink = function (id) {
     var decorate = this.getDecorator();
     return requestEngine.promiseRequest(decorate({
         method: "GET",
-        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
     })).then(function (result) { //result.response result.body
         return result.body;
     });
@@ -74,7 +71,7 @@ linksProto.listLinks = function (filters) {
 
             return requestEngine.promiseRequest(decorate({
                 method: "get",
-                url: requestEngine.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + ENDPOINTS_links,
                 params: filters
             }));
         }).then(function (result) { //result.response result.body

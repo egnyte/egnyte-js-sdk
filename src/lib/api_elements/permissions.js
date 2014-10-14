@@ -2,10 +2,7 @@ var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
 
-
-
-
-var permsEndpointFolder = "/perms/folder";
+var ENDPOINTS_perms = require("../enum/endpoints").perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -59,7 +56,7 @@ permsProto.allow = function (pathFromRoot, permission) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
                 json: {
                     "permission": permission
                 }
@@ -79,7 +76,7 @@ permsProto.getPerms = function (pathFromRoot) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body

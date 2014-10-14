@@ -1,12 +1,9 @@
 var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
+var notes = require("./notes");
 
-var APIROOTS = {
-    fsmeta: "/fs",
-    fscontent: "/fs-content",
-    notes: "/notes"
-};
+var ENDPOINTS = require("../enum/endpoints");
 
 
 function Storage(requestEngine) {
@@ -22,7 +19,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -54,7 +51,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -77,7 +74,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = {
@@ -102,7 +99,7 @@ storageProto.createFolder = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -135,7 +132,7 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
@@ -163,7 +160,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
             body: file,
         }
 
@@ -213,7 +210,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
@@ -244,83 +241,7 @@ storageProto.remove = function (pathFromRoot) {
     return remove(this.requestEngine, decorate, pathFromRoot);
 }
 
-storageProto.addNote = function (pathFromRoot, body) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "POST",
-            headers: {
-                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-            },
-            url: requestEngine.getEndpoint() + APIROOTS.notes,
-            body: JSON.stringify({
-                "path": pathFromRoot,
-                "body": body,
-            })
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return {
-            id: result.body.id
-        };
-    });
-
-}
-storageProto.listNotes = function (pathFromRoot, params) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.notes
-        };
-
-        //xhr and request differ here
-        opts.params = helpers.extend({
-            "file": encodeURI(pathFromRoot)
-        }, params);
-
-        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
-            return result.body;
-        });
-    });
-
-}
-
-storageProto.getNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
-            return result.body;
-        });
-    });
-
-}
-storageProto.removeNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "DELETE",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    });
-
-}
-
-
-
-
-
+storageProto = helpers.extend(storageProto,notes);
 
 Storage.prototype = storageProto;
 

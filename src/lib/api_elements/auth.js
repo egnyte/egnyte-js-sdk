@@ -9,7 +9,7 @@ var messages = require('../reusables/messages');
 var errorify = require("./errorify");
 
 
-
+var ENDPOINTS_userinfo = require("../enum/endpoints").userinfo;
 
 
 function Auth(options) {
@@ -180,7 +180,7 @@ authPrototypeMethods.getUserInfo = function () {
     } else {
         return this.requestEngine.promiseRequest({
             method: "GET",
-            url: this.requestEngine.getEndpoint() + "/userinfo",
+            url: this.requestEngine.getEndpoint() + ENDPOINTS_userinfo,
         }).then(function (result) { //result.response result.body
             self.userInfo = result.body;
             return result.body;

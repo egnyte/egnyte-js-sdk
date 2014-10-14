@@ -1,0 +1,8 @@
+{
+    "fsmeta": "/fs",
+    "fscontent": "/fs-content",
+    "notes": "/notes",
+    "links": "/links",
+    "perms":"/perms/folder",
+    "userinfo":"/userinfo"
+}
