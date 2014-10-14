@@ -186,20 +186,6 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <h3 id="change-the-style">Change the style</h3>
 <p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
 <p>You can also modify the defaults to keep everything in one package. Change the colors in variables of <code>src/lib/filepicker_elements.view.less</code> and rebuild the package <code>grunt dist</code> (requires grunt and other dependencies installed via <code>npm</code>)</p>
-<h2 id="remote-file-picker-no-api-">Remote file picker (no API)</h2>
-<p>If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.</p>
-<p>To use the remote file picker call <code>filePickerRemote</code> instead of <code>filePicker</code> with the same options</p>
-<pre><code class="lang-javascript">    //simplified init
-    var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;);
-
-    var picker = egnyte.filePickerRemote(containerNode,options);</code></pre>
-<p>Only <code>path</code> <code>cancel</code> and <code>selection</code> options are available.</p>
-<p>The data returned by the remote filepicker is limited to:</p>
-<ul>
-<li><code>name</code> - name of the file</li>
-<li><code>path</code> - path of the folder containing the file</li>
-<li><code>url</code> - URL where the file can be downloaded by a logged-in Egnyte user</li>
-</ul>
 
 
     </div>

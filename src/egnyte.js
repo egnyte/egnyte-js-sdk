@@ -13,7 +13,6 @@
         return {
             domain: options.egnyteDomainURL,
             filePicker: require("./lib/filepicker/byapi")(api),
-            filePickerRemote: require("./lib/filepicker/bysession")(options),
             API: api
         }
 

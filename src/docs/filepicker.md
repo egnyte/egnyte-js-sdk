@@ -161,21 +161,3 @@ File picker is easily stylable on its own. To ease the work of theming start wit
 
 You can also modify the defaults to keep everything in one package. Change the colors in variables of `src/lib/filepicker_elements.view.less` and rebuild the package `grunt dist` (requires grunt and other dependencies installed via `npm`)
 
-## Remote file picker (no API)
-
-If API with oAuth flow is not a desired way to use Egnyte, you can use a filepicker version that will present the user with a view from Egnyte online file storage behind an ordinary log-in instead of the API.
-
-To use the remote file picker call `filePickerRemote` instead of `filePicker` with the same options
-```javascript
-    //simplified init
-    var egnyte = Egnyte.init("http://mydomain.egnyte.com");
-    
-    var picker = egnyte.filePickerRemote(containerNode,options);
-```
-
-Only `path` `cancel` and `selection` options are available.
-
-The data returned by the remote filepicker is limited to:
- - `name` - name of the file
- - `path` - path of the folder containing the file
- - `url` - URL where the file can be downloaded by a logged-in Egnyte user

@@ -24,34 +24,12 @@
 
     </div>
 
-    <button onclick="openPickerR()">open remote picker</button>
     <button onclick="openPickerA()">open API picker</button>
     Take a look at the console.
     <script>
         var node = document.getElementById("there");
 
 
-
-        function openPickerR() {
-
-            var eg = Egnyte.init(egnyteDomain);
-
-            //this line will use mock instead of real egnyte domain
-            //doesn't work with file:// protocol
-            //var eg = Egnyte.init(window.location.origin, { filepickerViewAddress: window.location.pathname.replace(/\/[^\/]*$/, "/") + "mock/mock_filepicker.html" });
-
-            eg.filePickerRemote(node, {
-                selection: function (fileData) {
-
-                    var fp = eg.filePickerRemote(node, {
-                        selection: function (fileData2) {
-                            console.info(fileData2);
-                        },
-                        path: fileData[0].path
-                    });
-                }
-            });
-        }
 
         function openPickerA() {
 

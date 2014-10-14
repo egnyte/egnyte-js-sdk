@@ -19,8 +19,8 @@ This package contains:
 
 _File sizes_
 ```
-dist/egnyte.min.js minified: 40.07 kB gzipped: 9.05 kB
-dist/slim.min.js minified: 21.7 kB gzipped: 4.91 kB
+dist/egnyte.min.js minified: 43.37 kB gzipped: 9.59 kB
+dist/slim.min.js minified: 25.9 kB gzipped: 5.58 kB
 
 ```
 
