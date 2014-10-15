@@ -228,7 +228,7 @@ describe("Storage API facade integration", function () {
                 .then(function (e) {
                     expect(e["entry_id"]).toEqual(fileID);
                     expect(e["is_folder"]).toBeFalsy();
-                    expect(e["size"] > 0).toBeTruthy();
+                    expect(+e["size"]).toBeGreaterThan(0);
 
                     recentFileObject = e;
                     done();

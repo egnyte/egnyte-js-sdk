@@ -1,8 +1,8 @@
 var ImInBrowser = (typeof window !== "undefined");
 
 if (!ImInBrowser) {
-    var stream = require('stream')
-    var concat = require('concat-stream')
+    var fs = require('fs');
+    var stream = require('stream');
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
@@ -41,6 +41,7 @@ describe("Storage API facade integration", function () {
 
 
     describe("Chunked file upload", function () {
+
         it("Needs a location to upload to", function (done) {
             eg.API.storage.get("/Private")
                 .then(function (e) {
@@ -57,15 +58,15 @@ describe("Storage API facade integration", function () {
 
 
         it("Can store a file", function (done) {
-
-            eg.API.storage.startChunkedUpload(testpath, "[chunk 1 content]")
+            var fileID;
+            eg.API.storage.startChunkedUpload(testpath, "[chunk 1 content]", "text/plain")
                 .then(function (chunked) {
 
                     chunked.sendChunk("[chunk 2 content]", 2); //number is optional
                     chunked.sendChunk("[chunk 3 content]", 3);
 
                     return chunked.sendLastChunk("[chunk 4 content]").then(function (result) {
-                        //success
+                        fileID = result.id;
                     })
 
                 })
@@ -73,10 +74,14 @@ describe("Storage API facade integration", function () {
                     return eg.API.storage.get(testpath);
                 })
                 .then(function (e) {
-                    expect(e["entry_id"]).toBeTruthy();
-                    expect(e["size"] > 0).toBeTruthy();
+                    expect(e["entry_id"]).toEqual(fileID);
+                    expect(+e["size"]).toBeGreaterThan(0);
+                    return eg.API.storage.download(testpath, null, false /*non binary*/ )
+                })
+                .then(function (xhr) {
+                    expect(xhr.body).toEqual("[chunk 1 content][chunk 2 content][chunk 3 content][chunk 4 content]");
 
-                    eg.API.storage.remove(testpath).then(function () {
+                    return eg.API.storage.remove(testpath).then(function () {
                         done();
                     })
                 }).fail(function (e) {
@@ -89,8 +94,24 @@ describe("Storage API facade integration", function () {
 
         if (!ImInBrowser) {
             it("Can store a file stream", function (done) {
-                //TODO spec this out
-                done();
+                var st = fs.createReadStream(__dirname + '/file.png');
+                eg.API.storage.streamToChunks(testpath, st, "image/png")
+                    .then(function (result) {
+                        expect(result.id).toBeDefined();
+                        done();
+                    });
+
+            });
+
+            it("Can store a file stream htat is smaller than 1 chunk", function (done) {
+                var st = new stream.Readable();
+                st.push("Tradition enforces enforcing tradidion");
+                st.push(null);
+                eg.API.storage.streamToChunks(testpath, st, "text/plain")
+                    .then(function (result) {
+                        expect(result.id).toBeDefined();
+                        done();
+                    });
 
             });
         }

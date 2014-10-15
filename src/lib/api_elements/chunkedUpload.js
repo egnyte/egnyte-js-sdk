@@ -16,84 +16,96 @@ function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
     return requestEngine.promiseRequest(decorate(opts));
 }
 
-function ChunkedUploader(pathFromRoot, id) {
-    this.id = id;
+function ChunkedUploader(storage, pathFromRoot, mimeType) {
+    this.storage = storage;
     this.path = pathFromRoot;
-    this.num = 0;
-    this.deferd = promises.defer();
+    this.mime = mimeType;
+    this.num = 1;
+    this.successful = 1;
+    this.chunksPromised = [];
 }
 
 var chunkedUploaderProto = {};
 
-chunkedUploaderProto.sendChunk = function (content, num) {
-    var self = this;
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        if (num) {
-            self.num = num;
-        } else {
-            num = (++self.num);
-        }
-        var headers = {
-            "X-Egnyte-Upload-Id": self.id,
-            "X-Egnyte-Chunk-Num": self.num,
-
-        };
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-        return genericUpload(requestEngine, decorate, self.path, headers, content);
-
-    }).fail(function (err) {
-        err.num = num;
-        self.deferd.reject(err);
-        throw err;
-    });
+chunkedUploaderProto.setId = function (id) {
+    this.id = id;
 };
 
-chunkedUploaderProto.retryChunk = function (content, num) {
-    this.deferd = promises.defer();
-    return this.sendChunk(content, num);
-}
-
-chunkedUploaderProto.sendLastChunk = function (content) {
+chunkedUploaderProto.sendChunk = function (content, num, verify) {
     var self = this;
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+    if (num) {
+        self.num = num;
+    } else {
+        num = (++self.num);
+    }
     var headers = {
-        "X-Egnyte-Upload-Id": self.id,
-        "X-Egnyte-Last-Chunk": true,
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-chunk-num": self.num,
 
     };
-    if (mimeType) {
-        opts.headers["Content-Type"] = mimeType;
-    }
-    genericUpload(requestEngine, decorate, self.path, headers, content)
+    var promised = genericUpload(requestEngine, decorate, self.path, headers, content)
         .then(function (result) {
-            //operations on result?
-            self.deferd.resolve(result);
-        }, function (err) {
-            self.deferd.reject(err);
+            verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+            self.successful++;
+            return result;
+        });
+    self.chunksPromised.push(promised);
+    return promised;
+
+};
+
+
+chunkedUploaderProto.sendLastChunk = function (content, verify) {
+    var self = this;
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+
+    var headers = {
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-last-chunk": true,
+        "x-egnyte-chunk-num": self.num + 1
+    };
+    if (self.mime) {
+        headers["content-type"] = self.mime;
+    }
+
+    return promises.allSettled(this.chunksPromised)
+        .then(function () {
+            if (self.num === self.successful) {
+                return genericUpload(requestEngine, decorate, self.path, headers, content)
+                    .then(function (result) {
+                        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+                        return ({
+                            id: result.response.headers["etag"],
+                            path: self.path
+                        });
+                    });
+            } else {
+                throw new Error("Tried to commit a file with missing chunks (some uploads failed)");
+            }
         });
 
-    //will autofail if one of the intermediate chunks failed
-    return this.deferd;//rethink this magic
-}
+};
 
-export.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType) {
+ChunkedUploader.prototype = chunkedUploaderProto;
+
+exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verify) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
+    var chunkedUploader = new ChunkedUploader(this, pathFromRoot, mimeType);
     return promises(true).then(function () {
         var file = fileOrBlob;
         var headers = {};
         if (mimeType) {
-            headers["Content-Type"] = mimeType;
+            headers["content-type"] = mimeType;
         }
-        return genericUpload(requestEngine, pathFromRoot, headers, fileOrBlob);
+        return genericUpload(requestEngine, decorate, pathFromRoot, headers, fileOrBlob);
     }).then(function (result) { //result.response result.body
-        return new ChunkedUploader(pathFromRoot, decorate, result.response.headers["X-Egnyte-Upload-Id"]);
+        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+        chunkedUploader.setId(result.response.headers["x-egnyte-upload-id"])
+        return chunkedUploader;
     });
 
 }
