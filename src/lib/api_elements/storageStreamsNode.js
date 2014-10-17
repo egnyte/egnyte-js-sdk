@@ -45,11 +45,11 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
 
 var uploadChunkSize = 10240; //10k chunks
 
-function streamToChunks(pathFromRoot, stream, mimeType /* optional */ ) {
+function streamToChunks(pathFromRoot, stream, mimeType /* optional */, sizeOverride /*optional*/ ) {
     var self = this;
     var defer = promises.defer();
     var chunker = new SizeChunker({
-        chunkSize: uploadChunkSize,
+        chunkSize: sizeOverride || uploadChunkSize,
         flushTail: true
     });
     var chunkData;
