@@ -585,19 +585,19 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":12,"2":15,"3":16,"4":17,"5":18,"6":19,"7":20}],12:[function(require,module,exports){
+},{"1":12,"2":15,"3":17,"4":18,"5":19,"6":20,"7":21}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
 
-var promises = require(5);
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
-var errorify = require(4);
+var promises = require(6);
+var helpers = require(3);
+var dom = require(2);
+var messages = require(4);
+var errorify = require(5);
 
 
-
+var ENDPOINTS_userinfo = require(1).userinfo;
 
 
 function Auth(options) {
@@ -768,7 +768,7 @@ authPrototypeMethods.getUserInfo = function () {
     } else {
         return this.requestEngine.promiseRequest({
             method: "GET",
-            url: this.requestEngine.getEndpoint() + "/userinfo",
+            url: this.requestEngine.getEndpoint() + ENDPOINTS_userinfo,
         }).then(function (result) { //result.response result.body
             self.userInfo = result.body;
             return result.body;
@@ -779,7 +779,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":22,"2":23,"3":24,"4":14,"5":21}],13:[function(require,module,exports){
+},{"1":22,"2":24,"3":25,"4":26,"5":14,"6":23}],13:[function(require,module,exports){
 var helpers = require(1);
 
 var defaultDecorators = {
@@ -847,7 +847,7 @@ module.exports = {
     }
 }
 
-},{"1":23}],14:[function(require,module,exports){
+},{"1":25}],14:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -910,14 +910,11 @@ module.exports = function (result) {
 }
 
 },{}],15:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(1);
-var decorators = require(2);
+var promises = require(4);
+var helpers = require(2);
+var decorators = require(3);
 
-
-
-
-var linksEndpoint = "/links";
+var ENDPOINTS_links = require(1).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -945,7 +942,7 @@ linksProto.createLink = function (setup) {
 
             return requestEngine.promiseRequest(decorate({
                 method: "POST",
-                url: requestEngine.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + ENDPOINTS_links,
                 json: setup
             }));
         }).then(function (result) { //result.response result.body
@@ -959,7 +956,7 @@ linksProto.removeLink = function (id) {
     var decorate = this.getDecorator();
     return requestEngine.promiseRequest(decorate({
         method: "DELETE",
-        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
     })).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
@@ -970,7 +967,7 @@ linksProto.listLink = function (id) {
     var decorate = this.getDecorator();
     return requestEngine.promiseRequest(decorate({
         method: "GET",
-        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
     })).then(function (result) { //result.response result.body
         return result.body;
     });
@@ -986,7 +983,7 @@ linksProto.listLinks = function (filters) {
 
             return requestEngine.promiseRequest(decorate({
                 method: "get",
-                url: requestEngine.getEndpoint() + linksEndpoint,
+                url: requestEngine.getEndpoint() + ENDPOINTS_links,
                 params: filters
             }));
         }).then(function (result) { //result.response result.body
@@ -1008,15 +1005,95 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":23,"2":13,"3":21}],16:[function(require,module,exports){
+},{"1":22,"2":25,"3":13,"4":23}],16:[function(require,module,exports){
 var promises = require(3);
-var helpers = require(1);
-var decorators = require(2);
+var helpers = require(2);
+
+var ENDPOINTS_notes = require(1).notes;
+
+exports.addNote = function (pathFromRoot, body) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var opts = {
+            method: "POST",
+            headers: {
+                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
+            },
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes,
+            body: JSON.stringify({
+                "path": pathFromRoot,
+                "body": body,
+            })
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return {
+            id: result.body.id
+        };
+    });
+
+}
+exports.listNotes = function (pathFromRoot, params) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes
+        };
+
+        //xhr and request differ here
+        opts.params = helpers.extend({
+            "file": encodeURI(pathFromRoot)
+        }, params);
+
+        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
+            return result.body;
+        });
+    });
+
+}
+
+exports.getNote = function (id) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+        };
+        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
+            return result.body;
+        });
+    });
+
+}
+exports.removeNote = function (id) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        var opts = {
+            method: "DELETE",
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    });
+
+}
 
 
 
 
-var permsEndpointFolder = "/perms/folder";
+
+},{"1":22,"2":25,"3":23}],17:[function(require,module,exports){
+var promises = require(4);
+var helpers = require(2);
+var decorators = require(3);
+
+var ENDPOINTS_perms = require(1).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1070,7 +1147,7 @@ permsProto.allow = function (pathFromRoot, permission) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
                 json: {
                     "permission": permission
                 }
@@ -1090,7 +1167,7 @@ permsProto.getPerms = function (pathFromRoot) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + permsEndpointFolder + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body
@@ -1102,7 +1179,7 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"1":23,"2":13,"3":21}],17:[function(require,module,exports){
+},{"1":22,"2":25,"3":13,"4":23}],18:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1364,16 +1441,13 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":22,"2":23,"3":24,"4":14,"5":21,"6":3}],18:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(1);
-var decorators = require(2);
+},{"1":24,"2":25,"3":26,"4":14,"5":23,"6":3}],19:[function(require,module,exports){
+var promises = require(5);
+var helpers = require(2);
+var decorators = require(3);
+var notes = require(4);
 
-var APIROOTS = {
-    fsmeta: "/fs",
-    fscontent: "/fs-content",
-    notes: "/notes"
-};
+var ENDPOINTS = require(1);
 
 
 function Storage(requestEngine) {
@@ -1389,7 +1463,7 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -1421,7 +1495,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -1444,7 +1518,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = {
@@ -1469,7 +1543,7 @@ storageProto.createFolder = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -1502,7 +1576,7 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
@@ -1530,7 +1604,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + APIROOTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
             body: file,
         }
 
@@ -1580,7 +1654,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + APIROOTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
@@ -1611,88 +1685,12 @@ storageProto.remove = function (pathFromRoot) {
     return remove(this.requestEngine, decorate, pathFromRoot);
 }
 
-storageProto.addNote = function (pathFromRoot, body) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "POST",
-            headers: {
-                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-            },
-            url: requestEngine.getEndpoint() + APIROOTS.notes,
-            body: JSON.stringify({
-                "path": pathFromRoot,
-                "body": body,
-            })
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return {
-            id: result.body.id
-        };
-    });
-
-}
-storageProto.listNotes = function (pathFromRoot, params) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.notes
-        };
-
-        //xhr and request differ here
-        opts.params = helpers.extend({
-            "file": encodeURI(pathFromRoot)
-        }, params);
-
-        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
-            return result.body;
-        });
-    });
-
-}
-
-storageProto.getNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
-            return result.body;
-        });
-    });
-
-}
-storageProto.removeNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "DELETE",
-            url: requestEngine.getEndpoint() + APIROOTS.notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    });
-
-}
-
-
-
-
-
+storageProto = helpers.extend(storageProto,notes);
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":23,"2":13,"3":21}],19:[function(require,module,exports){
+},{"1":22,"2":25,"3":13,"4":16,"5":23}],20:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1754,7 +1752,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":22,"2":23,"3":24}],20:[function(require,module,exports){
+},{"1":24,"2":25,"3":26}],21:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1888,7 +1886,17 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":22,"2":23,"3":24,"4":21}],21:[function(require,module,exports){
+},{"1":24,"2":25,"3":26,"4":23}],22:[function(require,module,exports){
+module.exports={
+    "fsmeta": "/fs",
+    "fscontent": "/fs-content",
+    "notes": "/notes",
+    "links": "/links",
+    "perms":"/perms/folder",
+    "userinfo":"/userinfo"
+}
+
+},{}],23:[function(require,module,exports){
 var pinkySwear = require(1);
 
 //for pinkyswear starting versions above 2.10
@@ -1919,7 +1927,7 @@ Promises.defer = function () {
 }
 
 module.exports = Promises;
-},{"1":1}],22:[function(require,module,exports){
+},{"1":1}],24:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -1989,7 +1997,7 @@ module.exports = {
 
 }
 
-},{"1":2}],23:[function(require,module,exports){
+},{"1":2}],25:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2046,7 +2054,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2098,7 +2106,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":23}],25:[function(require,module,exports){
+},{"1":25}],27:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -2129,4 +2137,4 @@ module.exports = {
     }
 
 })();
-},{"1":10,"2":11,"3":23}]},{},[25]);
+},{"1":10,"2":11,"3":25}]},{},[27]);
