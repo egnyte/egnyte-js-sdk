@@ -88,7 +88,7 @@ module.exports = function (grunt) {
         },
         jasmine_node: {
             options: {
-                match: 'api_storagechunked', //TODO: change back to '.'
+                match: '.', //TODO: change back to '.'
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
