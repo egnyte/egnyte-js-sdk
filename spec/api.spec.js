@@ -237,39 +237,6 @@ describe("API to JS (integration test)", function () {
 
         });
 
-        if (!ImInBrowser) {
-            it("Can stream a file from disk", function (done) {
-                var fs = require("fs");
-                var stream = fs.createReadStream("/home/zb/Pictures/128x128/033_briefcase_upload.png");
-                //var stream = fs.createReadStream("/home/zb/TSLA.pdf");
-                //var stream = fs.createReadStream("/home/zb/review2000.png");
-                var fileID;
-                
-
-                eg.API.storage.storeFile("/Private/zb/uploadstream.png", stream)
-                    .then(function (e) {
-                        fileID = e.id;
-                        expect(e.id).toBeTruthy();
-                        expect(e.path).toEqual("/Private/zb/uploadstream.png");
-                    })
-                    .then(function () {
-                        return eg.API.storage.get("/Private/zb/uploadstream.png");
-                    })
-                    .then(function (e) {
-                        expect(e["entry_id"]).toEqual(fileID);
-                        expect(e["is_folder"]).toBeFalsy();
-                        expect(e["size"] > 0).toBeTruthy();
-
-                        done();
-                    }).fail(function (e) {
-                        expect(this).toAutoFail(e);
-                        done();
-                    });
-
-            });
-
-        }
-
         it("Can download a file and use content", function (done) {
             eg.API.storage.download(testpath, null, false /*non binary*/ ).then(function (xhr) {
                 expect(xhr.body).toMatch(/^<a id="a"><b id="b">/);
