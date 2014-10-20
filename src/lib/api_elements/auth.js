@@ -133,6 +133,27 @@ authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
 
 }
 
+authPrototypeMethods.requestTokenByPassword = function (username, password) {
+    var self = this;
+
+    return this.requestEngine.promiseRequest({
+        method: "POST",
+        url: this.options.egnyteDomainURL + "/puboauth/token",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded"
+        },
+        body: [
+            "client_id=" + this.options.key,
+            "grant_type=password",
+            "username=" + username,
+            "password=" + password
+        ].join("&");
+    }).then(function (result) { //result.response result.body
+        self.token = result.body.access_token
+        return self.token;
+    });
+}
+
 authPrototypeMethods.authorizeXHR = function (xhr) {
     //assuming token_type was bearer, no use for XHR otherwise, right?
     xhr.setRequestHeader("Authorization", "Bearer " + this.token);

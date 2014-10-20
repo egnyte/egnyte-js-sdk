@@ -88,12 +88,13 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */, sizeOverr
                     defer.resolve(result);
                 })
             } else {
-                chunkedUploader.sendChunk(buf, chunkNumber).then(function () {
-                    next();
-                }).fail(function (err) {
+                chunkedUploader.sendChunk(buf, chunkNumber)
+                .fail(function (err) {
                     //chunk failed. retry?
                     defer.reject(err);
                 })
+                //accept another chunk async
+                next();
 
             }
         }
