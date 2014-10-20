@@ -227,6 +227,7 @@ API.storage.get | `path`,`entryID(optional)` | Resolves to file or folder defini
 API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"...",id:"<version ID>"}` 
 API.storage.storeFile | `path`, `Blob_object`, `mimeType (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob). There one optional argument as well. This is MIME type of Blob to get stored.
+API.storage.startChunkedUpload || TBD
 API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
 API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
 API.storage.rename | `path`,  `new path` | alias for move
@@ -236,6 +237,8 @@ API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{i
 API.storage.getNote | `node_id` | Resolves to a note object
 API.storage.removeNote | `node_id` | Removes the note
 API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)
+
+
 
 ### Storing a file
 

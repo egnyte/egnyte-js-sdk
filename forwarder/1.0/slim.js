@@ -585,7 +585,11 @@ module.exports = function (options) {
 
     return api;
 };
+<<<<<<< HEAD
 },{"1":12,"2":15,"3":17,"4":18,"5":19,"6":20,"7":21}],12:[function(require,module,exports){
+=======
+},{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22}],12:[function(require,module,exports){
+>>>>>>> chunk-upload
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
@@ -779,7 +783,124 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
+<<<<<<< HEAD
 },{"1":22,"2":24,"3":25,"4":26,"5":14,"6":23}],13:[function(require,module,exports){
+=======
+},{"1":23,"2":25,"3":26,"4":27,"5":15,"6":24}],13:[function(require,module,exports){
+var promises = require(3);
+var helpers = require(2);
+var ENDPOINTS = require(1);
+
+
+function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+
+    var opts = {
+        headers: headers,
+        method: "POST",
+        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + encodeURI(pathFromRoot),
+        body: file,
+    }
+
+    return requestEngine.promiseRequest(decorate(opts));
+}
+
+function ChunkedUploader(storage, pathFromRoot, mimeType) {
+    this.storage = storage;
+    this.path = pathFromRoot;
+    this.mime = mimeType;
+    this.num = 1;
+    this.successful = 1;
+    this.chunksPromised = [];
+}
+
+var chunkedUploaderProto = {};
+
+chunkedUploaderProto.setId = function (id) {
+    this.id = id;
+};
+
+chunkedUploaderProto.sendChunk = function (content, num, verify) {
+    var self = this;
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+    if (num) {
+        self.num = num;
+    } else {
+        num = (++self.num);
+    }
+    var headers = {
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-chunk-num": self.num,
+
+    };
+    var promised = genericUpload(requestEngine, decorate, self.path, headers, content)
+        .then(function (result) {
+            verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+            self.successful++;
+            return result;
+        });
+    self.chunksPromised.push(promised);
+    return promised;
+
+};
+
+
+chunkedUploaderProto.sendLastChunk = function (content, verify) {
+    var self = this;
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+
+    var headers = {
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-last-chunk": true,
+        "x-egnyte-chunk-num": self.num + 1
+    };
+    if (self.mime) {
+        headers["content-type"] = self.mime;
+    }
+
+    return promises.allSettled(this.chunksPromised)
+        .then(function () {
+            if (self.num === self.successful) {
+                return genericUpload(requestEngine, decorate, self.path, headers, content)
+                    .then(function (result) {
+                        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+                        return ({
+                            id: result.response.headers["etag"],
+                            path: self.path
+                        });
+                    });
+            } else {
+                throw new Error("Tried to commit a file with missing chunks (some uploads failed)");
+            }
+        });
+
+};
+
+ChunkedUploader.prototype = chunkedUploaderProto;
+
+exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verify) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    var chunkedUploader = new ChunkedUploader(this, pathFromRoot, mimeType);
+    return promises(true).then(function () {
+        var file = fileOrBlob;
+        var headers = {};
+        if (mimeType) {
+            headers["content-type"] = mimeType;
+        }
+        return genericUpload(requestEngine, decorate, pathFromRoot, headers, fileOrBlob);
+    }).then(function (result) { //result.response result.body
+        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+        chunkedUploader.setId(result.response.headers["x-egnyte-upload-id"])
+        return chunkedUploader;
+    });
+
+}
+
+},{"1":23,"2":26,"3":24}],14:[function(require,module,exports){
+>>>>>>> chunk-upload
 var helpers = require(1);
 
 var defaultDecorators = {
@@ -847,7 +968,11 @@ module.exports = {
     }
 }
 
+<<<<<<< HEAD
 },{"1":25}],14:[function(require,module,exports){
+=======
+},{"1":26}],15:[function(require,module,exports){
+>>>>>>> chunk-upload
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -909,7 +1034,11 @@ module.exports = function (result) {
     return error;
 }
 
+<<<<<<< HEAD
 },{}],15:[function(require,module,exports){
+=======
+},{}],16:[function(require,module,exports){
+>>>>>>> chunk-upload
 var promises = require(4);
 var helpers = require(2);
 var decorators = require(3);
@@ -1005,7 +1134,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
+<<<<<<< HEAD
 },{"1":22,"2":25,"3":13,"4":23}],16:[function(require,module,exports){
+=======
+},{"1":23,"2":26,"3":14,"4":24}],17:[function(require,module,exports){
+>>>>>>> chunk-upload
 var promises = require(3);
 var helpers = require(2);
 
@@ -1083,12 +1216,20 @@ exports.removeNote = function (id) {
     });
 
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> chunk-upload
 
 
 
 
+<<<<<<< HEAD
 
 },{"1":22,"2":25,"3":23}],17:[function(require,module,exports){
+=======
+},{"1":23,"2":26,"3":24}],18:[function(require,module,exports){
+>>>>>>> chunk-upload
 var promises = require(4);
 var helpers = require(2);
 var decorators = require(3);
@@ -1179,7 +1320,11 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
+<<<<<<< HEAD
 },{"1":22,"2":25,"3":13,"4":23}],18:[function(require,module,exports){
+=======
+},{"1":23,"2":26,"3":14,"4":24}],19:[function(require,module,exports){
+>>>>>>> chunk-upload
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1441,11 +1586,20 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
+<<<<<<< HEAD
 },{"1":24,"2":25,"3":26,"4":14,"5":23,"6":3}],19:[function(require,module,exports){
 var promises = require(5);
 var helpers = require(2);
 var decorators = require(3);
 var notes = require(4);
+=======
+},{"1":25,"2":26,"3":27,"4":15,"5":24,"6":3}],20:[function(require,module,exports){
+var promises = require(6);
+var helpers = require(2);
+var decorators = require(4);
+var notes = require(5);
+var chunkedUpload = require(3);
+>>>>>>> chunk-upload
 
 var ENDPOINTS = require(1);
 
@@ -1605,6 +1759,37 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
         var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+<<<<<<< HEAD
+=======
+            body: file,
+        }
+
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return ({
+            id: result.response.headers["etag"],
+            path: pathFromRoot
+        });
+    });
+}
+
+
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        var file = fileOrBlob;
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+>>>>>>> chunk-upload
             body: file,
         }
 
@@ -1686,11 +1871,19 @@ storageProto.remove = function (pathFromRoot) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+<<<<<<< HEAD
+=======
+storageProto = helpers.extend(storageProto,chunkedUpload);
+>>>>>>> chunk-upload
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
+<<<<<<< HEAD
 },{"1":22,"2":25,"3":13,"4":16,"5":23}],20:[function(require,module,exports){
+=======
+},{"1":23,"2":26,"3":13,"4":14,"5":17,"6":24}],21:[function(require,module,exports){
+>>>>>>> chunk-upload
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1752,7 +1945,11 @@ function init(options, api) {
 }
 
 module.exports = init;
+<<<<<<< HEAD
 },{"1":24,"2":25,"3":26}],21:[function(require,module,exports){
+=======
+},{"1":25,"2":26,"3":27}],22:[function(require,module,exports){
+>>>>>>> chunk-upload
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1886,18 +2083,32 @@ function init(options, api) {
 }
 
 module.exports = init;
+<<<<<<< HEAD
 },{"1":24,"2":25,"3":26,"4":23}],22:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
+=======
+},{"1":25,"2":26,"3":27,"4":24}],23:[function(require,module,exports){
+module.exports={
+    "fsmeta": "/fs",
+    "fscontent": "/fs-content",
+    "fschunked": "/fs-content-chunked",
+>>>>>>> chunk-upload
     "notes": "/notes",
     "links": "/links",
     "perms":"/perms/folder",
     "userinfo":"/userinfo"
 }
 
+<<<<<<< HEAD
 },{}],23:[function(require,module,exports){
 var pinkySwear = require(1);
+=======
+},{}],24:[function(require,module,exports){
+var pinkySwear = require(2);
+var helpers = require(1);
+>>>>>>> chunk-upload
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -1926,8 +2137,38 @@ Promises.defer = function () {
     };
 }
 
+Promises.allSettled = function (array) {
+    var collectiveDefere = Promises.defer();
+    var results = [];
+    var counter = array.length;
+    var resolver = function (num, item) {
+        results[num] = item;
+        if (--counter === 0) {
+            collectiveDefere.resolve(results);
+        }
+    }
+    helpers.each(array, function (promise, num) {
+        promise.then(function (result) {
+            resolver(num, {
+                state: "fulfilled",
+                value: result
+            });
+        }, function (err) {
+            resolver(num, {
+                state: "rejected",
+                reason: err
+            });
+        })
+    });
+    return collectiveDefere.promise;
+}
+
 module.exports = Promises;
+<<<<<<< HEAD
 },{"1":1}],24:[function(require,module,exports){
+=======
+},{"1":26,"2":1}],25:[function(require,module,exports){
+>>>>>>> chunk-upload
 var vkey = require(1);
 
 
@@ -1997,7 +2238,11 @@ module.exports = {
 
 }
 
+<<<<<<< HEAD
 },{"1":2}],25:[function(require,module,exports){
+=======
+},{"1":2}],26:[function(require,module,exports){
+>>>>>>> chunk-upload
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2054,7 +2299,11 @@ module.exports = {
         return (name);
     }
 };
+<<<<<<< HEAD
 },{}],26:[function(require,module,exports){
+=======
+},{}],27:[function(require,module,exports){
+>>>>>>> chunk-upload
 var helpers = require(1);
 
 
@@ -2106,7 +2355,11 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
+<<<<<<< HEAD
 },{"1":25}],27:[function(require,module,exports){
+=======
+},{"1":26}],28:[function(require,module,exports){
+>>>>>>> chunk-upload
 (function () {
     "use strict";
 
@@ -2137,4 +2390,8 @@ module.exports = {
     }
 
 })();
+<<<<<<< HEAD
 },{"1":10,"2":11,"3":25}]},{},[27]);
+=======
+},{"1":10,"2":11,"3":26}]},{},[28]);
+>>>>>>> chunk-upload

@@ -1,6 +1,8 @@
 var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
+var chunkingStreams = require('chunking-streams');
+var SizeChunker = chunkingStreams.SizeChunker;
 
 
 var fscontent = "/fs-content";
@@ -11,7 +13,7 @@ function StreamsExtendedStorage() {
 };
 
 
-function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional*/ ) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional, not so much*/ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -39,6 +41,70 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
                 });
             });
     });
+}
+
+var uploadChunkSize = 10240; //10k chunks
+
+function streamToChunks(pathFromRoot, stream, mimeType /* optional */, sizeOverride /*optional*/ ) {
+    var self = this;
+    var defer = promises.defer();
+    var chunker = new SizeChunker({
+        chunkSize: sizeOverride || uploadChunkSize,
+        flushTail: true
+    });
+    var chunkData;
+    var chunkNumber = 0;
+    var chunkedUploader;
+
+    chunker.on('chunkStart', function (id, next) {
+        chunkData = [];
+        next();
+    });
+
+    chunker.on('chunkEnd', function (id, next) {
+        var buf = Buffer.concat(chunkData);
+        chunkNumber++;
+        if (chunkNumber === 1) {
+            if (stream._readableState.pipesCount === 0) {
+                //only one chunk. lol, pass on to the normal upload
+                StreamsExtendedStorage.super_.prototype.storeFile.call(self, pathFromRoot, buf, mimeType, buf.size)
+                    .then(function (result) {
+                        defer.resolve(result);
+                    });
+            } else {
+                self.startChunkedUpload(pathFromRoot, buf, mimeType)
+                    .then(function (chunked) {
+                        chunkedUploader = chunked;
+                        next();
+                    }).fail(function (err) {
+                        //no idea what now xD
+                        defer.reject(err);
+                    })
+            }
+        } else {
+            if (stream._readableState.pipesCount === 0) {
+                //last chunk
+                return chunkedUploader.sendLastChunk(buf).then(function (result) {
+                    defer.resolve(result);
+                })
+            } else {
+                chunkedUploader.sendChunk(buf, chunkNumber)
+                .fail(function (err) {
+                    //chunk failed. retry?
+                    defer.reject(err);
+                })
+                //accept another chunk async
+                next();
+
+            }
+        }
+    });
+
+    chunker.on('data', function (chunk) {
+        chunkData.push(chunk.data);
+    });
+    stream.pipe(chunker);
+    return defer.promise;
 }
 
 function getFileStream(pathFromRoot, versionEntryId) {
@@ -84,6 +150,7 @@ module.exports = function (Storage) {
 
     StreamsExtendedStorage.prototype.getFileStream = getFileStream;
     StreamsExtendedStorage.prototype.storeFile = storeFile;
+    StreamsExtendedStorage.prototype.streamToChunks = streamToChunks;
 
 
     return StreamsExtendedStorage;

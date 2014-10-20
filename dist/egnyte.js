@@ -570,7 +570,7 @@ module.exports = {
     }
 
 })();
-},{"1":10,"2":12,"3":24,"4":32}],12:[function(require,module,exports){
+},{"1":10,"2":12,"3":25,"4":33}],12:[function(require,module,exports){
 var RequestEngine = require(4);
 var AuthEngine = require(1);
 var StorageFacade = require(5);
@@ -611,7 +611,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":13,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22}],13:[function(require,module,exports){
+},{"1":13,"2":17,"3":19,"4":20,"5":21,"6":22,"7":23}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
@@ -747,6 +747,27 @@ authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
 
 }
 
+authPrototypeMethods.requestTokenByPassword = function (username, password) {
+    var self = this;
+
+    return this.requestEngine.promiseRequest({
+        method: "POST",
+        url: this.options.egnyteDomainURL + "/puboauth/token",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded"
+        },
+        body: [
+            "client_id=" + this.options.key,
+            "grant_type=password",
+            "username=" + username,
+            "password=" + password
+        ].join("&")
+    }).then(function (result) { //result.response result.body
+        self.token = result.body.access_token
+        return self.token;
+    });
+}
+
 authPrototypeMethods.authorizeXHR = function (xhr) {
     //assuming token_type was bearer, no use for XHR otherwise, right?
     xhr.setRequestHeader("Authorization", "Bearer " + this.token);
@@ -805,7 +826,120 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":23,"2":31,"3":32,"4":33,"5":15,"6":30}],14:[function(require,module,exports){
+},{"1":24,"2":32,"3":33,"4":34,"5":16,"6":31}],14:[function(require,module,exports){
+var promises = require(3);
+var helpers = require(2);
+var ENDPOINTS = require(1);
+
+
+function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+
+    var opts = {
+        headers: headers,
+        method: "POST",
+        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + encodeURI(pathFromRoot),
+        body: file,
+    }
+
+    return requestEngine.promiseRequest(decorate(opts));
+}
+
+function ChunkedUploader(storage, pathFromRoot, mimeType) {
+    this.storage = storage;
+    this.path = pathFromRoot;
+    this.mime = mimeType;
+    this.num = 1;
+    this.successful = 1;
+    this.chunksPromised = [];
+}
+
+var chunkedUploaderProto = {};
+
+chunkedUploaderProto.setId = function (id) {
+    this.id = id;
+};
+
+chunkedUploaderProto.sendChunk = function (content, num, verify) {
+    var self = this;
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+    if (num) {
+        self.num = num;
+    } else {
+        num = (++self.num);
+    }
+    var headers = {
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-chunk-num": self.num,
+
+    };
+    var promised = genericUpload(requestEngine, decorate, self.path, headers, content)
+        .then(function (result) {
+            verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+            self.successful++;
+            return result;
+        });
+    self.chunksPromised.push(promised);
+    return promised;
+
+};
+
+
+chunkedUploaderProto.sendLastChunk = function (content, verify) {
+    var self = this;
+    var requestEngine = this.storage.requestEngine;
+    var decorate = this.storage.getDecorator();
+
+    var headers = {
+        "x-egnyte-upload-id": self.id,
+        "x-egnyte-last-chunk": true,
+        "x-egnyte-chunk-num": self.num + 1
+    };
+    if (self.mime) {
+        headers["content-type"] = self.mime;
+    }
+
+    return promises.allSettled(this.chunksPromised)
+        .then(function () {
+            if (self.num === self.successful) {
+                return genericUpload(requestEngine, decorate, self.path, headers, content)
+                    .then(function (result) {
+                        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+                        return ({
+                            id: result.response.headers["etag"],
+                            path: self.path
+                        });
+                    });
+            } else {
+                throw new Error("Tried to commit a file with missing chunks (some uploads failed)");
+            }
+        });
+
+};
+
+ChunkedUploader.prototype = chunkedUploaderProto;
+
+exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verify) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    var chunkedUploader = new ChunkedUploader(this, pathFromRoot, mimeType);
+    return promises(true).then(function () {
+        var file = fileOrBlob;
+        var headers = {};
+        if (mimeType) {
+            headers["content-type"] = mimeType;
+        }
+        return genericUpload(requestEngine, decorate, pathFromRoot, headers, fileOrBlob);
+    }).then(function (result) { //result.response result.body
+        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
+        chunkedUploader.setId(result.response.headers["x-egnyte-upload-id"])
+        return chunkedUploader;
+    });
+
+}
+
+},{"1":24,"2":33,"3":31}],15:[function(require,module,exports){
 var helpers = require(1);
 
 var defaultDecorators = {
@@ -873,7 +1007,7 @@ module.exports = {
     }
 }
 
-},{"1":32}],15:[function(require,module,exports){
+},{"1":33}],16:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -935,7 +1069,7 @@ module.exports = function (result) {
     return error;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var decorators = require(3);
@@ -1031,7 +1165,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":23,"2":32,"3":14,"4":30}],17:[function(require,module,exports){
+},{"1":24,"2":33,"3":15,"4":31}],18:[function(require,module,exports){
 var promises = require(3);
 var helpers = require(2);
 
@@ -1114,7 +1248,7 @@ exports.removeNote = function (id) {
 
 
 
-},{"1":23,"2":32,"3":30}],18:[function(require,module,exports){
+},{"1":24,"2":33,"3":31}],19:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var decorators = require(3);
@@ -1205,7 +1339,7 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"1":23,"2":32,"3":14,"4":30}],19:[function(require,module,exports){
+},{"1":24,"2":33,"3":15,"4":31}],20:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1467,11 +1601,12 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":31,"2":32,"3":33,"4":15,"5":30,"6":3}],20:[function(require,module,exports){
-var promises = require(5);
+},{"1":32,"2":33,"3":34,"4":16,"5":31,"6":3}],21:[function(require,module,exports){
+var promises = require(6);
 var helpers = require(2);
-var decorators = require(3);
-var notes = require(4);
+var decorators = require(4);
+var notes = require(5);
+var chunkedUpload = require(3);
 
 var ENDPOINTS = require(1);
 
@@ -1648,6 +1783,34 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
+
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        var file = fileOrBlob;
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            body: file,
+        }
+
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return ({
+            id: result.response.headers["etag"],
+            path: pathFromRoot
+        });
+    });
+}
+
 //currently not supported by back - end
 //
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
@@ -1712,11 +1875,12 @@ storageProto.remove = function (pathFromRoot) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":23,"2":32,"3":14,"4":17,"5":30}],21:[function(require,module,exports){
+},{"1":24,"2":33,"3":14,"4":15,"5":18,"6":31}],22:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1778,7 +1942,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":31,"2":32,"3":33}],22:[function(require,module,exports){
+},{"1":32,"2":33,"3":34}],23:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -1912,17 +2076,18 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":31,"2":32,"3":33,"4":30}],23:[function(require,module,exports){
+},{"1":32,"2":33,"3":34,"4":31}],24:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
+    "fschunked": "/fs-content-chunked",
     "notes": "/notes",
     "links": "/links",
     "perms":"/perms/folder",
     "userinfo":"/userinfo"
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function () {
 
     var helpers = require(4);
@@ -2000,7 +2165,7 @@ module.exports={
 
 
 })();
-},{"1":27,"2":28,"3":31,"4":32}],25:[function(require,module,exports){
+},{"1":28,"2":29,"3":32,"4":33}],26:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2014,7 +2179,7 @@ module.exports={
 }
 
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var helpers = require(1);
 var mapping = {};
 helpers.each({
@@ -2069,7 +2234,7 @@ module.exports = {
     getExtensionFilter: getExtensionFilter
 }
 
-},{"1":32}],27:[function(require,module,exports){
+},{"1":33}],28:[function(require,module,exports){
 var helpers = require(1);
 var exts = require(2);
 
@@ -2253,7 +2418,7 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"1":32,"2":26}],28:[function(require,module,exports){
+},{"1":33,"2":27}],29:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
@@ -2641,11 +2806,12 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"1":35,"2":31,"3":32,"4":34,"5":25,"6":29}],29:[function(require,module,exports){
+},{"1":36,"2":32,"3":33,"4":35,"5":26,"6":30}],30:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 
-},{}],30:[function(require,module,exports){
-var pinkySwear = require(1);
+},{}],31:[function(require,module,exports){
+var pinkySwear = require(2);
+var helpers = require(1);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2674,8 +2840,34 @@ Promises.defer = function () {
     };
 }
 
+Promises.allSettled = function (array) {
+    var collectiveDefere = Promises.defer();
+    var results = [];
+    var counter = array.length;
+    var resolver = function (num, item) {
+        results[num] = item;
+        if (--counter === 0) {
+            collectiveDefere.resolve(results);
+        }
+    }
+    helpers.each(array, function (promise, num) {
+        promise.then(function (result) {
+            resolver(num, {
+                state: "fulfilled",
+                value: result
+            });
+        }, function (err) {
+            resolver(num, {
+                state: "rejected",
+                reason: err
+            });
+        })
+    });
+    return collectiveDefere.promise;
+}
+
 module.exports = Promises;
-},{"1":1}],31:[function(require,module,exports){
+},{"1":33,"2":1}],32:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -2745,7 +2937,7 @@ module.exports = {
 
 }
 
-},{"1":2}],32:[function(require,module,exports){
+},{"1":2}],33:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2802,7 +2994,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2854,7 +3046,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":32}],34:[function(require,module,exports){
+},{"1":33}],35:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -2867,7 +3059,7 @@ module.exports = function (overrides) {
         return txt;
     };
 };
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {

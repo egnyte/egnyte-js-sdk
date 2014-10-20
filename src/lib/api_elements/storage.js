@@ -2,6 +2,7 @@ var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
 var notes = require("./notes");
+var chunkedUpload = require("./chunkedUpload");
 
 var ENDPOINTS = require("../enum/endpoints");
 
@@ -178,6 +179,34 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
+
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        var file = fileOrBlob;
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            body: file,
+        }
+
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return ({
+            id: result.response.headers["etag"],
+            path: pathFromRoot
+        });
+    });
+}
+
 //currently not supported by back - end
 //
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
@@ -242,6 +271,7 @@ storageProto.remove = function (pathFromRoot) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;
 

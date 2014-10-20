@@ -88,7 +88,7 @@ module.exports = function (grunt) {
         },
         jasmine_node: {
             options: {
-                match: '.',
+                match: '.', //TODO: change back to '.'
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'

@@ -65,6 +65,13 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
     .then(function(filemeta){
         //
     })</code></pre>
+<p><code>API.storage.streamToChunks</code> accepts a data stream, splits it in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big. 
+Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload.</p>
+<pre><code>var fileStream = fs.createReadStream(&#39;sample.txt&#39;)
+egnyte.API.storage.streamToChunks(pathFromRoot, fileStream, &quot;text/plain&quot; )
+    .then(function(filemeta){
+        //
+    })</code></pre>
 <p><code>API.storage.getFileStream</code> a new method for node to get a response that can be used with streams. Use it instead of <code>API.storage.download</code>
 This method resolves its promise to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently.</p>
 <pre><code class="lang-javascript">egnyte.API.storage.getFileStream(pathFromRoot)
