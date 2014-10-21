@@ -67,9 +67,10 @@ describe("API auth", function () {
         });
 
         it('should be able to log in', function () {
-            eg.API.auth.requestTokenByPassword("zb","this ")
-            //token was passed in beforeEach
-            expect(eg.API.auth.isAuthorized()).toBe(true);
+            expect(eg.API.auth.isAuthorized()).toBe(false);
+            eg.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
+                expect(eg.API.auth.isAuthorized()).toBe(true);
+            });
         });
     });
 
