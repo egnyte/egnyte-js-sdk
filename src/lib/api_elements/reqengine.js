@@ -61,7 +61,7 @@ enginePrototypeMethods.promise = function (value) {
     return promises(value);
 }
 
-enginePrototypeMethods.sendRequest = function (opts, callback) {
+enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
     var originalOpts = helpers.extend({}, opts);
     //IE8/9 
@@ -69,14 +69,14 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         opts.response = true;
     }
 
-    if (this.auth.isAuthorized()) {
+    if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
         if (!callback) {
             return self.requestHandler(opts);
         } else {
-            var retry = function(){
+            var retry = function () {
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry));
             };
             return self.requestHandler(opts, self.retryHandler(callback, retry));
@@ -89,7 +89,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
 
 }
 
-enginePrototypeMethods.retryHandler = function(callback, retry){
+enginePrototypeMethods.retryHandler = function (callback, retry) {
     var self = this;
     return function (error, response, body) {
         //emulating the default XHR behavior
@@ -155,7 +155,7 @@ enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
     var defer = promises.defer();
     var self = this;
     var requestFunction = function () {
-        
+
         try {
             var req = self.sendRequest(opts);
             defer.resolve(req);
@@ -165,7 +165,7 @@ enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
             }));
         }
     }
-    
+
     if (!this.options.handleQuota) {
         requestFunction();
     } else {
@@ -179,7 +179,7 @@ enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
     return defer.promise;
 }
 
-enginePrototypeMethods.promiseRequest = function (opts, requestHandler) {
+enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoAuth) {
     var defer = promises.defer();
     var self = this;
     var requestFunction = function () {
@@ -197,7 +197,7 @@ enginePrototypeMethods.promiseRequest = function (opts, requestHandler) {
                         body: body
                     });
                 }
-            });
+            }, forceNoAuth);
             requestHandler && requestHandler(req);
         } catch (error) {
             defer.reject(errorify({

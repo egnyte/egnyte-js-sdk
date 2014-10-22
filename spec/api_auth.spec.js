@@ -61,15 +61,19 @@ describe("API auth", function () {
     });
 
     describe("Password grant", function () {
-        var eg = Egnyte.init(egnyteDomain, {
+        var eg2 = Egnyte.init(egnyteDomain, {
             key: APIKey,
             QPS: 2
         });
 
-        it('should be able to log in', function () {
-            expect(eg.API.auth.isAuthorized()).toBe(false);
-            eg.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
-                expect(eg.API.auth.isAuthorized()).toBe(true);
+        it('should be able to log in', function (done) {
+            expect(eg2.API.auth.isAuthorized()).toBe(false);
+            eg2.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
+                expect(eg2.API.auth.isAuthorized()).toBe(true);
+                done();
+            }).fail(function (e) {
+                expect(e.statusCode).toBe(400);
+                done();
             });
         });
     });

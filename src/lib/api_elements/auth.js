@@ -148,7 +148,7 @@ authPrototypeMethods.requestTokenByPassword = function (username, password) {
             "username=" + username,
             "password=" + password
         ].join("&")
-    }).then(function (result) { //result.response result.body
+    },null,!!"forceNoAuth").then(function (result) { //result.response result.body
         self.token = result.body.access_token
         return self.token;
     });
