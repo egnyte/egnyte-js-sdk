@@ -15,9 +15,10 @@
     "author": "ztenerowicz@egnyte.com",
     "license": "Apache2",
     "dependencies": {
+        "chunking-streams": "0.0.7-b1",
         "pinkyswear": "2.2.2",
-        "q": "^1.0.1",
-        "request": "^2.40.0",
+        "q": "1.0.1",
+        "request": "2.40.0",
         "vkey": "1.0.0",
         "xhr": "1.16.1"
     },
