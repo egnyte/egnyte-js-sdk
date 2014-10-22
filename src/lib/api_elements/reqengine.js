@@ -101,13 +101,16 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
             body = JSON.parse(body);
         } catch (e) {}
 
+        if(response){
         var retryAfter = response.headers["retry-after"];
         var masheryCode = response.headers["x-mashery-error-code"];
         //in case headers get returned as arrays, we only expect one value
         retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
         masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+        }
 
         if (
+            response &&
             self.options.handleQuota &&
             response.statusCode === 403 &&
             retryAfter
@@ -131,6 +134,7 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
         } else {
 
             if (
+                response &&
                 //Checking for failed auth responses
                 //(ノಠ益ಠ)ノ彡┻━┻
                 self.options.onInvalidToken &&
