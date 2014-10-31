@@ -545,11 +545,10 @@ module.exports = {
 }
 
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(4);
+var RequestEngine = require(3);
 var AuthEngine = require(1);
-var StorageFacade = require(5);
+var StorageFacade = require(4);
 var LinkFacade = require(2);
-var PermFacade = require(3);
 
 
 module.exports = function (options) {
@@ -558,24 +557,22 @@ module.exports = function (options) {
 
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
-    var perms = new PermFacade(requestEngine);
     var api = {
         auth: auth,
         storage: storage,
-        link: link,
-        perms: perms
+        link: link
     };
 
     //onlt in IE8 and IE9
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(6);
+            var responder = require(5);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(7);
+                var forwarder = require(6);
                 forwarder(options, api);
             }
         }
@@ -585,23 +582,19 @@ module.exports = function (options) {
 
     return api;
 };
-<<<<<<< HEAD
-},{"1":12,"2":15,"3":17,"4":18,"5":19,"6":20,"7":21}],12:[function(require,module,exports){
-=======
-},{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22}],12:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":12,"2":14,"3":15,"4":16,"5":17,"6":18}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /\?error=access_denied/;
 
 
-var promises = require(6);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
-var errorify = require(5);
+var promises = require(5);
+var helpers = require(2);
+var dom = require(1);
+var messages = require(3);
+var errorify = require(4);
 
 
-var ENDPOINTS_userinfo = require(1).userinfo;
+
 
 
 function Auth(options) {
@@ -772,7 +765,7 @@ authPrototypeMethods.getUserInfo = function () {
     } else {
         return this.requestEngine.promiseRequest({
             method: "GET",
-            url: this.requestEngine.getEndpoint() + ENDPOINTS_userinfo,
+            url: this.requestEngine.getEndpoint() + "/userinfo",
         }).then(function (result) { //result.response result.body
             self.userInfo = result.body;
             return result.body;
@@ -783,196 +776,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-<<<<<<< HEAD
-},{"1":22,"2":24,"3":25,"4":26,"5":14,"6":23}],13:[function(require,module,exports){
-=======
-},{"1":23,"2":25,"3":26,"4":27,"5":15,"6":24}],13:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(2);
-var ENDPOINTS = require(1);
-
-
-function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
-    pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-    var opts = {
-        headers: headers,
-        method: "POST",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + encodeURI(pathFromRoot),
-        body: file,
-    }
-
-    return requestEngine.promiseRequest(decorate(opts));
-}
-
-function ChunkedUploader(storage, pathFromRoot, mimeType) {
-    this.storage = storage;
-    this.path = pathFromRoot;
-    this.mime = mimeType;
-    this.num = 1;
-    this.successful = 1;
-    this.chunksPromised = [];
-}
-
-var chunkedUploaderProto = {};
-
-chunkedUploaderProto.setId = function (id) {
-    this.id = id;
-};
-
-chunkedUploaderProto.sendChunk = function (content, num, verify) {
-    var self = this;
-    var requestEngine = this.storage.requestEngine;
-    var decorate = this.storage.getDecorator();
-    if (num) {
-        self.num = num;
-    } else {
-        num = (++self.num);
-    }
-    var headers = {
-        "x-egnyte-upload-id": self.id,
-        "x-egnyte-chunk-num": self.num,
-
-    };
-    var promised = genericUpload(requestEngine, decorate, self.path, headers, content)
-        .then(function (result) {
-            verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
-            self.successful++;
-            return result;
-        });
-    self.chunksPromised.push(promised);
-    return promised;
-
-};
-
-
-chunkedUploaderProto.sendLastChunk = function (content, verify) {
-    var self = this;
-    var requestEngine = this.storage.requestEngine;
-    var decorate = this.storage.getDecorator();
-
-    var headers = {
-        "x-egnyte-upload-id": self.id,
-        "x-egnyte-last-chunk": true,
-        "x-egnyte-chunk-num": self.num + 1
-    };
-    if (self.mime) {
-        headers["content-type"] = self.mime;
-    }
-
-    return promises.allSettled(this.chunksPromised)
-        .then(function () {
-            if (self.num === self.successful) {
-                return genericUpload(requestEngine, decorate, self.path, headers, content)
-                    .then(function (result) {
-                        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
-                        return ({
-                            id: result.response.headers["etag"],
-                            path: self.path
-                        });
-                    });
-            } else {
-                throw new Error("Tried to commit a file with missing chunks (some uploads failed)");
-            }
-        });
-
-};
-
-ChunkedUploader.prototype = chunkedUploaderProto;
-
-exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verify) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    var chunkedUploader = new ChunkedUploader(this, pathFromRoot, mimeType);
-    return promises(true).then(function () {
-        var file = fileOrBlob;
-        var headers = {};
-        if (mimeType) {
-            headers["content-type"] = mimeType;
-        }
-        return genericUpload(requestEngine, decorate, pathFromRoot, headers, fileOrBlob);
-    }).then(function (result) { //result.response result.body
-        verify && verify(result.response.headers["x-egnyte-chunk-sha512-checksum"]);
-        chunkedUploader.setId(result.response.headers["x-egnyte-upload-id"])
-        return chunkedUploader;
-    });
-
-}
-
-},{"1":23,"2":26,"3":24}],14:[function(require,module,exports){
->>>>>>> chunk-upload
-var helpers = require(1);
-
-var defaultDecorators = {
-
-    "impersonate": function (opts, data) {
-        if (!opts.headers) {
-            opts.headers = {}
-        }
-        if (data.username) {
-            opts.headers["X-Egnyte-Act-As"] = data.username;
-        }
-        if (data.email) {
-            opts.headers["X-Egnyte-Act-As-Email"] = data.email;
-        }
-        return opts;
-    }
-
-}
-
-
-
-function getDecorator() {
-    var self = this;
-    return function (opts) {
-        helpers.each(self._decorators, function (decor, name) {
-            if (self._decorations[name] !== undefined) {
-                opts = decor(opts, self._decorations[name]);
-            }
-        });
-        return opts;
-    }
-}
-
-module.exports = {
-    install: function (self) {
-
-        function exposeDecorators(that) {
-            helpers.each(that._decorators, function (decor, name) {
-                that[name] = function (data) {
-                    var Decorated = function () {};
-                    Decorated.prototype = this;
-                    var instance = new Decorated;
-                    instance.getDecorator = getDecorator;
-                    instance._decorations = helpers.extend({}, this._decorations)
-                    instance._decorations[name] = data;
-                    exposeDecorators(instance);
-                    return instance;
-                }
-            });
-        }
-
-        self._decorators = helpers.extend({}, defaultDecorators);
-        exposeDecorators(self);
-
-        self.addDecorator = function (name, action) {
-            this._decorators[name] = action;
-            exposeDecorators(this);
-        };
-        self.getDecorator = function () {
-            return helpers.id;
-        }
-
-
-
-    }
-}
-
-<<<<<<< HEAD
-},{"1":25}],14:[function(require,module,exports){
-=======
-},{"1":26}],15:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":20,"2":21,"3":22,"4":13,"5":19}],13:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -1034,27 +838,22 @@ module.exports = function (result) {
     return error;
 }
 
-<<<<<<< HEAD
-},{}],15:[function(require,module,exports){
-=======
-},{}],16:[function(require,module,exports){
->>>>>>> chunk-upload
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
+},{}],14:[function(require,module,exports){
+var promises = require(2);
+var helpers = require(1);
 
-var ENDPOINTS_links = require(1).links;
+
+
+var linksEndpoint = "/links";
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
-    decorators.install(this);
 }
 
 var linksProto = {};
 
-linksProto.createLink = function (setup) {
+linksProto.createLink = function(setup) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     var defaults = {
         path: null,
         type: "file",
@@ -1069,59 +868,56 @@ linksProto.createLink = function (setup) {
                 throw new Error("Path attribute missing or incorrect");
             }
 
-            return requestEngine.promiseRequest(decorate({
+            return requestEngine.promiseRequest({
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_links,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 json: setup
-            }));
+            });
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
 
-linksProto.removeLink = function (id) {
+linksProto.removeLink = function(id) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return requestEngine.promiseRequest(decorate({
+    return requestEngine.promiseRequest({
         method: "DELETE",
-        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
-    })).then(function (result) { //result.response result.body
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
         return result.response.statusCode;
     });
 }
 
-linksProto.listLink = function (id) {
+linksProto.listLink = function(id) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return requestEngine.promiseRequest(decorate({
+    return requestEngine.promiseRequest({
         method: "GET",
-        url: requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
-    })).then(function (result) { //result.response result.body
+        url: requestEngine.getEndpoint() + linksEndpoint + "/" + id
+    }).then(function (result) { //result.response result.body
         return result.body;
     });
 }
 
 
-linksProto.listLinks = function (filters) {
+linksProto.listLinks = function(filters) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true)
         .then(function () {
             filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-            return requestEngine.promiseRequest(decorate({
+            return requestEngine.promiseRequest({
                 method: "get",
-                url: requestEngine.getEndpoint() + ENDPOINTS_links,
+                url: requestEngine.getEndpoint() + linksEndpoint,
                 params: filters
-            }));
+            });
         }).then(function (result) { //result.response result.body
             return result.body;
         });
 }
 
-linksProto.findOne = function (filters) {
-    var self = this;
+linksProto.findOne = function(filters) {
+    var self=this;
     return self.listLinks(filters).then(function (list) {
         if (list.ids && list.ids.length > 0) {
             return self.listLink(list.ids[0]);
@@ -1134,197 +930,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-<<<<<<< HEAD
-},{"1":22,"2":25,"3":13,"4":23}],16:[function(require,module,exports){
-=======
-},{"1":23,"2":26,"3":14,"4":24}],17:[function(require,module,exports){
->>>>>>> chunk-upload
-var promises = require(3);
-var helpers = require(2);
-
-var ENDPOINTS_notes = require(1).notes;
-
-exports.addNote = function (pathFromRoot, body) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "POST",
-            headers: {
-                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-            },
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes,
-            body: JSON.stringify({
-                "path": pathFromRoot,
-                "body": body,
-            })
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return {
-            id: result.body.id
-        };
-    });
-
-}
-exports.listNotes = function (pathFromRoot, params) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes
-        };
-
-        //xhr and request differ here
-        opts.params = helpers.extend({
-            "file": encodeURI(pathFromRoot)
-        }, params);
-
-        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
-            return result.body;
-        });
-    });
-
-}
-
-exports.getNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
-            return result.body;
-        });
-    });
-
-}
-exports.removeNote = function (id) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var opts = {
-            method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    });
-
-}
-<<<<<<< HEAD
-=======
-
->>>>>>> chunk-upload
-
-
-
-
-<<<<<<< HEAD
-
-},{"1":22,"2":25,"3":23}],17:[function(require,module,exports){
-=======
-},{"1":23,"2":26,"3":24}],18:[function(require,module,exports){
->>>>>>> chunk-upload
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
-
-var ENDPOINTS_perms = require(1).perms;
-
-function Perms(requestEngine) {
-    this.requestEngine = requestEngine;
-    decorators.install(this);
-
-    this.addDecorator("users", enlist("users"))
-    this.addDecorator("groups", enlist("groups"))
-
-}
-
-function enlist(what) {
-    return function (opts, data) {
-        switch (opts.method) {
-        case 'GET':
-            opts.params || (opts.params = {});
-            opts.params[what] = data.join("|");
-            break;
-        case 'POST':
-            opts.json[what] = data;
-            break;
-        }
-        return opts;
-    }
-}
-
-
-var permsProto = {};
-
-permsProto.disallow = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "None");
-}
-permsProto.allowView = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Viewer");
-}
-permsProto.allowEdit = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Editor");
-}
-permsProto.allowFullAccess = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Full");
-}
-permsProto.allowOwnership = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Owner");
-}
-
-permsProto.allow = function (pathFromRoot, permission) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-
-    return promises(true)
-        .then(function () {
-            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-            var opts = {
-                method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
-                json: {
-                    "permission": permission
-                }
-            };
-            return requestEngine.promiseRequest(decorate(opts));
-        }).then(function (result) { //result.response result.body
-            return result.response;
-        });
-};
-
-permsProto.getPerms = function (pathFromRoot) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-
-    return promises(true)
-        .then(function () {
-            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-            var opts = {
-                method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
-            };
-            return requestEngine.promiseRequest(decorate(opts));
-        }).then(function (result) { //result.response result.body
-            return result.body;
-        });
-};
-
-
-Perms.prototype = permsProto;
-
-module.exports = Perms;
-<<<<<<< HEAD
-},{"1":22,"2":25,"3":13,"4":23}],18:[function(require,module,exports){
-=======
-},{"1":23,"2":26,"3":14,"4":24}],19:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":21,"2":19}],15:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1403,10 +1009,63 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         if (!callback) {
             return self.requestHandler(opts);
         } else {
-            var retry = function(){
-                self.sendRequest(originalOpts, self.retryHandler(callback, retry));
-            };
-            return self.requestHandler(opts, self.retryHandler(callback, retry));
+            return self.requestHandler(opts, function (error, response, body) {
+                //emulating the default XHR behavior
+                if (!error && response.statusCode >= 400 && response.statusCode < 600) {
+                    error = new Error(body);
+                }
+                try {
+                    //this shouldn't be required, but server sometimes responds with content-type text/plain
+                    body = JSON.parse(body);
+                } catch (e) {}
+
+                var retryAfter = response.headers["retry-after"];
+                var masheryCode = response.headers["x-mashery-error-code"];
+                //in case headers get returned as arrays, we only expect one value
+                retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+                masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+
+                if (
+                    self.options.handleQuota &&
+                    response.statusCode === 403 &&
+                    retryAfter
+                ) {
+                    if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
+                        //retry
+                        console && console.warn("developer over QPS, retrying");
+                        self.quota.retrying = 1000 * ~~(retryAfter);
+                        setTimeout(function () {
+                            self.quota.retrying = 0;
+                            self.sendRequest(originalOpts, callback);
+                        }, self.quota.retrying);
+
+                    }
+                    if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
+                        error.RATE = true;
+                        callback.call(this, error, response, body);
+                    }
+
+                } else {
+
+                    if (
+                        //Checking for failed auth responses
+                        //(ノಠ益ಠ)ノ彡┻━┻
+                        self.options.onInvalidToken &&
+                        (
+                            response.statusCode === 401 ||
+                            (
+                                response.statusCode === 403 &&
+                                masheryCode === "ERR_403_DEVELOPER_INACTIVE"
+                            )
+                        )
+                    ) {
+                        self.auth.dropToken();
+                        self.options.onInvalidToken();
+                    }
+
+                    callback.call(this, error, response, body);
+                }
+            });
         }
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -1414,96 +1073,6 @@ enginePrototypeMethods.sendRequest = function (opts, callback) {
         }, null);
     }
 
-}
-
-enginePrototypeMethods.retryHandler = function(callback, retry){
-    var self = this;
-    return function (error, response, body) {
-        //emulating the default XHR behavior
-        if (!error && response.statusCode >= 400 && response.statusCode < 600) {
-            error = new Error(body);
-        }
-        try {
-            //this shouldn't be required, but server sometimes responds with content-type text/plain
-            body = JSON.parse(body);
-        } catch (e) {}
-
-        var retryAfter = response.headers["retry-after"];
-        var masheryCode = response.headers["x-mashery-error-code"];
-        //in case headers get returned as arrays, we only expect one value
-        retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-        masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
-
-        if (
-            self.options.handleQuota &&
-            response.statusCode === 403 &&
-            retryAfter
-        ) {
-            if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
-                //retry
-                console && console.warn("developer over QPS, retrying");
-                self.quota.retrying = 1000 * ~~(retryAfter);
-                setTimeout(function () {
-                    self.quota.retrying = 0;
-                    retry();
-
-                }, self.quota.retrying);
-
-            }
-            if (masheryCode === "ERR_403_DEVELOPER_OVER_RATE") {
-                error.RATE = true;
-                callback.call(this, error, response, body);
-            }
-
-        } else {
-
-            if (
-                //Checking for failed auth responses
-                //(ノಠ益ಠ)ノ彡┻━┻
-                self.options.onInvalidToken &&
-                (
-                    response.statusCode === 401 ||
-                    (
-                        response.statusCode === 403 &&
-                        masheryCode === "ERR_403_DEVELOPER_INACTIVE"
-                    )
-                )
-            ) {
-                self.auth.dropToken();
-                self.options.onInvalidToken();
-            }
-
-            callback.call(this, error, response, body);
-        }
-    };
-}
-
-enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
-    var defer = promises.defer();
-    var self = this;
-    var requestFunction = function () {
-        
-        try {
-            var req = self.sendRequest(opts);
-            defer.resolve(req);
-        } catch (error) {
-            defer.reject(errorify({
-                error: error
-            }));
-        }
-    }
-    
-    if (!this.options.handleQuota) {
-        requestFunction();
-    } else {
-        //add to queue
-        this.queue.push(requestFunction);
-        //stop previous queue processing if any
-        clearTimeout(this.quota.to);
-        //start queue processing
-        this.queueHandler();
-    }
-    return defer.promise;
 }
 
 enginePrototypeMethods.promiseRequest = function (opts, requestHandler) {
@@ -1586,47 +1155,35 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-<<<<<<< HEAD
-},{"1":24,"2":25,"3":26,"4":14,"5":23,"6":3}],19:[function(require,module,exports){
-var promises = require(5);
-var helpers = require(2);
-var decorators = require(3);
-var notes = require(4);
-=======
-},{"1":25,"2":26,"3":27,"4":15,"5":24,"6":3}],20:[function(require,module,exports){
-var promises = require(6);
-var helpers = require(2);
-var decorators = require(4);
-var notes = require(5);
-var chunkedUpload = require(3);
->>>>>>> chunk-upload
+},{"1":20,"2":21,"3":22,"4":13,"5":19,"6":3}],16:[function(require,module,exports){
+var promises = require(2);
+var helpers = require(1);
 
-var ENDPOINTS = require(1);
+var fsmeta = "/fs";
+var fscontent = "/fs-content";
 
 
 function Storage(requestEngine) {
     this.requestEngine = requestEngine;
-    decorators.install(this);
 }
 
 var storageProto = {};
 storageProto.exists = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
-            opts.params = {
+            opts.params = opts.qs = { //xhr and request differ here
                 "entry_id": versionEntryId
             };
         }
 
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return true;
@@ -1644,21 +1201,20 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
 
 storageProto.get = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
-            opts.params = {
+            opts.params = opts.qs = { //xhr and request differ here
                 "entry_id": versionEntryId
             };
         }
 
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.body;
     });
@@ -1666,16 +1222,15 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
 
 storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
-            opts.params = {
+            opts.params = opts.qs = { //xhr and request differ here
                 "entry_id": versionEntryId
             };
         }
@@ -1684,7 +1239,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
             opts.responseType = "arraybuffer";
         }
 
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return result.response;
     });
@@ -1692,17 +1247,15 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
 storageProto.createFolder = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
-        };
-        return requestEngine.promiseRequest(decorate(opts));
+        });
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 201) {
             return {
@@ -1714,29 +1267,28 @@ storageProto.createFolder = function (pathFromRoot) {
 }
 
 storageProto.move = storageProto.rename = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "move");
+    return transfer(this.requestEngine, pathFromRoot, newPath, "move");
 }
 
 storageProto.copy = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "copy");
+    return transfer(this.requestEngine, pathFromRoot, newPath, "copy");
 }
 
-function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
+function transfer(requestEngine, pathFromRoot, newPath, action) {
     return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
         }
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         newPath = helpers.encodeNameSafe(newPath);
-        var opts = {
+        return requestEngine.promiseRequest({
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": "/" + newPath,
             }
-        };
-        return requestEngine.promiseRequest(decorate(opts));
+        });
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return {
@@ -1749,27 +1301,24 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
 
 
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-<<<<<<< HEAD
-=======
+            url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
             body: file,
         }
-
+        
         opts.headers = {};
         if (mimeType) {
             opts.headers["Content-Type"] = mimeType;
         }
 
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(opts);
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
@@ -1778,37 +1327,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
-
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var file = fileOrBlob;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
->>>>>>> chunk-upload
-            body: file,
-        }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return ({
-            id: result.response.headers["etag"],
-            path: pathFromRoot
-        });
-    });
-}
-
-//currently not supported by back - end
-//
+//currently not supported by back-end
 //function storeFileMultipart(pathFromRoot, fileOrBlob) {
 //    return promises(true).then(function () {
 //        if (!window.FormData) {
@@ -1818,12 +1337,12 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 //        var formData = new window.FormData();
 //        formData.append('file', file);
 //        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-//        var opts = {
+//
+//        return api.promiseRequest({
 //            method: "POST",
 //            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
 //            body: formData,
-//        };
-//        return api.promiseRequest(decorate(opts));
+//        });
 //    }).then(function (result) { //result.response result.body
 //        return ({
 //            id: result.response.getResponseHeader("etag"),
@@ -1834,19 +1353,19 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
 
 //private
-function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
+function remove(requestEngine, pathFromRoot, versionEntryId) {
     return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
-            opts.params = {
+            opts.params = opts.qs = { //xhr and request differ here
                 "entry_id": versionEntryId
             };
         }
-        return requestEngine.promiseRequest(decorate(opts));
+        return requestEngine.promiseRequest(opts);
 
     }).then(function (result) { //result.response result.body
         return result.response.statusCode;
@@ -1855,35 +1374,23 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
 
 storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
     return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(requestEngine, decorate, pathFromRoot, versionEntryId)
+        return remove(requestEngine, pathFromRoot, versionEntryId)
     });
 }
 
 
 storageProto.remove = function (pathFromRoot) {
-    var decorate = this.getDecorator();
-    return remove(this.requestEngine, decorate, pathFromRoot);
+    return remove(this.requestEngine, pathFromRoot);
 }
-
-storageProto = helpers.extend(storageProto,notes);
-<<<<<<< HEAD
-=======
-storageProto = helpers.extend(storageProto,chunkedUpload);
->>>>>>> chunk-upload
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-<<<<<<< HEAD
-},{"1":22,"2":25,"3":13,"4":16,"5":23}],20:[function(require,module,exports){
-=======
-},{"1":23,"2":26,"3":13,"4":14,"5":17,"6":24}],21:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":21,"2":19}],17:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1945,11 +1452,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-<<<<<<< HEAD
-},{"1":24,"2":25,"3":26}],21:[function(require,module,exports){
-=======
-},{"1":25,"2":26,"3":27}],22:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":20,"2":21,"3":22}],18:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -2083,32 +1586,8 @@ function init(options, api) {
 }
 
 module.exports = init;
-<<<<<<< HEAD
-},{"1":24,"2":25,"3":26,"4":23}],22:[function(require,module,exports){
-module.exports={
-    "fsmeta": "/fs",
-    "fscontent": "/fs-content",
-=======
-},{"1":25,"2":26,"3":27,"4":24}],23:[function(require,module,exports){
-module.exports={
-    "fsmeta": "/fs",
-    "fscontent": "/fs-content",
-    "fschunked": "/fs-content-chunked",
->>>>>>> chunk-upload
-    "notes": "/notes",
-    "links": "/links",
-    "perms":"/perms/folder",
-    "userinfo":"/userinfo"
-}
-
-<<<<<<< HEAD
-},{}],23:[function(require,module,exports){
+},{"1":20,"2":21,"3":22,"4":19}],19:[function(require,module,exports){
 var pinkySwear = require(1);
-=======
-},{}],24:[function(require,module,exports){
-var pinkySwear = require(2);
-var helpers = require(1);
->>>>>>> chunk-upload
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2137,38 +1616,8 @@ Promises.defer = function () {
     };
 }
 
-Promises.allSettled = function (array) {
-    var collectiveDefere = Promises.defer();
-    var results = [];
-    var counter = array.length;
-    var resolver = function (num, item) {
-        results[num] = item;
-        if (--counter === 0) {
-            collectiveDefere.resolve(results);
-        }
-    }
-    helpers.each(array, function (promise, num) {
-        promise.then(function (result) {
-            resolver(num, {
-                state: "fulfilled",
-                value: result
-            });
-        }, function (err) {
-            resolver(num, {
-                state: "rejected",
-                reason: err
-            });
-        })
-    });
-    return collectiveDefere.promise;
-}
-
 module.exports = Promises;
-<<<<<<< HEAD
-},{"1":1}],24:[function(require,module,exports){
-=======
-},{"1":26,"2":1}],25:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":1}],20:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -2238,11 +1687,7 @@ module.exports = {
 
 }
 
-<<<<<<< HEAD
-},{"1":2}],25:[function(require,module,exports){
-=======
-},{"1":2}],26:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":2}],21:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2276,7 +1721,6 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    id: function (a) {return a},
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
@@ -2299,11 +1743,7 @@ module.exports = {
         return (name);
     }
 };
-<<<<<<< HEAD
-},{}],26:[function(require,module,exports){
-=======
-},{}],27:[function(require,module,exports){
->>>>>>> chunk-upload
+},{}],22:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2355,11 +1795,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-<<<<<<< HEAD
-},{"1":25}],27:[function(require,module,exports){
-=======
-},{"1":26}],28:[function(require,module,exports){
->>>>>>> chunk-upload
+},{"1":21}],23:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -2390,8 +1826,4 @@ module.exports = {
     }
 
 })();
-<<<<<<< HEAD
-},{"1":10,"2":11,"3":25}]},{},[27]);
-=======
-},{"1":10,"2":11,"3":26}]},{},[28]);
->>>>>>> chunk-upload
+},{"1":10,"2":11,"3":21}]},{},[23]);
