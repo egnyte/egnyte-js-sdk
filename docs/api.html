@@ -142,6 +142,11 @@
 <td>Performs authorization in an iframe instead of reloading the page. Iframe is appended to <code>node</code>. <code>path</code> argument is used as a redirect target for log-in prompt completion. <code>path</code> defaults to current window location. (see examples/request_token_iframe.html)</td>
 </tr>
 <tr>
+<td>API.auth.requestTokenByPassword</td>
+<td><code>username</code>, <code>password</code></td>
+<td>Performs authorization using login and password provided by the user and resolves to the access token. Using this auth method requires switching your API key settings to be an &quot;internal application&quot;, which is only available for Egnyte partners. (Contact us if you need that)</td>
+</tr>
+<tr>
 <td>API.auth.authorizeXHR</td>
 <td><code>XHR object</code></td>
 <td>Adds authorization header to given XHR object</td>

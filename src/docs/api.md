@@ -73,6 +73,7 @@ API.auth.setToken | `token` | Accepts a token string. New token overwrites the p
 API.auth.requestTokenReload | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload. (see examples/request_token.html)
 API.auth.requestTokenPopup | `success_callback`, `denied_callback`,`postmessage_sender` | Opens a new window or tab for the user. `postmessage_sender` is a fully qualified HTTPS URL to a copy of `dist/resources/token.html`. (see examples/request_token_popup.html)
 API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location. (see examples/request_token_iframe.html)
+API.auth.requestTokenByPassword | `username`, `password` | Performs authorization using login and password provided by the user and resolves to the access token. Using this auth method requires switching your API key settings to be an "internal application", which is only available for Egnyte partners. (Contact us if you need that)
 API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object
 API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
 API.auth.getToken | | Returns the token string

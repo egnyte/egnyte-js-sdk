@@ -1,6 +1,7 @@
 #Usage notes for node.js
 
 The authorization flow has to be done in the browser, so you'll need to get the access token from there and initialize Egnyte with the token. 
+The only auth method that can be successfully used server-side is the password grant, `API.auth.requestTokenByPassword` which is available for "internal applications". (You need to become Egnyte partner to get a key for such an app)
 
 All API methods work as described in main docs, with the following exceptions:
 
