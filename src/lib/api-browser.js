@@ -3,7 +3,7 @@ var AuthEngine = require("./api_elements/auth");
 var StorageFacade = require("./api_elements/storage");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
-
+var plugin = require("./api_elements/plugin");
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -35,6 +35,7 @@ module.exports = function (options) {
     }
 
     api.manual = requestEngine;
+    api.plugin = plugin(requestEngine, api);
 
     return api;
 };
