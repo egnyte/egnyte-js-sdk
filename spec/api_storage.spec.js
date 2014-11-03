@@ -58,31 +58,6 @@ describe("Storage API facade integration", function () {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
-    it('should accept an existing token', function () {
-        //token was passed in beforeEach
-        expect(eg.API.auth.isAuthorized()).toBe(true);
-    });
-
-
-    describe("Auth methods", function () {
-
-        var recentFileObject;
-
-        it("Should provide userinfo", function (done) {
-            eg.API.auth.getUserInfo().then(function (info) {
-                expect(info).toBeTruthy();
-                expect(info.username).toBeDefined();
-                expect(info.username.length).toBeGreaterThan(1);
-                done();
-            }).fail(function (e) {
-                expect(this).toAutoFail(e);
-                done();
-            });
-
-        });
-
-    });
-
 
     var testpath;
     var testpath2;
@@ -228,7 +203,7 @@ describe("Storage API facade integration", function () {
                 .then(function (e) {
                     expect(e["entry_id"]).toEqual(fileID);
                     expect(e["is_folder"]).toBeFalsy();
-                    expect(e["size"] > 0).toBeTruthy();
+                    expect(+e["size"]).toBeGreaterThan(0);
 
                     recentFileObject = e;
                     done();
