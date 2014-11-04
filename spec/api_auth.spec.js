@@ -59,23 +59,23 @@ describe("API auth", function () {
 
 
     });
+    if (!ImInBrowser) {
+        describe("Password grant", function () {
+            var eg2 = Egnyte.init(egnyteDomain, {
+                key: APIKey,
+                QPS: 2
+            });
 
-    describe("Password grant", function () {
-        var eg2 = Egnyte.init(egnyteDomain, {
-            key: APIKey,
-            QPS: 2
-        });
-
-        it('should be able to log in', function (done) {
-            expect(eg2.API.auth.isAuthorized()).toBe(false);
-            eg2.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
-                expect(eg2.API.auth.isAuthorized()).toBe(true);
-                done();
-            }).fail(function (e) {
-                expect(e.statusCode).toBe(400);
-                done();
+            it('should be able to log in', function (done) {
+                expect(eg2.API.auth.isAuthorized()).toBe(false);
+                eg2.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
+                    expect(eg2.API.auth.isAuthorized()).toBe(true);
+                    done();
+                }).fail(function (e) {
+                    expect(e.statusCode).toBe(400);
+                    done();
+                });
             });
         });
-    });
-
+    }
 });

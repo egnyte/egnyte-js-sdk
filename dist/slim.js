@@ -587,7 +587,7 @@ module.exports = function (options) {
 };
 },{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
-var oauthDeniedRegex = /\?error=access_denied/;
+var oauthDeniedRegex = /error=access_denied/;
 
 
 var promises = require(6);
