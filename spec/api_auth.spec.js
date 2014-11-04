@@ -59,7 +59,7 @@ describe("API auth", function () {
 
 
     });
-    if (!ImInBrowser) {
+    if (!ImInBrowser && typeof APIPassword !== "undefined" && typeof APIKey !== "undefined") {
         describe("Password grant", function () {
             var eg2 = Egnyte.init(egnyteDomain, {
                 key: APIKey,
@@ -68,7 +68,7 @@ describe("API auth", function () {
 
             it('should be able to log in', function (done) {
                 expect(eg2.API.auth.isAuthorized()).toBe(false);
-                eg2.API.auth.requestTokenByPassword("zb", "thisIsNotAPassword").then(function () {
+                eg2.API.auth.requestTokenByPassword(APIUsername, APIPassword).then(function () {
                     expect(eg2.API.auth.isAuthorized()).toBe(true);
                     done();
                 }).fail(function (e) {
@@ -78,4 +78,8 @@ describe("API auth", function () {
             });
         });
     }
+
+    
+
+
 });
