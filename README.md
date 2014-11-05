@@ -5,23 +5,22 @@ Egnyte JavaScript SDK
 
 This package contains:
 
- - a JavaScript wrapper on Egnyte Public API with methods for working with File System API and Link API 
+ - a JavaScript wrapper on Egnyte Public API with methods for working with File System, Links, Permissions and more 
  - a file picker implementation working on top of the File System API
- - a file picker helper to pick files from Egnyte without using the Public API
  
 
 ## Installation
 
 `dist/` contains two builds:
 
- - `dist/egnyte.js` is the complete functionality
+ - `dist/egnyte.js` is the complete functionality (with UI)
  - `dist/slim.js` is only the API wrapper
 
 _File sizes_
-```
-dist/egnyte.min.js minified: 43.37 kB gzipped: 9.59 kB
-dist/slim.min.js minified: 25.9 kB gzipped: 5.58 kB
 
+```
+dist/egnyte.min.js minified: 46.23 kB gzipped: 10.12 kB
+dist/slim.min.js minified: 28.77 kB gzipped: 6.15 kB
 ```
 
 To use the SDK, just add the script to your app's HTML document.
