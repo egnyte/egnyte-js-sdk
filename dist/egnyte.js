@@ -613,7 +613,7 @@ module.exports = function (options) {
 };
 },{"1":13,"2":17,"3":19,"4":20,"5":21,"6":22,"7":23}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
-var oauthDeniedRegex = /\?error=access_denied/;
+var oauthDeniedRegex = /error=access_denied/;
 
 
 var promises = require(6);

@@ -1,5 +1,5 @@
 var oauthRegex = /access_token=([^&]+)/;
-var oauthDeniedRegex = /\?error=access_denied/;
+var oauthDeniedRegex = /error=access_denied/;
 
 
 var promises = require("q");
