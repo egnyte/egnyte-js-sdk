@@ -545,12 +545,12 @@ module.exports = {
 }
 
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(4);
+var RequestEngine = require(5);
 var AuthEngine = require(1);
-var StorageFacade = require(5);
+var StorageFacade = require(6);
 var LinkFacade = require(2);
 var PermFacade = require(3);
-
+var plugin = require(4);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -570,22 +570,23 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(6);
+            var responder = require(7);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(7);
+                var forwarder = require(8);
                 forwarder(options, api);
             }
         }
     }
 
     api.manual = requestEngine;
+    api.plugin = plugin(requestEngine, api);
 
     return api;
 };
-},{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22}],12:[function(require,module,exports){
+},{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22,"8":23}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
@@ -800,7 +801,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":23,"2":25,"3":26,"4":27,"5":15,"6":24}],13:[function(require,module,exports){
+},{"1":24,"2":26,"3":27,"4":28,"5":15,"6":25}],13:[function(require,module,exports){
 var promises = require(3);
 var helpers = require(2);
 var ENDPOINTS = require(1);
@@ -913,7 +914,7 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
 
 }
 
-},{"1":23,"2":26,"3":24}],14:[function(require,module,exports){
+},{"1":24,"2":27,"3":25}],14:[function(require,module,exports){
 var helpers = require(1);
 
 var defaultDecorators = {
@@ -981,7 +982,7 @@ module.exports = {
     }
 }
 
-},{"1":26}],15:[function(require,module,exports){
+},{"1":27}],15:[function(require,module,exports){
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -1139,7 +1140,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":23,"2":26,"3":14,"4":24}],17:[function(require,module,exports){
+},{"1":24,"2":27,"3":14,"4":25}],17:[function(require,module,exports){
 var promises = require(3);
 var helpers = require(2);
 
@@ -1222,7 +1223,7 @@ exports.removeNote = function (id) {
 
 
 
-},{"1":23,"2":26,"3":24}],18:[function(require,module,exports){
+},{"1":24,"2":27,"3":25}],18:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var decorators = require(3);
@@ -1313,7 +1314,25 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"1":23,"2":26,"3":14,"4":24}],19:[function(require,module,exports){
+},{"1":24,"2":27,"3":14,"4":25}],19:[function(require,module,exports){
+var promises = require(4);
+var helpers = require(2);
+var decorators = require(3);
+var ENDPOINTS = require(1);
+
+module.exports = function (requestEngine, API) {
+    return function (name, pluginClosure) {
+        API[name] = pluginClosure({
+            requestEngine: requestEngine,
+            ENDPOINTS: ENDPOINTS,
+            promises: promises,
+            helpers: helpers,
+            decorators: decorators
+        });
+    }
+}
+
+},{"1":24,"2":27,"3":14,"4":25}],20:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1579,7 +1598,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":25,"2":26,"3":27,"4":15,"5":24,"6":3}],20:[function(require,module,exports){
+},{"1":26,"2":27,"3":28,"4":15,"5":25,"6":3}],21:[function(require,module,exports){
 var promises = require(6);
 var helpers = require(2);
 var decorators = require(4);
@@ -1858,7 +1877,7 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":23,"2":26,"3":13,"4":14,"5":17,"6":24}],21:[function(require,module,exports){
+},{"1":24,"2":27,"3":13,"4":14,"5":17,"6":25}],22:[function(require,module,exports){
 var helpers = require(2);
 var dom = require(1);
 var messages = require(3);
@@ -1920,7 +1939,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":25,"2":26,"3":27}],22:[function(require,module,exports){
+},{"1":26,"2":27,"3":28}],23:[function(require,module,exports){
 var promises = require(4);
 var helpers = require(2);
 var dom = require(1);
@@ -2054,7 +2073,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":25,"2":26,"3":27,"4":24}],23:[function(require,module,exports){
+},{"1":26,"2":27,"3":28,"4":25}],24:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
@@ -2065,7 +2084,7 @@ module.exports={
     "userinfo":"/userinfo"
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var pinkySwear = require(2);
 var helpers = require(1);
 
@@ -2123,7 +2142,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":26,"2":1}],25:[function(require,module,exports){
+},{"1":27,"2":1}],26:[function(require,module,exports){
 var vkey = require(1);
 
 
@@ -2193,7 +2212,7 @@ module.exports = {
 
 }
 
-},{"1":2}],26:[function(require,module,exports){
+},{"1":2}],27:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2250,7 +2269,7 @@ module.exports = {
         return (name);
     }
 };
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var helpers = require(1);
 
 
@@ -2302,7 +2321,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"1":26}],28:[function(require,module,exports){
+},{"1":27}],29:[function(require,module,exports){
 (function () {
     "use strict";
 
@@ -2333,4 +2352,4 @@ module.exports = {
     }
 
 })();
-},{"1":10,"2":11,"3":26}]},{},[28]);
+},{"1":10,"2":11,"3":27}]},{},[29]);

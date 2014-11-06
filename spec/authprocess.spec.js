@@ -6,11 +6,12 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    var Browser = require("zombie");
 
     process.setMaxListeners(0);
 }
 
-describe("API auth", function () {
+describe("API auth functional", function () {
 
 
     beforeEach(function () {
@@ -20,51 +21,52 @@ describe("API auth", function () {
 
 
     if (!ImInBrowser && typeof APIPassword !== "undefined" && typeof APIKeyImplicit !== "undefined") {
-        describe("Implicit grant", function () {
-            var Browser = require("zombie");
+        describe("Implicit grant without sessions", function () {
             var browser = new Browser({
                 debug: false
             });
             browser.runScripts = true;
             browser.deleteCookies();
 
-            it("needs a headless browser", function (next) {
-                expect(browser).toBeDefined();
-                next();
+
+            it("should work with login and password", function (done) {
+                var authpage = egnyteDomain + "/puboauth/token?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
+                browser.visit(authpage, function (err) {
+                    //console.log(err);
+                    expect(browser.success).toBe(true);
+                    expect(browser.query("#userInSession").value).toBe("false");
+
+                    browser
+                        .fill("#j_username", APIUsername)
+                        .fill("#j_password", APIPassword);
+
+                    browser.pressButton("#btnSubmit", function (err) {
+                        //check stuff
+                        if (err) {
+                            expect(this).toAutoFail(err);
+                        }
+                        var authRequest = browser.resources.filter(function (re) {
+                            return re.request && re.request.url.match(/puboauth\/authenticate/);
+                        }).reverse()[0];
+
+                        expect(authRequest).toBeTruthy();
+                        expect(authRequest.response.url).not.toMatch(/error=access_denied/);
+                        expect(authRequest.response.url).toMatch(/type=bearer/);
+
+                        done();
+                    });
+                });
+
+
             });
-            
-// currently crashes Zombie.js, waiting for new version          
-//            it("should work when an Egnyte session doesn't exist", function (done) {
-//                var authpage = egnyteDomain + "/puboauth/token?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
-//                browser.deleteCookies();
-//                browser.visit(authpage, function (err) {
-//                    //console.log(err);
-//                    expect(browser.success).toBe(true);
-//                    expect(browser.query("#userInSession").value).toBe("false");
-//
-//                    browser
-//                        .fill("#j_username", APIUsername)
-//                        .fill("#j_password", APIPassword);
-//
-//                    browser.pressButton("#btnSubmit", function (err) {
-//                        //check stuff
-//                        if (err) {
-//                            expect(this).toAutoFail(err);
-//                        }
-//                        var authRequest = browser.resources.filter(function (re) {
-//                            return re.request.url.match(/puboauth\/authenticate/);
-//                        }).reverse()[0];
-//                        
-//                        expect(authRequest).toBeTruthy();
-//                        expect(authRequest.response.url).not.toMatch(/error=access_denied/);
-//                        expect(authRequest.response.url).toMatch(/type=bearer/);
-//
-//                        done();
-//                    });
-//                });
-//
-//
-//            });
+        });
+        describe("Implicit grant with session", function () {
+            var browser = new Browser({
+                debug: false
+            });
+            browser.runScripts = true;
+            browser.deleteCookies();
+
 
             it('needs a session with Egnyte', function (done) {
                 browser.visit(egnyteDomain, function () {
@@ -86,7 +88,7 @@ describe("API auth", function () {
 
             });
 
-            it("should work when an Egnyte session exists", function (done) {
+            it("should work without login and password", function (done) {
                 var authpage = egnyteDomain + "/puboauth/token?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                 browser.visit(authpage, function (err) {
                     //console.log(err);
@@ -98,9 +100,10 @@ describe("API auth", function () {
                             expect(this).toAutoFail(err);
                         }
                         var authRequest = browser.resources.filter(function (re) {
-                            return re.request.url.match(/puboauth\/authenticate/);
+                            return re.request && re.request.url.match(/puboauth\/authenticate/);
                         }).reverse()[0];
-console.log(authRequest)
+
+
                         expect(authRequest).toBeTruthy();
                         expect(authRequest.response.url).not.toMatch(/error=access_denied/);
                         expect(authRequest.response.url).toMatch(/type=bearer/);
