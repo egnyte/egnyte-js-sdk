@@ -1,8 +1,7 @@
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "app/integ/forwarder/1.1/apiForwarder.html",
-    filepickerViewAddress: "register.do?ref=folder-explorer",
+    forwarderAddress: "app/integ/forwarder/1.2/apiForwarder.html",
     channelMarker: "'E",
     httpRequest: null,
     oldIEForwarder: false
