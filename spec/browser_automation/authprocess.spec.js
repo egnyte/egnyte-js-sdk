@@ -3,9 +3,9 @@ var ImInBrowser = (typeof window !== "undefined");
 if (!ImInBrowser) {
     var stream = require('stream')
     var concat = require('concat-stream')
-    Egnyte = require("../src/slim");
-    require("./conf/apiaccess");
-    require("./helpers/matchers");
+    Egnyte = require("../../src/slim");
+    require("../conf/apiaccess");
+    require("../helpers/matchers");
     var Browser = require("zombie");
 
     process.setMaxListeners(0);

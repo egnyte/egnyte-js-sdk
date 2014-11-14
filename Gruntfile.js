@@ -93,7 +93,8 @@ module.exports = function (grunt) {
                 extensions: 'js',
                 specNameMatcher: 'spec'
             },
-            all: ['spec/']
+            all: ['spec/','spec/browser_automation'],
+            browser_automation:['spec/browser_automation']
         },
         nodeunit: {
             units: ['src/unittests/*.js']
