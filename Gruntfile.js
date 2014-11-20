@@ -202,9 +202,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-jasmine-node');
 
 
-    grunt.registerTask("test", ["nodeunit:units", "dist", "jasmine:all"]);
+    grunt.registerTask("test-browser", ["nodeunit:units", "dist", "jasmine:all"]);
     grunt.registerTask("test-node", ["jasmine_node"]);
-    grunt.registerTask("test-all", ["jasmine_node","test"]);
+    grunt.registerTask("test", ["test","test-node"]);
     grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
