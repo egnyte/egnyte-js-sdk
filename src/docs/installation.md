@@ -1,4 +1,4 @@
-#Installation
+# Installation
 
 `dist/` contains two builds:
  - `dist/egnyte.js` (~32KB minified) is the complete functionality
@@ -21,7 +21,7 @@ If you wish to use filepicker with fonts matching main Egnyte UI, add `Open Sans
 <script src="egnyte.min.js"></script>
 ```  
 
-#Building and dependencies
+# Building and dependencies
 
 To build the project and run tests `nodeJS` is required in your system.
 
@@ -45,16 +45,26 @@ Run localhost server at https://127.0.0.1:9999/
 
 
 
-##Tests setup
+## Tests setup
 
 To run tests for the API you need to have access to the Public API first.
-Create a file `spec/conf/apiaccess.js` with the following content:
+Create a file `spec/conf/apiaccess.js` based on the `spec/conf/apiaccess_template.js` file.
 
-    egnyteDomain = "https://YOURDOMAIN.egnyte.com";
-    APIToken = "YOURACCESSTOKEN";
+```javascript
+egnyteDomain = "https://YOURDOMAIN.egnyte.com";
+APIToken = "YOURACCESSTOKEN";
+
+//optionally
+APIKey = "12345" //API key for password grant
+APIUsername = "user";
+APIPassword = "foo";
+APIKeyImplicit = "9876543" //API key for implicit grant
+```
 
 `YOURACCESSTOKEN` is not the API key. 
 
 You need to obtain the access token using your key and `requestToken` method or as described in authentication section of [Egnyte Public API docs](http://developers.egnyte.com/docs). 
 
 But the easiest way at first is to run `grunt serve` and open https://127.0.0.1:9999/examples/request_token.html and go through the flow in the example to get a token.
+
+Keys and user credentials are optional - tests checking authorization flows will not run without them.
