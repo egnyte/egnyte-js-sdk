@@ -29,7 +29,9 @@ function Engine(auth, options) {
 
 }
 
-var enginePrototypeMethods = {};
+var enginePrototypeMethods = {
+    Promise: promises
+};
 
 
 
@@ -72,7 +74,9 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
-        opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
+        if (!forceNoAuth) {
+            opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
+        }
         if (!callback) {
             return self.requestHandler(opts);
         } else {
@@ -101,12 +105,12 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
             body = JSON.parse(body);
         } catch (e) {}
 
-        if(response){
-        var retryAfter = response.headers["retry-after"];
-        var masheryCode = response.headers["x-mashery-error-code"];
-        //in case headers get returned as arrays, we only expect one value
-        retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
-        masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
+        if (response) {
+            var retryAfter = response.headers["retry-after"];
+            var masheryCode = response.headers["x-mashery-error-code"];
+            //in case headers get returned as arrays, we only expect one value
+            retryAfter = typeof retryAfter === "array" ? retryAfter[0] : retryAfter;
+            masheryCode = typeof masheryCode === "array" ? masheryCode[0] : masheryCode;
         }
 
         if (
@@ -246,7 +250,7 @@ function _quotaWaitTime(quota, QPS) {
         return quota.retrying + 1;
     }
     //last call was over a second ago, can start
-    if (diff > 1000) {
+    if (diff > 1002) {
         quota.startOfTheSecond = now;
         quota.calls = 0;
         return 0;
@@ -256,7 +260,7 @@ function _quotaWaitTime(quota, QPS) {
         return 0;
     }
     //calls limit reached, delay to the next second
-    return 1001 - diff;
+    return 1003 - diff;
 }
 
 

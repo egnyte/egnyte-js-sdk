@@ -28,7 +28,15 @@ if (ImInBrowser) {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; //QA API can be laggy
 
         });
-
+        it("BTW.The test needs to have the request cached for stable response times", function (done) {
+            var eg = Egnyte.init(egnyteDomain, {
+                token: APIToken,
+                oldIEForwarder: true, //opt in for IE8/9 support
+            });
+            eg.API.storage.exists("/jiberish").then(function (e) {
+                done();
+            })
+        });
 
         it("should delay calls to fit QPS", function (done) {
             var t1 = (1 / 0),
@@ -164,8 +172,10 @@ describe("API Quota response", function () {
                     expect(allowed.indexOf(h)).toBeGreaterThan(-1);
                 })
                 done();
+            }).fail(function (e) {
+                expect(this).toAutoFail(e);
+                done();
             });
-
         })
     }
     it("headers should be readable", function (done) {
@@ -175,17 +185,14 @@ describe("API Quota response", function () {
             handleQuota: false //turn off all throttling and retrying in SDK
         });
 
-        for (var i = 0; i < 10; i++) {
-            eg.API.storage.exists("/jiberish");
+        var manyRequests = [];
+        for (var i = 0; i < 12; i++) {
+            manyRequests.push(eg.API.storage.exists("/jiberish"));
         }
-        eg.API.storage.exists("/jiberish").then(function (e) {
-            //It didn't hit the quota? looks like we just entered a new second
-            //let's try that again
-            for (var i = 0; i < 10; i++) {
-                eg.API.storage.exists("/jiberish");
-            }
-            return eg.API.storage.exists("/jiberish");
-        }).fail(function (error) {
+        eg.API.manual.Promise.all(manyRequests).then(function () {
+            expect(this).toAutoFail("Quota not reached, no 403 response");
+            done();
+        }, function (error) {
             //here we catch an error from both cases
             var headers = error.response.headers;
             expect(headers["x-mashery-error-code"]).toEqual("ERR_403_DEVELOPER_OVER_QPS");
