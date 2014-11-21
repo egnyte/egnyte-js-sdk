@@ -133,20 +133,20 @@ describe("Storage API facade integration", function () {
                 });
 
         });
+        if (!ImInBrowser) {
+            it("Gets a 596 on weird mess in paths", function (done) {
+                eg.API.storage.exists(" foo")
+                    .then(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    })
+                    .fail(function (e) {
+                        expect(e.response.statusCode).toEqual(596);
+                        done();
+                    });
 
-        it("Gets a 596 on weird mess in paths", function (done) {
-            eg.API.storage.exists(" foo")
-                .then(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                })
-                .fail(function (e) {
-                    expect(e.response.statusCode).toEqual(596);
-                    done();
-                });
-
-        });
-
+            });
+        }
         it("Can move a folder", function (done) {
             eg.API.storage.move(testpath, testpath2)
                 .then(function (e) {
@@ -306,20 +306,20 @@ describe("Storage API facade integration", function () {
 
         });
 
-//        it("Can list notes", function (done) {
-//            eg.API.storage.listNotes(testpath, {
-//                count: 1,
-//                offset: 1
-//            })
-//                .then(function (result) {
-//                    console.log(result);
-//                    done();
-//                }).fail(function (e) {
-//                    expect(this).toAutoFail(e);
-//                    done();
-//                });
-//
-//        });
+        //        it("Can list notes", function (done) {
+        //            eg.API.storage.listNotes(testpath, {
+        //                count: 1,
+        //                offset: 1
+        //            })
+        //                .then(function (result) {
+        //                    console.log(result);
+        //                    done();
+        //                }).fail(function (e) {
+        //                    expect(this).toAutoFail(e);
+        //                    done();
+        //                });
+        //
+        //        });
 
         it("Can delete the note", function (done) {
             eg.API.storage.removeNote(recentNoteId)

@@ -69,10 +69,11 @@ describe("API auth", function () {
             it('should be able to log in', function (done) {
                 expect(eg2.API.auth.isAuthorized()).toBe(false);
                 eg2.API.auth.requestTokenByPassword(APIUsername, APIPassword).then(function () {
+                    console.log("token:",eg2.API.auth.getToken());
                     expect(eg2.API.auth.isAuthorized()).toBe(true);
                     done();
                 }).fail(function (e) {
-                    expect(e.statusCode).toBe(400);
+                    expect(this).toAutoFail(e);
                     done();
                 });
             });

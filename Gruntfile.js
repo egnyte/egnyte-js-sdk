@@ -88,13 +88,14 @@ module.exports = function (grunt) {
         },
         jasmine_node: {
             options: {
-                match: '.',
+                match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
             },
-            all: ['spec/','spec/browser_automation'],
+            all: ['spec/'],
             browser_automation:['spec/browser_automation']
+            
         },
         nodeunit: {
             units: ['src/unittests/*.js']

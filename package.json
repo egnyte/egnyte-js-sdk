@@ -44,6 +44,7 @@
     "node-lessify": "^0.0.5",
     "readable-stream": "~1.1.8",
     "through2": "~0.5.1",
-    "unpathify": "^0.1.1"
+    "unpathify": "^0.1.1",
+    "zombie": "^2.2.1"
   }
 }
