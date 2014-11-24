@@ -600,6 +600,7 @@ var errorify = require(5);
 
 
 var ENDPOINTS_userinfo = require(1).userinfo;
+var ENDPOINTS_tokenauth = require(1).tokenauth;
 
 
 function Auth(options) {
@@ -615,7 +616,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._reloadForToken = function () {
-    window.location.href = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+    window.location.href = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
 }
 
 authPrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
@@ -652,7 +653,7 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
         var self = this;
         var locationObject = window.location;
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -702,7 +703,7 @@ authPrototypeMethods._postTokenUp = function () {
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
-        var url = this.options.egnyteDomainURL + "/puboauth/token?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
         var win = window.open(url);
         win.name = this.options.channelMarker;
         var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
@@ -728,7 +729,7 @@ authPrototypeMethods.requestTokenByPassword = function (username, password) {
 
     return this.requestEngine.promiseRequest({
         method: "POST",
-        url: this.options.egnyteDomainURL + "/puboauth/token",
+        url: this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "",
         headers: {
             "content-type": "application/x-www-form-urlencoded"
         },
@@ -738,7 +739,7 @@ authPrototypeMethods.requestTokenByPassword = function (username, password) {
             "username=" + username,
             "password=" + password
         ].join("&")
-    },null,!!"forceNoAuth").then(function (result) { //result.response result.body
+    }, null, !!"forceNoAuth").then(function (result) { //result.response result.body
         self.token = result.body.access_token
         return self.token;
     });
@@ -2086,7 +2087,8 @@ module.exports={
     "notes": "/notes",
     "links": "/links",
     "perms":"/perms/folder",
-    "userinfo":"/userinfo"
+    "userinfo":"/userinfo",
+    "tokenauth":"/rest/unauthorized/puboauth/token"
 }
 
 },{}],25:[function(require,module,exports){
