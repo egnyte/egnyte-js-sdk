@@ -35,7 +35,7 @@ if (!ImInBrowser) {
                     var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                     browser.visit(authpage, function (err) {
                         var response = browser.resources.reverse()[0].response;
-                        if (err && response.statusCode > 222) {
+                        if (err && response.statusCode !== 200) {
                             expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
                             done();
                         } else {
@@ -100,7 +100,7 @@ if (!ImInBrowser) {
                     var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                     browser.visit(authpage, function (err) {
                         var response = browser.resources.reverse()[0].response;
-                        if (err && response.statusCode > 222) {
+                        if (err && response.statusCode !== 200) {
                             expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
                             done();
                         } else {
