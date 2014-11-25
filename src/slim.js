@@ -1,5 +1,3 @@
-"use strict";
-
 var helpers = require("./lib/reusables/helpers");
 var defaults = require("./defaults.js");
 

@@ -1216,18 +1216,11 @@ exports.addNote = function (pathFromRoot, body) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-//            headers: {
-//                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-//            },
             url: requestEngine.getEndpoint() + ENDPOINTS_notes,
             json:{
                 "path": pathFromRoot,
                 "body": body,
             }
-//            body: JSON.stringify({
-//                "path": pathFromRoot,
-//                "body": body,
-//            })
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body

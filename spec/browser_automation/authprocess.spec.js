@@ -34,9 +34,9 @@ if (!ImInBrowser) {
                 it("should work with login and password", function (done) {
                     var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                     browser.visit(authpage, function (err) {
-                        if (err) {
-                            //console.log(authpage, err);
-                            expect(this).toAutoFail(err);
+                        var response = browser.resources.reverse()[0].response;
+                        if (err && response.statusCode > 222) {
+                            expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
                             done();
                         } else {
                             expect(browser.success).toBe(true);
@@ -99,8 +99,9 @@ if (!ImInBrowser) {
                 it("should work without login and password", function (done) {
                     var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                     browser.visit(authpage, function (err) {
-                        if (err) {
-                            expect(this).toAutoFail(err);
+                        var response = browser.resources.reverse()[0].response;
+                        if (err && response.statusCode > 222) {
+                            expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
                             done();
                         } else {
                             //console.log(err);
