@@ -1,4 +1,39 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Egnyte=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*
+ * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
+ * 
+ * Public Domain. Use, modify and distribute it any way you like. No attribution required.
+ *
+ * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+ *
+ * PinkySwear is a very small implementation of the Promises/A+ specification. After compilation with the
+ * Google Closure Compiler and gzipping it weighs less than 500 bytes. It is based on the implementation for 
+ * Minified.js and should be perfect for embedding. 
+ *
+ *
+ * PinkySwear has just three functions.
+ *
+ * To create a new promise in pending state, call pinkySwear():
+ *         var promise = pinkySwear();
+ *
+ * The returned object has a Promises/A+ compatible then() implementation:
+ *          promise.then(function(value) { alert("Success!"); }, function(value) { alert("Failure!"); });
+ *
+ *
+ * The promise returned by pinkySwear() is a function. To fulfill the promise, call the function with true as first argument and
+ * an optional array of values to pass to the then() handler. By putting more than one value in the array, you can pass more than one
+ * value to the then() handlers. Here an example to fulfill a promsise, this time with only one argument: 
+ *         promise(true, [42]);
+ *
+ * When the promise has been rejected, call it with false. Again, there may be more than one argument for the then() handler:
+ *         promise(true, [6, 6, 6]);
+ *         
+ * You can obtain the promise's current state by calling the function without arguments. It will be true if fulfilled,
+ * false if rejected, and otherwise undefined.
+ * 		   var state = promise(); 
+ * 
+ * https://github.com/timjansen/PinkySwear.js
+ */
 (function(target) {
 	var undef;
 
@@ -80,6 +115,8 @@
 		return set;
 	};
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
+
+
 },{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
@@ -217,10 +254,11 @@ for(i = 96; i < 106; ++i) {
 for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
+
 },{}],3:[function(require,module,exports){
-var window = require(1)
-var once = require(2)
-var parseHeaders = require(3)
+var window = require(4)
+var once = require(5)
+var parseHeaders = require(9)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -394,7 +432,8 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-},{"1":4,"2":5,"3":9}],4:[function(require,module,exports){
+
+},{}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window;
 } else if (typeof global !== "undefined") {
@@ -404,6 +443,7 @@ if (typeof window !== "undefined") {
 } else {
     module.exports = {};
 }
+
 },{}],5:[function(require,module,exports){
 module.exports = once
 
@@ -424,8 +464,9 @@ function once (fn) {
     return fn.apply(this, arguments)
   }
 }
+
 },{}],6:[function(require,module,exports){
-var isFunction = require(1)
+var isFunction = require(7)
 
 module.exports = forEach
 
@@ -471,7 +512,8 @@ function forEachObject(object, iterator, context) {
         }
     }
 }
-},{"1":7}],7:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -487,7 +529,9 @@ function isFunction (fn) {
       fn === window.confirm ||
       fn === window.prompt))
 };
+
 },{}],8:[function(require,module,exports){
+
 exports = module.exports = trim;
 
 function trim(str){
@@ -501,9 +545,10 @@ exports.left = function(str){
 exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
+
 },{}],9:[function(require,module,exports){
-var trim = require(2)
-  , forEach = require(1)
+var trim = require(8)
+  , forEach = require(6)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -533,8 +578,7 @@ module.exports = function (headers) {
 
   return result
 }
-
-},{"1":6,"2":8}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -544,40 +588,33 @@ module.exports = {
     oldIEForwarder: false
     
 }
-
 },{}],11:[function(require,module,exports){
-(function () {
-    "use strict";
+var helpers = require(34);
+var defaults = require(10);
 
-    var helpers = require(4);
-    var defaults = require(1);
-
-    function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({},defaults, opts);
+module.exports = {
+    init: function init(egnyteDomainURL, opts) {
+        var options = helpers.extend({}, defaults, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
-        var api = require(2)(options);
-      
+        var api = require(12)(options);
+
         return {
             domain: options.egnyteDomainURL,
-            filePicker: require(3)(api),
+            filePicker: require(26)(api),
             API: api
         }
 
     }
 
-    window.Egnyte = {
-        init: init
-    }
-
-})();
-},{"1":10,"2":12,"3":26,"4":34}],12:[function(require,module,exports){
-var RequestEngine = require(5);
-var AuthEngine = require(1);
-var StorageFacade = require(6);
-var LinkFacade = require(2);
-var PermFacade = require(3);
-var plugin = require(4);
+}
+},{}],12:[function(require,module,exports){
+var RequestEngine = require(21);
+var AuthEngine = require(13);
+var StorageFacade = require(22);
+var LinkFacade = require(17);
+var PermFacade = require(19);
+var plugin = require(20);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -597,12 +634,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(7);
+            var responder = require(23);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(8);
+                var forwarder = require(24);
                 forwarder(options, api);
             }
         }
@@ -613,20 +650,20 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":13,"2":17,"3":19,"4":20,"5":21,"6":22,"7":23,"8":24}],13:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
 
-var promises = require(6);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
-var errorify = require(5);
+var promises = require(32);
+var helpers = require(34);
+var dom = require(33);
+var messages = require(35);
+var errorify = require(16);
 
 
-var ENDPOINTS_userinfo = require(1).userinfo;
-var ENDPOINTS_tokenauth = require(1).tokenauth;
+var ENDPOINTS_userinfo = require(25).userinfo;
+var ENDPOINTS_tokenauth = require(25).tokenauth;
 
 
 function Auth(options) {
@@ -829,10 +866,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":25,"2":33,"3":34,"4":35,"5":16,"6":32}],14:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(2);
-var ENDPOINTS = require(1);
+},{}],14:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var ENDPOINTS = require(25);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -941,9 +978,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-
-},{"1":25,"2":34,"3":32}],15:[function(require,module,exports){
-var helpers = require(1);
+},{}],15:[function(require,module,exports){
+var helpers = require(34);
 
 var defaultDecorators = {
 
@@ -1009,8 +1045,8 @@ module.exports = {
 
     }
 }
-
-},{"1":34}],16:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+//making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -1071,13 +1107,12 @@ module.exports = function (result) {
     }
     return error;
 }
-
 },{}],17:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
+var promises = require(32);
+var helpers = require(34);
+var decorators = require(15);
 
-var ENDPOINTS_links = require(1).links;
+var ENDPOINTS_links = require(25).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1168,11 +1203,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":25,"2":34,"3":15,"4":32}],18:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(2);
+},{}],18:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
 
-var ENDPOINTS_notes = require(1).notes;
+var ENDPOINTS_notes = require(25).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1181,14 +1216,18 @@ exports.addNote = function (pathFromRoot, body) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            headers: {
-                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-            },
+//            headers: {
+//                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
+//            },
             url: requestEngine.getEndpoint() + ENDPOINTS_notes,
-            body: JSON.stringify({
+            json:{
                 "path": pathFromRoot,
                 "body": body,
-            })
+            }
+//            body: JSON.stringify({
+//                "path": pathFromRoot,
+//                "body": body,
+//            })
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
@@ -1250,13 +1289,12 @@ exports.removeNote = function (id) {
 
 
 
+},{}],19:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var decorators = require(15);
 
-},{"1":25,"2":34,"3":32}],19:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
-
-var ENDPOINTS_perms = require(1).perms;
+var ENDPOINTS_perms = require(25).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1342,11 +1380,11 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"1":25,"2":34,"3":15,"4":32}],20:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
-var ENDPOINTS = require(1);
+},{}],20:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var decorators = require(15);
+var ENDPOINTS = require(25);
 
 module.exports = function (requestEngine, API) {
     return function (name, pluginClosure) {
@@ -1359,17 +1397,16 @@ module.exports = function (requestEngine, API) {
         });
     }
 }
-
-},{"1":25,"2":34,"3":15,"4":32}],21:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(5);
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
-var errorify = require(4);
-var request = require(6);
+var promises = require(32);
+var helpers = require(34);
+var dom = require(33);
+var messages = require(35);
+var errorify = require(16);
+var request = require(3);
 
 
 
@@ -1630,14 +1667,14 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":33,"2":34,"3":35,"4":16,"5":32,"6":3}],22:[function(require,module,exports){
-var promises = require(6);
-var helpers = require(2);
-var decorators = require(4);
-var notes = require(5);
-var chunkedUpload = require(3);
+},{}],22:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var decorators = require(15);
+var notes = require(18);
+var chunkedUpload = require(14);
 
-var ENDPOINTS = require(1);
+var ENDPOINTS = require(25);
 
 
 function Storage(requestEngine) {
@@ -1909,10 +1946,10 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":25,"2":34,"3":14,"4":15,"5":18,"6":32}],23:[function(require,module,exports){
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
+},{}],23:[function(require,module,exports){
+var helpers = require(34);
+var dom = require(33);
+var messages = require(35);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -1971,11 +2008,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":33,"2":34,"3":35}],24:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
+},{}],24:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var dom = require(33);
+var messages = require(35);
 
 
 
@@ -2105,7 +2142,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":33,"2":34,"3":35,"4":32}],25:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
@@ -2114,16 +2151,15 @@ module.exports={
     "links": "/links",
     "perms":"/perms/folder",
     "userinfo":"/userinfo",
-    "tokenauth":"/rest/unauthorized/puboauth/token"
+    "tokenauth":"/puboauth/token"
 }
-
 },{}],26:[function(require,module,exports){
 (function () {
 
-    var helpers = require(4);
-    var dom = require(3);
-    var View = require(2);
-    var Model = require(1);
+    var helpers = require(34);
+    var dom = require(33);
+    var View = require(30);
+    var Model = require(29);
 
     function noGoog(ext, mime) {
         return mime !== "goog";
@@ -2195,7 +2231,7 @@ module.exports={
 
 
 })();
-},{"1":29,"2":30,"3":33,"4":34}],27:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2208,9 +2244,8 @@ module.exports={
     "?": "Unknown error"
 }
 
-
 },{}],28:[function(require,module,exports){
-var helpers = require(1);
+var helpers = require(34);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2263,10 +2298,9 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-
-},{"1":34}],29:[function(require,module,exports){
-var helpers = require(1);
-var exts = require(2);
+},{}],29:[function(require,module,exports){
+var helpers = require(34);
+var exts = require(28);
 
 
 
@@ -2448,16 +2482,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{"1":34,"2":28}],30:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(2);
-var helpers = require(3);
-var texts = require(4);
-var jungle = require(1);
+var dom = require(33);
+var helpers = require(34);
+var texts = require(36);
+var jungle = require(37);
 
-require(6);
+require(31);
 
 var fontLoaded = false;
 
@@ -2761,7 +2795,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(5);
+var msgs = require(27);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -2836,12 +2870,12 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{"1":37,"2":33,"3":34,"4":36,"5":27,"6":31}],31:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-
 },{}],32:[function(require,module,exports){
-var pinkySwear = require(2);
-var helpers = require(1);
+//wrapper for any promises library
+var pinkySwear = require(1);
+var helpers = require(34);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2924,8 +2958,8 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":34,"2":1}],33:[function(require,module,exports){
-var vkey = require(1);
+},{}],33:[function(require,module,exports){
+var vkey = require(2);
 
 
 function addListener(elem, type, callback) {
@@ -2993,8 +3027,7 @@ module.exports = {
     }
 
 }
-
-},{"1":2}],34:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -3052,7 +3085,7 @@ module.exports = {
     }
 };
 },{}],35:[function(require,module,exports){
-var helpers = require(1);
+var helpers = require(34);
 
 
 //returns postMessage specific handler
@@ -3102,8 +3135,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-
-},{"1":34}],36:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -3116,7 +3148,15 @@ module.exports = function (overrides) {
         return txt;
     };
 };
+
 },{}],37:[function(require,module,exports){
+/**
+ * zenjungle - HTML via JSON with elements of Zen Coding
+ *
+ * https://github.com/radmen/zenjungle
+ * Copyright (c) 2012 Radoslaw Mejer <radmen@gmail.com>
+ */
+
 var zenjungle = (function () {
     // helpers
     var is_object = function (object) {
@@ -3229,4 +3269,5 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[11]);
+},{}]},{},[11])(11)
+});

@@ -11,20 +11,16 @@ module.exports = function (grunt) {
                     "dist/slim.js": ["src/slim.js"]
                 },
                 options: {
-                    transform: [
-                        'node-lessify'
-                    ],
+                    transform: ['node-lessify'],
+                    plugin: ['bundle-collapser/plugin'],
                     browserifyOptions: {
                         fullPaths: false,
                         insertGlobals: false,
-                        detectGlobals: false
-                        //,standalone: "Egnyte"
+                        detectGlobals: false,
+                        standalone: "Egnyte"
                     }
                 }
             }
-        },
-        unpathify: {
-            files: ["dist/egnyte.js", "dist/slim.js"]
         },
         uglify: {
             options: {
@@ -94,8 +90,8 @@ module.exports = function (grunt) {
                 specNameMatcher: 'spec'
             },
             all: ['spec/'],
-            browser_automation:['spec/browser_automation']
-            
+            browser_automation: ['spec/browser_automation']
+
         },
         nodeunit: {
             units: ['src/unittests/*.js']
@@ -191,7 +187,6 @@ module.exports = function (grunt) {
         }
     })
     grunt.loadNpmTasks("grunt-browserify");
-    grunt.loadNpmTasks('unpathify');
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-clean");
@@ -206,8 +201,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test-browser", ["nodeunit:units", "dist", "jasmine:all"]);
     grunt.registerTask("test-node", ["jasmine_node"]);
-    grunt.registerTask("test", ["test-browser","test-node"]);
-    grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
+    grunt.registerTask("test", ["test-browser", "test-node"]);
+    grunt.registerTask("dist", ["clean", "markdown", "browserify", "uglify", "copy"]);
     grunt.registerTask("build", ["dist"]);
     grunt.registerTask("serve", ["dist", "connect:server"]);
     grunt.registerTask("serve:API", ["serve:api"]);

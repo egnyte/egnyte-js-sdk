@@ -1,4 +1,39 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Egnyte=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*
+ * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
+ * 
+ * Public Domain. Use, modify and distribute it any way you like. No attribution required.
+ *
+ * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+ *
+ * PinkySwear is a very small implementation of the Promises/A+ specification. After compilation with the
+ * Google Closure Compiler and gzipping it weighs less than 500 bytes. It is based on the implementation for 
+ * Minified.js and should be perfect for embedding. 
+ *
+ *
+ * PinkySwear has just three functions.
+ *
+ * To create a new promise in pending state, call pinkySwear():
+ *         var promise = pinkySwear();
+ *
+ * The returned object has a Promises/A+ compatible then() implementation:
+ *          promise.then(function(value) { alert("Success!"); }, function(value) { alert("Failure!"); });
+ *
+ *
+ * The promise returned by pinkySwear() is a function. To fulfill the promise, call the function with true as first argument and
+ * an optional array of values to pass to the then() handler. By putting more than one value in the array, you can pass more than one
+ * value to the then() handlers. Here an example to fulfill a promsise, this time with only one argument: 
+ *         promise(true, [42]);
+ *
+ * When the promise has been rejected, call it with false. Again, there may be more than one argument for the then() handler:
+ *         promise(true, [6, 6, 6]);
+ *         
+ * You can obtain the promise's current state by calling the function without arguments. It will be true if fulfilled,
+ * false if rejected, and otherwise undefined.
+ * 		   var state = promise(); 
+ * 
+ * https://github.com/timjansen/PinkySwear.js
+ */
 (function(target) {
 	var undef;
 
@@ -80,6 +115,8 @@
 		return set;
 	};
 })(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
+
+
 },{}],2:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
@@ -217,10 +254,11 @@ for(i = 96; i < 106; ++i) {
 for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
+
 },{}],3:[function(require,module,exports){
-var window = require(1)
-var once = require(2)
-var parseHeaders = require(3)
+var window = require(4)
+var once = require(5)
+var parseHeaders = require(9)
 
 var messages = {
     "0": "Internal XMLHttpRequest Error",
@@ -394,7 +432,8 @@ function createXHR(options, callback) {
 
 
 function noop() {}
-},{"1":4,"2":5,"3":9}],4:[function(require,module,exports){
+
+},{}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window;
 } else if (typeof global !== "undefined") {
@@ -404,6 +443,7 @@ if (typeof window !== "undefined") {
 } else {
     module.exports = {};
 }
+
 },{}],5:[function(require,module,exports){
 module.exports = once
 
@@ -424,8 +464,9 @@ function once (fn) {
     return fn.apply(this, arguments)
   }
 }
+
 },{}],6:[function(require,module,exports){
-var isFunction = require(1)
+var isFunction = require(7)
 
 module.exports = forEach
 
@@ -471,7 +512,8 @@ function forEachObject(object, iterator, context) {
         }
     }
 }
-},{"1":7}],7:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -487,7 +529,9 @@ function isFunction (fn) {
       fn === window.confirm ||
       fn === window.prompt))
 };
+
 },{}],8:[function(require,module,exports){
+
 exports = module.exports = trim;
 
 function trim(str){
@@ -501,9 +545,10 @@ exports.left = function(str){
 exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
+
 },{}],9:[function(require,module,exports){
-var trim = require(2)
-  , forEach = require(1)
+var trim = require(8)
+  , forEach = require(6)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -533,8 +578,7 @@ module.exports = function (headers) {
 
   return result
 }
-
-},{"1":6,"2":8}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -544,14 +588,13 @@ module.exports = {
     oldIEForwarder: false
     
 }
-
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(5);
-var AuthEngine = require(1);
-var StorageFacade = require(6);
-var LinkFacade = require(2);
-var PermFacade = require(3);
-var plugin = require(4);
+var RequestEngine = require(20);
+var AuthEngine = require(12);
+var StorageFacade = require(21);
+var LinkFacade = require(16);
+var PermFacade = require(18);
+var plugin = require(19);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -571,12 +614,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(7);
+            var responder = require(22);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(8);
+                var forwarder = require(23);
                 forwarder(options, api);
             }
         }
@@ -587,20 +630,20 @@ module.exports = function (options) {
 
     return api;
 };
-},{"1":12,"2":16,"3":18,"4":19,"5":20,"6":21,"7":22,"8":23}],12:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
 
-var promises = require(6);
-var helpers = require(3);
-var dom = require(2);
-var messages = require(4);
-var errorify = require(5);
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
+var errorify = require(15);
 
 
-var ENDPOINTS_userinfo = require(1).userinfo;
-var ENDPOINTS_tokenauth = require(1).tokenauth;
+var ENDPOINTS_userinfo = require(24).userinfo;
+var ENDPOINTS_tokenauth = require(24).tokenauth;
 
 
 function Auth(options) {
@@ -803,10 +846,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"1":24,"2":26,"3":27,"4":28,"5":15,"6":25}],13:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(2);
-var ENDPOINTS = require(1);
+},{}],13:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var ENDPOINTS = require(24);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -915,9 +958,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-
-},{"1":24,"2":27,"3":25}],14:[function(require,module,exports){
-var helpers = require(1);
+},{}],14:[function(require,module,exports){
+var helpers = require(27);
 
 var defaultDecorators = {
 
@@ -983,8 +1025,8 @@ module.exports = {
 
     }
 }
-
-},{"1":27}],15:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
+//making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
     "message": 1,
@@ -1045,13 +1087,12 @@ module.exports = function (result) {
     }
     return error;
 }
-
 },{}],16:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
+var promises = require(25);
+var helpers = require(27);
+var decorators = require(14);
 
-var ENDPOINTS_links = require(1).links;
+var ENDPOINTS_links = require(24).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1142,11 +1183,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"1":24,"2":27,"3":14,"4":25}],17:[function(require,module,exports){
-var promises = require(3);
-var helpers = require(2);
+},{}],17:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
 
-var ENDPOINTS_notes = require(1).notes;
+var ENDPOINTS_notes = require(24).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1155,14 +1196,18 @@ exports.addNote = function (pathFromRoot, body) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            headers: {
-                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
-            },
+//            headers: {
+//                "content-type": "application/vnd.egnyte.annotations.request+json;v=1"
+//            },
             url: requestEngine.getEndpoint() + ENDPOINTS_notes,
-            body: JSON.stringify({
+            json:{
                 "path": pathFromRoot,
                 "body": body,
-            })
+            }
+//            body: JSON.stringify({
+//                "path": pathFromRoot,
+//                "body": body,
+//            })
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
@@ -1224,13 +1269,12 @@ exports.removeNote = function (id) {
 
 
 
+},{}],18:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var decorators = require(14);
 
-},{"1":24,"2":27,"3":25}],18:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
-
-var ENDPOINTS_perms = require(1).perms;
+var ENDPOINTS_perms = require(24).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1316,11 +1360,11 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"1":24,"2":27,"3":14,"4":25}],19:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var decorators = require(3);
-var ENDPOINTS = require(1);
+},{}],19:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var decorators = require(14);
+var ENDPOINTS = require(24);
 
 module.exports = function (requestEngine, API) {
     return function (name, pluginClosure) {
@@ -1333,17 +1377,16 @@ module.exports = function (requestEngine, API) {
         });
     }
 }
-
-},{"1":24,"2":27,"3":14,"4":25}],20:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(5);
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
-var errorify = require(4);
-var request = require(6);
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
+var errorify = require(15);
+var request = require(3);
 
 
 
@@ -1604,14 +1647,14 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"1":26,"2":27,"3":28,"4":15,"5":25,"6":3}],21:[function(require,module,exports){
-var promises = require(6);
-var helpers = require(2);
-var decorators = require(4);
-var notes = require(5);
-var chunkedUpload = require(3);
+},{}],21:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var decorators = require(14);
+var notes = require(17);
+var chunkedUpload = require(13);
 
-var ENDPOINTS = require(1);
+var ENDPOINTS = require(24);
 
 
 function Storage(requestEngine) {
@@ -1883,10 +1926,10 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"1":24,"2":27,"3":13,"4":14,"5":17,"6":25}],22:[function(require,module,exports){
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
+},{}],22:[function(require,module,exports){
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -1945,11 +1988,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":26,"2":27,"3":28}],23:[function(require,module,exports){
-var promises = require(4);
-var helpers = require(2);
-var dom = require(1);
-var messages = require(3);
+},{}],23:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 
 
 
@@ -2079,7 +2122,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"1":26,"2":27,"3":28,"4":25}],24:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
@@ -2088,12 +2131,12 @@ module.exports={
     "links": "/links",
     "perms":"/perms/folder",
     "userinfo":"/userinfo",
-    "tokenauth":"/rest/unauthorized/puboauth/token"
+    "tokenauth":"/puboauth/token"
 }
-
 },{}],25:[function(require,module,exports){
-var pinkySwear = require(2);
-var helpers = require(1);
+//wrapper for any promises library
+var pinkySwear = require(1);
+var helpers = require(27);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2176,8 +2219,8 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":27,"2":1}],26:[function(require,module,exports){
-var vkey = require(1);
+},{}],26:[function(require,module,exports){
+var vkey = require(2);
 
 
 function addListener(elem, type, callback) {
@@ -2245,8 +2288,7 @@ module.exports = {
     }
 
 }
-
-},{"1":2}],27:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2304,7 +2346,7 @@ module.exports = {
     }
 };
 },{}],28:[function(require,module,exports){
-var helpers = require(1);
+var helpers = require(27);
 
 
 //returns postMessage specific handler
@@ -2354,36 +2396,24 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
+},{}],29:[function(require,module,exports){
+"use strict";
 
-},{"1":27}],29:[function(require,module,exports){
-(function () {
-    "use strict";
+var helpers = require(27);
+var defaults = require(10);
 
-    var helpers = require(3);
-    var defaults = require(1);
-
-    function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({},defaults, opts);
+module.exports = {
+    init: function init(egnyteDomainURL, opts) {
+        var options = helpers.extend({}, defaults, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
         return {
             domain: options.egnyteDomainURL,
-            API: require(2)(options)
+            API: require(11)(options)
         }
 
     }
-    //for commonJS
-    if (typeof module !== "undefined" && module.exports) {
-        module.exports = {
-            init: init
-        }
-    }
-    //for browsers. AMD works better with shims anyway
-    if (typeof window !== "undefined") {
-        window.Egnyte = {
-            init: init
-        }
-    }
 
-})();
-},{"1":10,"2":11,"3":27}]},{},[29]);
+}
+},{}]},{},[29])(29)
+});

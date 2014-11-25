@@ -28,6 +28,7 @@
     "./src/lib/api.js": "./src/lib/api-browser.js"
   },
   "devDependencies": {
+    "bundle-collapser": "^1.1.0",
     "concat-stream": "^1.4.6",
     "grunt": "^0.4.4",
     "grunt-browserify": "3.1.0",
@@ -44,7 +45,6 @@
     "node-lessify": "^0.0.5",
     "readable-stream": "~1.1.8",
     "through2": "~0.5.1",
-    "unpathify": "^0.1.1",
     "zombie": "^2.2.1"
   }
 }
