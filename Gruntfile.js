@@ -64,6 +64,25 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        dependo: {
+            main: {
+                options: {
+                    fileName: 'dependencyGraph.html'
+                }
+            },
+            filtered: {
+                options: {
+                    fileName: 'dependencyGraphFiltered.html',
+                    exclude: 'reusables|q/q'
+                }
+            },
+            options: {
+                outputPath: './docs/',
+                targetPath: './src',
+                fileName: 'dependencyGraph.html',
+                format: 'cjs'
+            }
+        },
 
         jasmine: {
             all: {
@@ -196,17 +215,18 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-connect-proxy');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
+    grunt.loadNpmTasks('grunt-dependo');
     grunt.loadNpmTasks('grunt-jasmine-node');
 
 
-    grunt.registerTask("test-browser", ["nodeunit:units", "dist", "jasmine:all"]);
+    grunt.registerTask("test-browser", ["nodeunit:units", "build", "jasmine:all"]);
     grunt.registerTask("test-node", ["jasmine_node"]);
     grunt.registerTask("test", ["test-browser", "test-node"]);
-    grunt.registerTask("dist", ["clean", "markdown", "browserify", "uglify", "copy"]);
-    grunt.registerTask("build", ["dist"]);
-    grunt.registerTask("serve", ["dist", "connect:server"]);
+    grunt.registerTask("build", ["clean", "browserify", "uglify", "copy"]);
+    grunt.registerTask("dist", ["build", "markdown", "dependo"]);
+    grunt.registerTask("serve", ["build", "connect:server"]);
     grunt.registerTask("serve:API", ["serve:api"]);
-    grunt.registerTask("serve:api", ["dist", "configureProxies:realAPI", "connect:realAPI"]);
+    grunt.registerTask("serve:api", ["build", "configureProxies:realAPI", "connect:realAPI"]);
 
     grunt.registerTask("default", ["test"]);
 }
