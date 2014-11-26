@@ -116,6 +116,7 @@ describe("Item names / ", function () {
         goodTestNames.forEach(function (fname) {
 
             it("BTW. file leftovers from previous tests need to be destroyed", function (done) {
+                expect(fname).toBeDefined();
                 eg.API.storage.remove(basePath + "/" + fname).then(done, done);
             });
 
@@ -193,6 +194,7 @@ describe("Item names / ", function () {
                         expect(this).toAutoFail(e);
                         done();
                     }).fail(function (e) {
+                        expect(true).toBeTruthy();
                         done();
                     });
 
@@ -228,6 +230,7 @@ describe("Item names / ", function () {
                         expect(this).toAutoFail(e);
                         done();
                     }).fail(function (e) {
+                        expect(true).toBeTruthy();
                         done();
                     });
 

@@ -1,19 +1,8 @@
-var helpers = require("./lib/reusables/helpers");
-var defaults = require("./defaults.js");
+var slim = require("./slim");
+var filepicker = require("./lib/filepicker/byapi")
 
-module.exports = {
-    init: function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({}, defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+slim.plugin("filePicker", function (root, resources) {
+    root.filePicker = filepicker(resources.API);
+});
 
-        var api = require("./lib/api")(options);
-
-        return {
-            domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(api),
-            API: api
-        }
-
-    }
-
-}
+module.exports = slim;

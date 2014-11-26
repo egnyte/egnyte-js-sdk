@@ -1,4 +1,5 @@
 var helpers = require("./lib/reusables/helpers");
+var plugins = require("./lib/plugins");
 var defaults = require("./defaults.js");
 
 module.exports = {
@@ -6,11 +7,15 @@ module.exports = {
         var options = helpers.extend({}, defaults, opts);
         options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
 
-        return {
+        var exporting = {
             domain: options.egnyteDomainURL,
             API: require("./lib/api")(options)
         }
+        plugins.install(exporting);
 
-    }
+        return exporting;
+
+    },
+    plugin: plugins.define
 
 }

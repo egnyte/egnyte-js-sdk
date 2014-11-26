@@ -582,39 +582,27 @@ module.exports = function (headers) {
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "app/integ/forwarder/1.2/apiForwarder.html",
+    forwarderAddress: "app/integ/forwarder/1.3/apiForwarder.html",
     channelMarker: "'E",
     httpRequest: null,
     oldIEForwarder: false
     
 }
 },{}],11:[function(require,module,exports){
-var helpers = require(34);
-var defaults = require(10);
+var slim = require(37);
+var filepicker = require(25)
 
-module.exports = {
-    init: function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({}, defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+slim.plugin("filePicker", function (root, resources) {
+    root.filePicker = filepicker(resources.API);
+});
 
-        var api = require(12)(options);
-
-        return {
-            domain: options.egnyteDomainURL,
-            filePicker: require(26)(api),
-            API: api
-        }
-
-    }
-
-}
+module.exports = slim;
 },{}],12:[function(require,module,exports){
-var RequestEngine = require(21);
+var RequestEngine = require(20);
 var AuthEngine = require(13);
-var StorageFacade = require(22);
+var StorageFacade = require(21);
 var LinkFacade = require(17);
 var PermFacade = require(19);
-var plugin = require(20);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -634,19 +622,18 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(23);
+            var responder = require(22);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(24);
+                var forwarder = require(23);
                 forwarder(options, api);
             }
         }
     }
 
     api.manual = requestEngine;
-    api.plugin = plugin(requestEngine, api);
 
     return api;
 };
@@ -662,8 +649,8 @@ var messages = require(35);
 var errorify = require(16);
 
 
-var ENDPOINTS_userinfo = require(25).userinfo;
-var ENDPOINTS_tokenauth = require(25).tokenauth;
+var ENDPOINTS_userinfo = require(24).userinfo;
+var ENDPOINTS_tokenauth = require(24).tokenauth;
 
 
 function Auth(options) {
@@ -869,7 +856,7 @@ module.exports = Auth;
 },{}],14:[function(require,module,exports){
 var promises = require(32);
 var helpers = require(34);
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(24);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -1112,7 +1099,7 @@ var promises = require(32);
 var helpers = require(34);
 var decorators = require(15);
 
-var ENDPOINTS_links = require(25).links;
+var ENDPOINTS_links = require(24).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1207,7 +1194,7 @@ module.exports = Links;
 var promises = require(32);
 var helpers = require(34);
 
-var ENDPOINTS_notes = require(25).notes;
+var ENDPOINTS_notes = require(24).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1287,7 +1274,7 @@ var promises = require(32);
 var helpers = require(34);
 var decorators = require(15);
 
-var ENDPOINTS_perms = require(25).perms;
+var ENDPOINTS_perms = require(24).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1374,23 +1361,6 @@ Perms.prototype = permsProto;
 
 module.exports = Perms;
 },{}],20:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(34);
-var decorators = require(15);
-var ENDPOINTS = require(25);
-
-module.exports = function (requestEngine, API) {
-    return function (name, pluginClosure) {
-        API[name] = pluginClosure({
-            requestEngine: requestEngine,
-            ENDPOINTS: ENDPOINTS,
-            promises: promises,
-            helpers: helpers,
-            decorators: decorators
-        });
-    }
-}
-},{}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1660,14 +1630,14 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var promises = require(32);
 var helpers = require(34);
 var decorators = require(15);
 var notes = require(18);
 var chunkedUpload = require(14);
 
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(24);
 
 
 function Storage(requestEngine) {
@@ -1939,7 +1909,7 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var helpers = require(34);
 var dom = require(33);
 var messages = require(35);
@@ -2001,7 +1971,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var promises = require(32);
 var helpers = require(34);
 var dom = require(33);
@@ -2135,7 +2105,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports={
     "fsmeta": "/fs",
     "fscontent": "/fs-content",
@@ -2146,13 +2116,13 @@ module.exports={
     "userinfo":"/userinfo",
     "tokenauth":"/puboauth/token"
 }
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function () {
 
     var helpers = require(34);
     var dom = require(33);
-    var View = require(30);
-    var Model = require(29);
+    var View = require(29);
+    var Model = require(28);
 
     function noGoog(ext, mime) {
         return mime !== "goog";
@@ -2224,7 +2194,7 @@ module.exports={
 
 
 })();
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2237,7 +2207,7 @@ module.exports={
     "?": "Unknown error"
 }
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var helpers = require(34);
 var mapping = {};
 helpers.each({
@@ -2291,9 +2261,9 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var helpers = require(34);
-var exts = require(28);
+var exts = require(27);
 
 
 
@@ -2475,16 +2445,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
 var dom = require(33);
 var helpers = require(34);
 var texts = require(36);
-var jungle = require(37);
+var jungle = require(38);
 
-require(31);
+require(30);
 
 var fontLoaded = false;
 
@@ -2788,7 +2758,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(27);
+var msgs = require(26);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -2863,8 +2833,41 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],31:[function(require,module,exports){
+var promises = require(32);
+var helpers = require(34);
+var dom = require(33);
+var messages = require(35);
+var decorators = require(15);
+var ENDPOINTS = require(24);
+
+var plugins = {};
+module.exports = {
+    define: function (name, pluginClosure) {
+        if (plugins[name]) {
+            throw new Error("Plugin conflict. " + name + " already exists");
+        } else {
+            plugins[name] = pluginClosure;
+        }
+    },
+    install: function (root) {
+        helpers.each(plugins, function (pluginClosure, name) {
+            pluginClosure(root, {
+                API: root.API,
+                ENDPOINTS: ENDPOINTS,
+                promises: promises,
+                decorators: decorators,
+                reusables: {
+                    helpers: helpers,
+                    dom: dom,
+                    messages: messages
+                }
+            });
+        });
+    }
+};
 },{}],32:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
@@ -3143,6 +3146,28 @@ module.exports = function (overrides) {
 };
 
 },{}],37:[function(require,module,exports){
+var helpers = require(34);
+var plugins = require(31);
+var defaults = require(10);
+
+module.exports = {
+    init: function init(egnyteDomainURL, opts) {
+        var options = helpers.extend({}, defaults, opts);
+        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+
+        var exporting = {
+            domain: options.egnyteDomainURL,
+            API: require(12)(options)
+        }
+        plugins.install(exporting);
+
+        return exporting;
+
+    },
+    plugin: plugins.define
+
+}
+},{}],38:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

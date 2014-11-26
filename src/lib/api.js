@@ -4,7 +4,6 @@ var StorageFacade = require("./api_elements/storage");
 var streamsExtension = require("./api_elements/storageStreamsNode");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
-var plugin = require("./api_elements/plugin");
 
 
 module.exports = function (options) {
@@ -22,7 +21,6 @@ module.exports = function (options) {
         link: link,
         perms: perms
     };
-    api.plugin = plugin(requestEngine, api);
 
     return api;
 };

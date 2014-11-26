@@ -34,6 +34,7 @@ if (ImInBrowser) {
                 oldIEForwarder: true, //opt in for IE8/9 support
             });
             eg.API.storage.exists("/jiberish").then(function (e) {
+                expect(true).toBeTruthy();
                 done();
             })
         });
