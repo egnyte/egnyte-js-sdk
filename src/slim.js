@@ -9,6 +9,9 @@ module.exports = {
 
         var exporting = {
             domain: options.egnyteDomainURL,
+            setDomain: function (d) {
+                this.domain = options.egnyteDomainURL = d;
+            },
             API: require("./lib/api")(options)
         }
         plugins.install(exporting);

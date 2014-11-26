@@ -3157,6 +3157,9 @@ module.exports = {
 
         var exporting = {
             domain: options.egnyteDomainURL,
+            setDomain: function (d) {
+                this.domain = options.egnyteDomainURL = d;
+            },
             API: require(12)(options)
         }
         plugins.install(exporting);
