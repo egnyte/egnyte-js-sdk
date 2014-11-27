@@ -10,7 +10,7 @@ module.exports = {
         var exporting = {
             domain: options.egnyteDomainURL,
             setDomain: function (d) {
-                this.domain = options.egnyteDomainURL = d;
+                this.domain = options.egnyteDomainURL = helpers.normalizeURL(d);
             },
             API: require("./lib/api")(options)
         }
