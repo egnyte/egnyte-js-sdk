@@ -1,0 +1,79 @@
+var promises = require("q");
+var helpers = require('../reusables/helpers');
+var every = require('../reusables/every');
+var decorators = require("./decorators");
+
+var ENDPOINTS_events = require("../enum/endpoints").events;
+var ENDPOINTS_eventscursor = require("../enum/endpoints").eventscursor;
+
+function Events(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
+    this.addDecorator("filter", addFilter);
+}
+
+function addFilter(opts, data) {
+    opts.params || (opts.params = {});
+    if (data.folder) {
+        opts.params.folder = data.folder;
+    }
+    if (data.type) {
+        if (data.type.join) {
+            opts.params.type = data.type.join("|");
+        } else {
+            opts.params.type = data.type;
+        }
+    }
+    return opts;
+}
+
+//options.start
+//options.interval >2000
+//options.emit
+//returns {stop:function}
+Events.prototype = {
+    listen: function (options) {
+        var requestEngine = this.requestEngine;
+        var decorate = this.getDecorator();
+
+        return promises(true)
+            .then(function () {
+                if (!isNaN(options.start)) {
+                    return options.start;
+                } else {
+                    return requestEngine.promiseRequest({
+                        method: "GET",
+                        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
+                    }).then(function (cursor) {
+                        return cursor.latest_event_id;
+                    });
+                }
+            }).then(function (initial) {
+                var start = initial;
+                //start looping!
+                return every(Math.max(options.interval || 30000, 2000), function () {
+
+                    return requestEngine.promiseRequest(decorate({
+                        method: "GET",
+                        url: requestEngine.getEndpoint() + ENDPOINTS_events,
+                        params: {
+                            id: start
+                        }
+                    })).then(function (result) {
+                        start = result.body.latest_id;
+                        if (result.body.events) {
+                            helpers.each(result.body.events, function (e) {
+                                setTimeout(function () {
+                                    options.emit(e);
+                                }, 0)
+                            });
+                        }
+                    });
+                })
+
+            });
+    }
+
+};
+
+module.exports = Events;
