@@ -1,10 +1,10 @@
 {
-    "fsmeta": "/fs",
-    "fscontent": "/fs-content",
-    "fschunked": "/fs-content-chunked",
-    "notes": "/notes",
-    "links": "/links",
-    "perms":"/perms/folder",
-    "userinfo":"/userinfo",
+    "fsmeta": "/v1/fs",
+    "fscontent": "/v1/fs-content",
+    "fschunked": "/v1/fs-content-chunked",
+    "notes": "/v1/notes",
+    "links": "/v1/links",
+    "perms":"/v1/perms/folder",
+    "userinfo":"/v1/userinfo",
     "tokenauth":"/puboauth/token"
 }

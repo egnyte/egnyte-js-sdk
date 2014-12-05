@@ -158,7 +158,7 @@ describe("API Quota response", function () {
                 oldIEForwarder: true, //opt in for IE8/9 support
             });
             eg.API.manual.promiseRequest({
-                url: eg.API.manual.getEndpoint() + "/fs/Private",
+                url: eg.API.manual.getEndpoint() + "/v1/fs/Private",
                 method: "GET",
                 headers: {
                     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.62 Safari/537.36",

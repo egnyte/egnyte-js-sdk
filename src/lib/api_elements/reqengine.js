@@ -56,7 +56,7 @@ function params(obj) {
 }
 
 enginePrototypeMethods.getEndpoint = function () {
-    return this.options.egnyteDomainURL + "/pubapi/v1";
+    return this.options.egnyteDomainURL + "/pubapi";
 }
 
 enginePrototypeMethods.promise = function (value) {

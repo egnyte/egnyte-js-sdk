@@ -1410,7 +1410,7 @@ function params(obj) {
 }
 
 enginePrototypeMethods.getEndpoint = function () {
-    return this.options.egnyteDomainURL + "/pubapi/v1";
+    return this.options.egnyteDomainURL + "/pubapi";
 }
 
 enginePrototypeMethods.promise = function (value) {
@@ -2098,13 +2098,13 @@ function init(options, api) {
 module.exports = init;
 },{}],23:[function(require,module,exports){
 module.exports={
-    "fsmeta": "/fs",
-    "fscontent": "/fs-content",
-    "fschunked": "/fs-content-chunked",
-    "notes": "/notes",
-    "links": "/links",
-    "perms":"/perms/folder",
-    "userinfo":"/userinfo",
+    "fsmeta": "/v1/fs",
+    "fscontent": "/v1/fs-content",
+    "fschunked": "/v1/fs-content-chunked",
+    "notes": "/v1/notes",
+    "links": "/v1/links",
+    "perms":"/v1/perms/folder",
+    "userinfo":"/v1/userinfo",
     "tokenauth":"/puboauth/token"
 }
 },{}],24:[function(require,module,exports){
@@ -2416,7 +2416,7 @@ module.exports = {
         var exporting = {
             domain: options.egnyteDomainURL,
             setDomain: function (d) {
-                this.domain = options.egnyteDomainURL = d;
+                this.domain = options.egnyteDomainURL = helpers.normalizeURL(d);
             },
             API: require(11)(options)
         }
