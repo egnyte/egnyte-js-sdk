@@ -6,7 +6,7 @@ var helpers = require("../reusables/helpers");
 var texts = require("../reusables/texts");
 var jungle = require("../../vendor/zenjungle");
 
-require("./view.less");
+require("../styles/main.less");
 
 var fontLoaded = false;
 
@@ -64,7 +64,7 @@ function View(opts, txtOverride) {
     //create reusable view elements
     myElements.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
     myElements.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
-    myElements.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    myElements.ok = jungle([["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("Ok")]]).childNodes[0];
     myElements.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
     myElements.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
     myElements.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
@@ -174,7 +174,7 @@ viewPrototypeMethods.render = function () {
 
     myElements.list = document.createElement("ul");
 
-    var topbar = ["div.eg-picker-bar.eg-top"];
+    var topbar = ["div.eg-bar.eg-top"];
     if (this.model.isMultiselectable) {
         myElements.selectAll.checked = false;
         topbar.push(myElements.selectAll);
@@ -184,10 +184,10 @@ viewPrototypeMethods.render = function () {
 
     topbar = jungle([topbar]).childNodes[0];
 
-    var layoutFragm = jungle([["div.eg-theme.eg-picker",
+    var layoutFragm = jungle([["div.eg-theme.eg-picker.eg-widget",
         topbar,
         myElements.list,
-        ["div.eg-picker-bar" + this.bottomBarClass,
+        ["div.eg-bar" + this.bottomBarClass,
             myElements.ok,
             myElements.close,
             ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),

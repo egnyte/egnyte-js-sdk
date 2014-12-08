@@ -1,9 +1,9 @@
-# File picker
+# Widgets
 
 |Sections|
 | --- |
-|[File picker on API](#file-picker-on-file-system-api)|
-|[Remote file picker](#remote-file-picker-no-api-)|
+|[File picker](#file-picker-on-file-system-api)|
+|[prompt](#prompt-widget)|
 
 ## File picker on File System API
 
@@ -17,7 +17,7 @@ var egnyte = Egnyte.init("http://mydomain.egnyte.com", {
 
 ### Open file picker:
 ```javascript
-    //find a DOM node to put the picker iframe in:
+    //find a DOM node to put the picker in:
     var containerNode = document.getElementById("myPickerContainer");
     //open file picker
     var picker = egnyte.filePicker(containerNode,options);
@@ -161,3 +161,34 @@ File picker is easily stylable on its own. To ease the work of theming start wit
 
 You can also modify the defaults to keep everything in one package. Change the colors in variables of `src/lib/filepicker_elements.view.less` and rebuild the package `grunt dist` (requires grunt and other dependencies installed via `npm`)
 
+## Prompt widget
+
+
+### Open prompt:
+```javascript
+    //find a DOM node to work with:
+    var containerNode = document.getElementById("myPickerContainer");
+    //open prompt
+    var promptObj = egnyte.prompt(containerNode,{
+        texts:{
+            question: "What's your name"
+        },
+        result:function(name){
+        //do stuff
+        }
+    });
+```
+
+
+The options are:
+ - `result` _Function_ - a callback to run when the user clicks ok. First argument is the string from user input
+ - `barAlign` _String_ - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
+ - `texts` _Map_ of labels in the widget to replace with given replacements. Put your question in the `question` field 
+ 
+ 
+### Close the prompt 
+
+Prompt can be closed without the user clicking the button:
+```javascript
+    promptObj.close();
+```

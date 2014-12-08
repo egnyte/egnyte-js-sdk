@@ -15,6 +15,10 @@ function each(collection, fun) {
 }
 var disallowedChars = /[":<>|?*+&#\\]/;
 
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+};
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -31,15 +35,18 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    id: function (a) {return a},
+    id: function (a) {
+        return a
+    },
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
         }
     },
     each: each,
-    normalizeURL: function (url) {
-        return (url).replace(/\/*$/, "");
+    normalizeURL: normalizeURL,
+    httpsURL: function (url) {
+        return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
     encodeNameSafe: function (name) {
         if (!name) {

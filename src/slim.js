@@ -5,7 +5,7 @@ var defaults = require("./defaults.js");
 module.exports = {
     init: function init(egnyteDomainURL, opts) {
         var options = helpers.extend({}, defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+        options.egnyteDomainURL = egnyteDomainURL ? helpers.normalizeURL(egnyteDomainURL) : null;
 
         var exporting = {
             domain: options.egnyteDomainURL,

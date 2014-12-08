@@ -1,13 +1,11 @@
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-
 var promises = require("q");
 var helpers = require('../reusables/helpers');
 var dom = require('../reusables/dom');
 var messages = require('../reusables/messages');
 var errorify = require("./errorify");
-
 
 var ENDPOINTS_userinfo = require("../enum/endpoints").userinfo;
 var ENDPOINTS_tokenauth = require("../enum/endpoints").tokenauth;
@@ -62,8 +60,9 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     if (!this.token) {
         var self = this;
         var locationObject = window.location;
+
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -90,7 +89,6 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     } else {
         callback();
     }
-
 }
 
 
@@ -110,6 +108,7 @@ authPrototypeMethods._postTokenUp = function () {
 
     }
 }
+
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
