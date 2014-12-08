@@ -32,6 +32,11 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
 
         return requestEngine.promiseRequest(decorate(opts), function (req) {
                 stream.pipe(req);
+                //for compatibility with streams created with request
+                //request returns a stream that is flowing, so we have to pause mannually and then it's hard to unpause at the right moment... so we're accepting a paused stream here too.
+                try {
+                    stream.resume();
+                } catch (e) {};
             })
             .then(function (result) { //result.response result.body
                 return ({
