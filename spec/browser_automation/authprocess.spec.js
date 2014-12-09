@@ -25,7 +25,10 @@ if (!ImInBrowser) {
         if (typeof APIPassword !== "undefined" && typeof APIKeyImplicit !== "undefined") {
             describe("Implicit grant without sessions", function () {
                 var browser = new Browser({
-                    debug: false
+                    debug: false,
+                    headers: {
+                        accept: "*/*"
+                    }
                 });
                 browser.runScripts = true;
                 browser.deleteCookies();
@@ -34,6 +37,7 @@ if (!ImInBrowser) {
                 it("should work with login and password", function (done) {
                     var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
                     browser.visit(authpage, function (err) {
+                        console.log(browser.resources.reverse()[0].request.headers);
                         var response = browser.resources.reverse()[0].response;
                         if (err && response.statusCode !== 200) {
                             expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
@@ -70,7 +74,10 @@ if (!ImInBrowser) {
             });
             describe("Implicit grant with session", function () {
                 var browser = new Browser({
-                    debug: false
+                    debug: false,
+                    headers: {
+                        accept: "*/*"
+                    }
                 });
                 browser.runScripts = true;
                 browser.deleteCookies();

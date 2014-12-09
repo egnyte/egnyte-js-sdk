@@ -91,12 +91,21 @@ a.eg-btn{
     & input{
         padding: 0;
     }
-}
-
-.eg-widget a{
+    & a{
     cursor:pointer;
-    &:hover{
-        text-decoration: underline;
+        &:hover{
+            text-decoration: underline;
+        }
+    }
+    &::after{
+        content: "";
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;
+        width: @barheight;
+        height: @barheight;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index:3;
     }
 }
 
@@ -136,6 +145,11 @@ a.eg-btn{
 
 .eg-not{
     visibility: hidden;
+}
+
+//prompt specific
+.eg-prompt{
+    padding-top: @size/2;
 }
 
 //picker specific
@@ -214,8 +228,6 @@ a.eg-btn{
         max-width: ~"calc(100% - 88px)";
     }
 }
-
-//icons and shapes
 
 
 
