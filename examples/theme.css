@@ -2,6 +2,9 @@
 * Theme file for Egnyte SDK File-picker
 * (it is not recomended to add properties affecting layout here)
 */
+.eg-theme.eg-brand {
+    display:none;
+}
 
 .eg-theme.eg-picker {
     border-color: #fff;
