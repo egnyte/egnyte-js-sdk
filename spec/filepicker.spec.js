@@ -115,7 +115,7 @@ if (ImInBrowser) {
                     done();
                 },
                 ready: function () {
-                    expect(node.querySelectorAll(".eg-picker-bar input").length).toEqual(0);
+                    expect(node.querySelectorAll(".eg-bar input").length).toEqual(0);
                     var list = node.querySelectorAll(".eg-picker ul li");
                     list[0].click();
                     list[1].click();
@@ -135,7 +135,7 @@ if (ImInBrowser) {
                     done();
                 },
                 ready: function () {
-                    node.querySelectorAll(".eg-picker-bar input")[0].click();
+                    node.querySelectorAll(".eg-bar input")[0].click();
                     node.querySelectorAll(".eg-picker-ok")[0].click();
                 },
                 select: {

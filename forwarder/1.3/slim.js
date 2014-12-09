@@ -636,13 +636,11 @@ module.exports = function (options) {
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-
 var promises = require(26);
 var helpers = require(29);
 var dom = require(27);
 var messages = require(30);
 var errorify = require(15);
-
 
 var ENDPOINTS_userinfo = require(24).userinfo;
 var ENDPOINTS_tokenauth = require(24).tokenauth;
@@ -697,8 +695,9 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     if (!this.token) {
         var self = this;
         var locationObject = window.location;
+
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -725,7 +724,6 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     } else {
         callback();
     }
-
 }
 
 
@@ -745,6 +743,7 @@ authPrototypeMethods._postTokenUp = function () {
 
     }
 }
+
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
@@ -2416,6 +2415,10 @@ function each(collection, fun) {
 }
 var disallowedChars = /[":<>|?*+&#\\]/;
 
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+};
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -2432,15 +2435,18 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    id: function (a) {return a},
+    id: function (a) {
+        return a
+    },
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
         }
     },
     each: each,
-    normalizeURL: function (url) {
-        return (url).replace(/\/*$/, "");
+    normalizeURL: normalizeURL,
+    httpsURL: function (url) {
+        return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
     encodeNameSafe: function (name) {
         if (!name) {
@@ -2514,7 +2520,7 @@ var defaults = require(10);
 module.exports = {
     init: function init(egnyteDomainURL, opts) {
         var options = helpers.extend({}, defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+        options.egnyteDomainURL = egnyteDomainURL ? helpers.normalizeURL(egnyteDomainURL) : null;
 
         var exporting = {
             domain: options.egnyteDomainURL,

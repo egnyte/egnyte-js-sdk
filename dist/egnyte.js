@@ -589,21 +589,27 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var slim = require(39);
-var filepicker = require(26)
+var slim = require(41);
+var filepicker = require(29)
+var prompt = require(34)
+var authPrompt = require(14)
 
 slim.plugin("filePicker", function (root, resources) {
     root.filePicker = filepicker(resources.API);
 });
+slim.plugin("authPrompt", authPrompt);
+slim.plugin("prompt", function (root, resources) {
+    root.prompt = prompt;
+});
 
 module.exports = slim;
 },{}],12:[function(require,module,exports){
-var RequestEngine = require(21);
+var RequestEngine = require(22);
 var AuthEngine = require(13);
-var StorageFacade = require(22);
-var LinkFacade = require(18);
-var PermFacade = require(20);
-var Events = require(17);
+var StorageFacade = require(23);
+var LinkFacade = require(19);
+var PermFacade = require(21);
+var Events = require(18);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -626,12 +632,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(23);
+            var responder = require(24);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(24);
+                var forwarder = require(25);
                 forwarder(options, api);
             }
         }
@@ -645,16 +651,14 @@ module.exports = function (options) {
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-
 var promises = require(33);
-var helpers = require(36);
-var dom = require(34);
-var messages = require(37);
-var errorify = require(16);
+var helpers = require(37);
+var dom = require(35);
+var messages = require(38);
+var errorify = require(17);
 
-
-var ENDPOINTS_userinfo = require(25).userinfo;
-var ENDPOINTS_tokenauth = require(25).tokenauth;
+var ENDPOINTS_userinfo = require(26).userinfo;
+var ENDPOINTS_tokenauth = require(26).tokenauth;
 
 
 function Auth(options) {
@@ -706,8 +710,9 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     if (!this.token) {
         var self = this;
         var locationObject = window.location;
+
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -734,7 +739,6 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
     } else {
         callback();
     }
-
 }
 
 
@@ -754,6 +758,7 @@ authPrototypeMethods._postTokenUp = function () {
 
     }
 }
+
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
@@ -858,9 +863,26 @@ Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
 },{}],14:[function(require,module,exports){
+var prompt = require(34)
+var helpers = require(37)
+
+module.exports = function (root, resources) {
+    root.API.auth.requestTokenIframeWithPrompt = function (targetNode, callback, denied, emptyPageURL) {
+        prompt(targetNode, {
+            texts: {
+                question: "Your egnyte domain address"
+            },
+            result: function (choice) {
+                root.setDomain(helpers.httpsURL(choice));
+                root.API.auth.requestTokenIframe(targetNode, callback, denied, emptyPageURL);
+            }
+        });
+    }
+};
+},{}],15:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var ENDPOINTS = require(25);
+var helpers = require(37);
+var ENDPOINTS = require(26);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -969,8 +991,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{}],15:[function(require,module,exports){
-var helpers = require(36);
+},{}],16:[function(require,module,exports){
+var helpers = require(37);
 
 var defaultDecorators = {
 
@@ -1036,7 +1058,7 @@ module.exports = {
 
     }
 }
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1098,14 +1120,14 @@ module.exports = function (result) {
     }
     return error;
 }
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var every = require(35);
-var decorators = require(15);
+var helpers = require(37);
+var every = require(36);
+var decorators = require(16);
 
-var ENDPOINTS_events = require(25).events;
-var ENDPOINTS_eventscursor = require(25).eventscursor;
+var ENDPOINTS_events = require(26).events;
+var ENDPOINTS_eventscursor = require(26).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1178,12 +1200,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var decorators = require(15);
+var helpers = require(37);
+var decorators = require(16);
 
-var ENDPOINTS_links = require(25).links;
+var ENDPOINTS_links = require(26).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1274,11 +1296,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
+var helpers = require(37);
 
-var ENDPOINTS_notes = require(25).notes;
+var ENDPOINTS_notes = require(26).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1353,12 +1375,12 @@ exports.removeNote = function (id) {
 
 
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var decorators = require(15);
+var helpers = require(37);
+var decorators = require(16);
 
-var ENDPOINTS_perms = require(25).perms;
+var ENDPOINTS_perms = require(26).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1444,15 +1466,15 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
 var promises = require(33);
-var helpers = require(36);
-var dom = require(34);
-var messages = require(37);
-var errorify = require(16);
+var helpers = require(37);
+var dom = require(35);
+var messages = require(38);
+var errorify = require(17);
 var request = require(3);
 
 
@@ -1714,14 +1736,14 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var decorators = require(15);
-var notes = require(19);
-var chunkedUpload = require(14);
+var helpers = require(37);
+var decorators = require(16);
+var notes = require(20);
+var chunkedUpload = require(15);
 
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(26);
 
 
 function Storage(requestEngine) {
@@ -1993,10 +2015,10 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],23:[function(require,module,exports){
-var helpers = require(36);
-var dom = require(34);
-var messages = require(37);
+},{}],24:[function(require,module,exports){
+var helpers = require(37);
+var dom = require(35);
+var messages = require(38);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2055,11 +2077,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var dom = require(34);
-var messages = require(37);
+var helpers = require(37);
+var dom = require(35);
+var messages = require(38);
 
 
 
@@ -2189,7 +2211,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2202,84 +2224,6 @@ module.exports={
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],26:[function(require,module,exports){
-(function () {
-
-    var helpers = require(36);
-    var dom = require(34);
-    var View = require(30);
-    var Model = require(29);
-
-    function noGoog(ext, mime) {
-        return mime !== "goog";
-    }
-
-    function init(API) {
-        var filePicker;
-
-        filePicker = function (node, setup) {
-            if (!setup) {
-                throw new Error("Setup required as a second argument");
-            }
-            var close, openPath, fpView, fpModel,
-                defaults = {
-                    folder: true,
-                    file: true,
-                    multiple: true,
-                    forbidden: []
-                };
-            var selectOpts = helpers.extend(defaults, setup.select);
-
-            close = function () {
-                fpView.destroy();
-                fpView = null;
-                fpModel = null;
-            };
-
-            openPath = function (path) {
-                fpModel.fetch(path || "/");
-            }
-
-            fpModel = new Model(API, {
-                select: selectOpts,
-                filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
-            });
-
-            fpView = new View({
-                el: node,
-                model: fpModel,
-                barAlign: setup.barAlign,
-                handlers: {
-                    ready: setup.ready,
-                    selection: function (items) {
-                        close();
-                        setup.selection && setup.selection(items);
-                    },
-                    close: function (e) {
-                        close();
-                        setup.cancel && setup.cancel(e);
-                    },
-                    error: setup.error
-                },
-                keys: setup.keys
-            }, setup.texts);
-
-            openPath(setup.path || "/");
-
-            return {
-                openPath: openPath,
-                close: close,
-            };
-        };
-
-        return filePicker;
-
-    }
-
-    module.exports = init;
-
-
-})();
 },{}],27:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
@@ -2294,7 +2238,7 @@ module.exports={
 }
 
 },{}],28:[function(require,module,exports){
-var helpers = require(36);
+var helpers = require(37);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2348,7 +2292,80 @@ module.exports = {
     getExtensionFilter: getExtensionFilter
 }
 },{}],29:[function(require,module,exports){
-var helpers = require(36);
+var helpers = require(37);
+var dom = require(35);
+var View = require(31);
+var Model = require(30);
+
+function noGoog(ext, mime) {
+    return mime !== "goog";
+}
+
+function init(API) {
+    var filePicker;
+
+    filePicker = function (node, setup) {
+        if (!setup) {
+            throw new Error("Setup required as a second argument");
+        }
+        var close, openPath, fpView, fpModel,
+            defaults = {
+                folder: true,
+                file: true,
+                multiple: true,
+                forbidden: []
+            };
+        var selectOpts = helpers.extend(defaults, setup.select);
+
+        close = function () {
+            fpView.destroy();
+            fpView = null;
+            fpModel = null;
+        };
+
+        openPath = function (path) {
+            fpModel.fetch(path || "/");
+        }
+
+        fpModel = new Model(API, {
+            select: selectOpts,
+            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
+        });
+
+        fpView = new View({
+            el: node,
+            model: fpModel,
+            barAlign: setup.barAlign,
+            handlers: {
+                ready: setup.ready,
+                selection: function (items) {
+                    close();
+                    setup.selection && setup.selection(items);
+                },
+                close: function (e) {
+                    close();
+                    setup.cancel && setup.cancel(e);
+                },
+                error: setup.error
+            },
+            keys: setup.keys
+        }, setup.texts);
+
+        openPath(setup.path || "/");
+
+        return {
+            openPath: openPath,
+            close: close,
+        };
+    };
+
+    return filePicker;
+
+}
+
+module.exports = init;
+},{}],30:[function(require,module,exports){
+var helpers = require(37);
 var exts = require(28);
 
 
@@ -2531,16 +2548,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(34);
-var helpers = require(36);
-var texts = require(38);
-var jungle = require(40);
+var dom = require(35);
+var helpers = require(37);
+var texts = require(39);
+var jungle = require(42);
 
-require(31);
+require(40);
 
 var fontLoaded = false;
 
@@ -2598,7 +2615,7 @@ function View(opts, txtOverride) {
     //create reusable view elements
     myElements.back = jungle([["a.eg-picker-back.eg-btn[title=back]"]]).childNodes[0];
     myElements.close = jungle([["a.eg-picker-close.eg-btn", this.txt("Cancel")]]).childNodes[0];
-    myElements.ok = jungle([["span.eg-picker-ok.eg-btn", this.txt("Ok")]]).childNodes[0];
+    myElements.ok = jungle([["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("Ok")]]).childNodes[0];
     myElements.pgup = jungle([["span.eg-picker-pgup.eg-btn", ">"]]).childNodes[0];
     myElements.pgdown = jungle([["span.eg-picker-pgup.eg-btn", "<"]]).childNodes[0];
     myElements.crumb = jungle([["span.eg-picker-path"]]).childNodes[0];
@@ -2708,7 +2725,7 @@ viewPrototypeMethods.render = function () {
 
     myElements.list = document.createElement("ul");
 
-    var topbar = ["div.eg-picker-bar.eg-top"];
+    var topbar = ["div.eg-bar.eg-top"];
     if (this.model.isMultiselectable) {
         myElements.selectAll.checked = false;
         topbar.push(myElements.selectAll);
@@ -2718,10 +2735,10 @@ viewPrototypeMethods.render = function () {
 
     topbar = jungle([topbar]).childNodes[0];
 
-    var layoutFragm = jungle([["div.eg-theme.eg-picker",
+    var layoutFragm = jungle([["div.eg-theme.eg-picker.eg-widget",
         topbar,
         myElements.list,
-        ["div.eg-picker-bar" + this.bottomBarClass,
+        ["div.eg-bar" + this.bottomBarClass,
             myElements.ok,
             myElements.close,
             ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
@@ -2919,15 +2936,13 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{}],31:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-picker a{cursor:pointer}.eg-picker a:hover{text-decoration:underline}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker,.eg-picker-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-picker{background:#fff;border:1px solid #dbdbdb;height:100%;min-height:300px;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-picker *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-picker input{margin:10px 20px}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-picker-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-picker-bar>*{float:left}.eg-bar-right>*{float:right}.eg-not{visibility:hidden}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-btn.eg-picker-ok{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],32:[function(require,module,exports){
 var promises = require(33);
-var helpers = require(36);
-var dom = require(34);
-var messages = require(37);
-var decorators = require(15);
-var ENDPOINTS = require(25);
+var helpers = require(37);
+var dom = require(35);
+var messages = require(38);
+var decorators = require(16);
+var ENDPOINTS = require(26);
 
 var plugins = {};
 module.exports = {
@@ -2957,7 +2972,7 @@ module.exports = {
 },{}],33:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(36);
+var helpers = require(37);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -3041,6 +3056,61 @@ Promises.allSettled = function (array) {
 
 module.exports = Promises;
 },{}],34:[function(require,module,exports){
+var helpers = require(37);
+var dom = require(35);
+var jungle = require(42);
+var texts = require(39);
+
+require(40);
+
+function openPrompt(node, setup) {
+    if (!setup) {
+        throw new Error("Setup required as a second argument");
+    }
+    var render, cleanup, ev;
+
+    var txt = texts(setup.texts);
+
+    cleanup = function () {
+        ev.destroy();
+        node.innerHTML = "";
+    };
+
+
+    var btOk = jungle([["span.eg-prompt-ok.eg-btn.eg-btn-prim", txt("Ok")]]).childNodes[0];
+    var input = jungle([["input[type=text]"]]).childNodes[0];
+
+    ev = (dom.addListener(btOk, "click", function () {
+        var val = input.value;
+        cleanup();
+        setup.result(input.value);
+    }));
+
+    var bottomBarClass = (setup.barAlign === "left") ? "" : ".eg-bar-right";
+
+    var layoutFragm = jungle([["div.eg-theme.eg-widget.eg-prompt",
+        ["div.eg-ctlgrp",
+            ["label.eg-prompt-ask", txt("question")],
+            input
+        ],
+        ["div.eg-bar" + bottomBarClass,
+            [
+                btOk
+            ]
+        ]
+    ]]);
+
+    node.innerHTML = "";
+    node.appendChild(layoutFragm);
+    input.focus();
+
+    return {
+        close: cleanup,
+    };
+};
+
+module.exports = openPrompt;
+},{}],35:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -3109,7 +3179,7 @@ module.exports = {
     }
 
 }
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var promises = require(33);
 module.exports = function (interval, func) {
     var pointer, runner = function () {
@@ -3126,7 +3196,7 @@ module.exports = function (interval, func) {
         }
     }
 }
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -3144,6 +3214,10 @@ function each(collection, fun) {
 }
 var disallowedChars = /[":<>|?*+&#\\]/;
 
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+};
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -3160,15 +3234,18 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    id: function (a) {return a},
+    id: function (a) {
+        return a
+    },
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
         }
     },
     each: each,
-    normalizeURL: function (url) {
-        return (url).replace(/\/*$/, "");
+    normalizeURL: normalizeURL,
+    httpsURL: function (url) {
+        return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
     encodeNameSafe: function (name) {
         if (!name) {
@@ -3183,8 +3260,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],37:[function(require,module,exports){
-var helpers = require(36);
+},{}],38:[function(require,module,exports){
+var helpers = require(37);
 
 
 //returns postMessage specific handler
@@ -3234,7 +3311,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -3248,15 +3325,17 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],39:[function(require,module,exports){
-var helpers = require(36);
+},{}],40:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],41:[function(require,module,exports){
+var helpers = require(37);
 var plugins = require(32);
 var defaults = require(10);
 
 module.exports = {
     init: function init(egnyteDomainURL, opts) {
         var options = helpers.extend({}, defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
+        options.egnyteDomainURL = egnyteDomainURL ? helpers.normalizeURL(egnyteDomainURL) : null;
 
         var exporting = {
             domain: options.egnyteDomainURL,
@@ -3273,7 +3352,7 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

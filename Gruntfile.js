@@ -114,7 +114,6 @@ module.exports = function (grunt) {
         },
         nodeunit: {
             units: ['src/unittests/*.js']
-            //,integration: ['tests/*_test.js']
         },
         connect: {
             server: {

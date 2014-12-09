@@ -30,7 +30,7 @@ To use the SDK, just add the script to your app's HTML document.
 See `docs/` or explore:
 
 [API](src/docs/api.md)  
-[File picker](src/docs/filepicker.md)  
+[File picker and other UI widgets](src/docs/widgets.md)  
 [Installation and tests](src/docs/installation.md)  
 
 If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to enable the cross-origin forwarder.
