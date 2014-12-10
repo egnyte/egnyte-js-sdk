@@ -44,8 +44,8 @@ Events.prototype = {
                     return requestEngine.promiseRequest({
                         method: "GET",
                         url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
-                    }).then(function (cursor) {
-                        return cursor.latest_event_id;
+                    }).then(function (result) {
+                        return result.body.latest_event_id;
                     });
                 }
             }).then(function (initial) {
@@ -60,8 +60,8 @@ Events.prototype = {
                             id: start
                         }
                     })).then(function (result) {
-                        start = result.body.latest_id;
-                        if (result.body.events) {
+                        if (result.body) {
+                            start = result.body.latest_id;
                             helpers.each(result.body.events, function (e) {
                                 setTimeout(function () {
                                     options.emit(e);
