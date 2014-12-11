@@ -185,6 +185,7 @@ viewPrototypeMethods.render = function () {
     topbar = jungle([topbar]).childNodes[0];
 
     var layoutFragm = jungle([["div.eg-theme.eg-picker.eg-widget",
+        ["a.eg-brand",{title:"egnyte.com"}],
         topbar,
         myElements.list,
         ["div.eg-bar" + this.bottomBarClass,

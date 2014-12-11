@@ -25,14 +25,17 @@ if (!ImInBrowser) {
         if (typeof APIPassword !== "undefined" && typeof APIKeyImplicit !== "undefined") {
             describe("Implicit grant without sessions", function () {
                 var browser = new Browser({
-                    debug: false
+                    debug: false,
+                    headers: {
+                        accept: "*/*"
+                    }
                 });
-                browser.runScripts = true;
+                browser.runScripts = false;
                 browser.deleteCookies();
 
 
                 it("should work with login and password", function (done) {
-                    var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://example.com/"
+                    var authpage = egnyteDomain + ENDPOINTS_tokenauth + "?client_id=" + APIKeyImplicit + "&mobile=1&redirect_uri=https://egnyte.com/&state=" + ~~(Math.random() * 999999);
                     browser.visit(authpage, function (err) {
                         var response = browser.resources.reverse()[0].response;
                         if (err && response.statusCode !== 200) {
@@ -47,10 +50,14 @@ if (!ImInBrowser) {
                                 .fill("#j_username", APIUsername)
                                 .fill("#j_password", APIPassword);
 
+                            //zombie browser is buggy, loses the form action
+                            browser.query("#masheryOAuthForm").setAttribute("action", "/rest/unauthorized/puboauth/authenticate");
+
                             browser.pressButton("#btnSubmit", function (err) {
                                 //check stuff
-                                if (err) {
-                                    expect(this).toAutoFail(err);
+                                var response = browser.resources.reverse()[0].response;
+                                if (err && response.statusCode !== 200) {
+                                    expect(this).toAutoFail(err.message + "\n[http body]\n" + response.body.toString());
                                 } else {
                                     var authRequest = browser.resources.filter(function (re) {
                                         return re.request && re.request.url.match(/puboauth\/authenticate/);
@@ -70,9 +77,12 @@ if (!ImInBrowser) {
             });
             describe("Implicit grant with session", function () {
                 var browser = new Browser({
-                    debug: false
+                    debug: false,
+                    headers: {
+                        accept: "*/*"
+                    }
                 });
-                browser.runScripts = true;
+                browser.runScripts = false;
                 browser.deleteCookies();
 
 
@@ -107,6 +117,10 @@ if (!ImInBrowser) {
                             //console.log(err);
                             expect(browser.success).toBe(true);
                             expect(browser.query("#userInSession").value).toBe("true");
+
+                            //zombie browser is buggy, loses the form action
+                            browser.query("#masheryOAuthForm").setAttribute("action", "/rest/unauthorized/puboauth/authenticate");
+
                             browser.pressButton("#btnSubmit", function (err) {
                                 //check stuff
                                 if (err) {

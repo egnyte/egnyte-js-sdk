@@ -31,6 +31,7 @@ function openPrompt(node, setup) {
     var bottomBarClass = (setup.barAlign === "left") ? "" : ".eg-bar-right";
 
     var layoutFragm = jungle([["div.eg-theme.eg-widget.eg-prompt",
+        ["a.eg-brand",{title:"egnyte.com"}],
         ["div.eg-ctlgrp",
             ["label.eg-prompt-ask", txt("question")],
             input
