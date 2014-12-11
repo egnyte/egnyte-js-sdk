@@ -27,11 +27,22 @@ function addFilter(opts, data) {
     return opts;
 }
 
+function getCursor() {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
+        method: "GET",
+        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
+    }).then(function (result) {
+        return result.body.latest_event_id;
+    });
+}
+
 //options.start
 //options.interval >2000
 //options.emit
 //returns {stop:function}
 Events.prototype = {
+    getCursor: getCursor,
     listen: function (options) {
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
@@ -41,12 +52,7 @@ Events.prototype = {
                 if (!isNaN(options.start)) {
                     return options.start;
                 } else {
-                    return requestEngine.promiseRequest({
-                        method: "GET",
-                        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
-                    }).then(function (result) {
-                        return result.body.latest_event_id;
-                    });
+                    return getCursor();
                 }
             }).then(function (initial) {
                 var start = initial;
