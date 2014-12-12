@@ -71,12 +71,11 @@ Events.prototype = {
                             helpers.each(result.body.events, function (e) {
                                 setTimeout(function () {
                                     options.emit(e);
-
-                                    if (options.progress) {
-                                        options.progress(start);
-                                    }
                                 }, 0)
                             });
+                            if (options.progress) {
+                                options.progress(start);
+                            }
                         }
                     });
                 })
