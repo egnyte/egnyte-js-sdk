@@ -1157,6 +1157,7 @@ var defaultCount = 20;
 //options.start
 //options.interval >2000
 //options.emit
+//options.current
 //returns {stop:function}
 Events.prototype = {
     getCursor: function () {
@@ -1172,6 +1173,8 @@ Events.prototype = {
         var self = this;
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
+
+        var current = options.current || helpers.noop;
 
         return promises(true)
             .then(function () {
@@ -1198,6 +1201,7 @@ Events.prototype = {
                     })).then(function (result) {
                         if (result.body) {
                             start = result.body.latest_id;
+                            current(start);
                             helpers.each(result.body.events, function (e) {
                                 setTimeout(function () {
                                     options.emit(e);
