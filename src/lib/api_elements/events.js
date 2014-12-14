@@ -84,6 +84,9 @@ Events.prototype = {
                                 controller.repeat();
                             }
                         }
+                        if (options.heartbeat) {
+                            options.heartbeat();
+                        }
                     });
                 })
 
