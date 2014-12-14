@@ -1179,7 +1179,7 @@ Events.prototype = {
                             }
                         }
                         if (options.heartbeat) {
-                            options.heartbeat();
+                            options.heartbeat(result);
                         }
                     });
                 })
