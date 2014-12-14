@@ -1118,15 +1118,7 @@ function addFilter(opts, data) {
     return opts;
 }
 
-function getCursor() {
-    var requestEngine = this.requestEngine;
-    return requestEngine.promiseRequest({
-        method: "GET",
-        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
-    }).then(function (result) {
-        return result.body.latest_event_id;
-    });
-}
+
 
 var defaultCount = 20;
 
@@ -1135,8 +1127,17 @@ var defaultCount = 20;
 //options.emit
 //returns {stop:function}
 Events.prototype = {
-    getCursor: getCursor,
+    getCursor: function () {
+        var requestEngine = this.requestEngine;
+        return requestEngine.promiseRequest({
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
+        }).then(function (result) {
+            return result.body.latest_event_id;
+        });
+    },
     listen: function (options) {
+        var self = this;
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
 
@@ -1145,7 +1146,7 @@ Events.prototype = {
                 if (!isNaN(options.start)) {
                     return options.start;
                 } else {
-                    return getCursor();
+                    return self.getCursor();
                 }
             }).then(function (initial) {
                 var start = initial;
@@ -1170,7 +1171,7 @@ Events.prototype = {
                             if (options.progress) {
                                 options.progress(start);
                             }
-                            if(result.body.events.length >= count){
+                            if (result.body.events.length >= count) {
                                 controller.repeat();
                             }
                         }
@@ -2401,7 +2402,7 @@ module.exports = function (interval, func) {
     var pointer,
         repeat = function () {
             clearTimeout(pointer);
-            setTimeout(runner,0);
+            pointer = setTimeout(runner,1);
         },
         runner = function () {
             promises({
