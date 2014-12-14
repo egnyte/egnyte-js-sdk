@@ -1150,6 +1150,9 @@ Events.prototype = {
                 }
             }).then(function (initial) {
                 var start = initial;
+                if (options.progress) {
+                    options.progress(start);
+                }
                 //start looping!
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
                     var count = options.count || defaultCount;
