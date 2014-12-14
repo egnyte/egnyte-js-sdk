@@ -1118,11 +1118,24 @@ function addFilter(opts, data) {
     return opts;
 }
 
+function getCursor() {
+    var requestEngine = this.requestEngine;
+    return requestEngine.promiseRequest({
+        method: "GET",
+        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
+    }).then(function (result) {
+        return result.body.latest_event_id;
+    });
+}
+
+var defaultCount = 20;
+
 //options.start
 //options.interval >2000
 //options.emit
 //returns {stop:function}
 Events.prototype = {
+    getCursor: getCursor,
     listen: function (options) {
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
@@ -1132,23 +1145,19 @@ Events.prototype = {
                 if (!isNaN(options.start)) {
                     return options.start;
                 } else {
-                    return requestEngine.promiseRequest({
-                        method: "GET",
-                        url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
-                    }).then(function (result) {
-                        return result.body.latest_event_id;
-                    });
+                    return getCursor();
                 }
             }).then(function (initial) {
                 var start = initial;
                 //start looping!
-                return every(Math.max(options.interval || 30000, 2000), function () {
-
+                return every(Math.max(options.interval || 30000, 2000), function (controller) {
+                    var count = options.count || defaultCount;
                     return requestEngine.promiseRequest(decorate({
                         method: "GET",
                         url: requestEngine.getEndpoint() + ENDPOINTS_events,
                         params: {
-                            id: start
+                            id: start,
+                            count: count
                         }
                     })).then(function (result) {
                         if (result.body) {
@@ -1158,6 +1167,12 @@ Events.prototype = {
                                     options.emit(e);
                                 }, 0)
                             });
+                            if (options.progress) {
+                                options.progress(start);
+                            }
+                            if(result.body.events.length >= count){
+                                controller.repeat();
+                            }
                         }
                     });
                 })
@@ -2383,18 +2398,27 @@ module.exports = {
 },{}],28:[function(require,module,exports){
 var promises = require(26);
 module.exports = function (interval, func) {
-    var pointer, runner = function () {
-        promises(true).then(func).then(function () {
-            pointer = setTimeout(runner, interval);
-        }).fail(function (e) {
-            console && console.error("Error in scheduled function", e);
-        });
-    }
+    var pointer,
+        repeat = function () {
+            clearTimeout(pointer);
+            setTimeout(runner,0);
+        },
+        runner = function () {
+            promises({
+                interval: interval,
+                repeat: repeat
+            }).then(func).then(function () {
+                pointer = setTimeout(runner, interval);
+            }).fail(function (e) {
+                console && console.error("Error in scheduled function", e);
+            });
+        }
     runner();
     return {
         stop: function () {
             clearTimeout(pointer);
-        }
+        },
+        forceRun: repeat
     }
 }
 },{}],29:[function(require,module,exports){

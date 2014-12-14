@@ -37,6 +37,8 @@ function getCursor() {
     });
 }
 
+var defaultCount = 20;
+
 //options.start
 //options.interval >2000
 //options.emit
@@ -57,13 +59,14 @@ Events.prototype = {
             }).then(function (initial) {
                 var start = initial;
                 //start looping!
-                return every(Math.max(options.interval || 30000, 2000), function () {
-
+                return every(Math.max(options.interval || 30000, 2000), function (controller) {
+                    var count = options.count || defaultCount;
                     return requestEngine.promiseRequest(decorate({
                         method: "GET",
                         url: requestEngine.getEndpoint() + ENDPOINTS_events,
                         params: {
-                            id: start
+                            id: start,
+                            count: count
                         }
                     })).then(function (result) {
                         if (result.body) {
@@ -75,6 +78,9 @@ Events.prototype = {
                             });
                             if (options.progress) {
                                 options.progress(start);
+                            }
+                            if(result.body.events.length >= count){
+                                controller.repeat();
                             }
                         }
                     });
