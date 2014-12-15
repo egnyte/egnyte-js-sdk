@@ -51,8 +51,6 @@ Events.prototype = {
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
 
-        var current = options.current || helpers.noop;
-
         return promises(true)
             .then(function () {
                 if (!isNaN(options.start)) {
@@ -62,8 +60,8 @@ Events.prototype = {
                 }
             }).then(function (initial) {
                 var start = initial;
-                if (options.progress) {
-                    options.progress(start);
+                if (options.current) {
+                    options.current(start);
                 }
                 //start looping!
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
@@ -78,14 +76,13 @@ Events.prototype = {
                     })).then(function (result) {
                         if (result.body) {
                             start = result.body.latest_id;
-                            current(start);
                             helpers.each(result.body.events, function (e) {
                                 setTimeout(function () {
                                     options.emit(e);
                                 }, 0)
                             });
-                            if (options.progress) {
-                                options.progress(start);
+                            if (options.current) {
+                                options.current(start);
                             }
                             if (result.body.events.length >= count) {
                                 controller.repeat();
