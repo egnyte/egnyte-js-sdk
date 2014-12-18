@@ -403,10 +403,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <tr>
 <td>API.storage.streamToChunks</td>
 <td><code>path</code>, <code>Stream</code>, <code>mimeType (optional)</code>, <code>chunksize(optional)</code></td>
-<td>splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big. </td>
-</tr>
-<tr>
-<td>Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload</td>
+<td>splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big. Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload</td>
 <td>node.js only</td>
 </tr>
 <tr>
@@ -465,10 +462,16 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </tr>
 </tbody>
 </table>
-<h3 id="storing-a-file">Storing a file</h3>
+<h3 id="storing-a-file-node-js">Storing a file - node.js</h3>
+<pre><code class="lang-javascript">var fileStream = fs.createReadStream(&#39;sample.txt&#39;)
+egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1105)
+    .then(function(filemeta){
+        //
+    })</code></pre>
+<p>If the API responds with an error that you cannot store an empty file, it means you have to provide the <code>size</code> argument.</p>
+<h3 id="storing-a-file-in-the-browser">Storing a file - in the browser</h3>
 <p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor or <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
 <p>To aid working with blobs cross-browser we recommend <a href="https://github.com/eligrey/Blob.js">https://github.com/eligrey/Blob.js</a> (a copy available in this repo in src/vendor/blob.js)</p>
-<p><em>Example</em></p>
 <pre><code class="lang-javascript">$(&quot;.myForm&quot;).on(&quot;submit&quot;,function(){
 
     var file = $(&quot;input.avatarfile&quot;)[0].files[0]
