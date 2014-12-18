@@ -643,6 +643,7 @@ var ENDPOINTS_tokenauth = require(23).tokenauth;
 
 
 function Auth(options) {
+    this.type = "Bearer";
     this.options = options;
     if (this.options.token) {
         this.token = this.options.token;
@@ -1428,7 +1429,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         if (!forceNoAuth) {
-            opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
+            opts.headers["Authorization"] = this.auth.type + " " + this.auth.getToken();
         }
         if (!callback) {
             return self.requestHandler(opts);

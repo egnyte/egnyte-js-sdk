@@ -57,20 +57,23 @@
     <div class="doc">
 
         <h1 id="installation">Installation</h1>
+<h2 id="browser">Browser</h2>
 <p><code>dist/</code> contains two builds:</p>
 <ul>
-<li><code>dist/egnyte.js</code> (~32KB minified) is the complete functionality</li>
-<li><code>dist/slim.js</code> (~10KB minified) is only the API wrapper (no filepicker)</li>
+<li><code>dist/egnyte.js</code> is the complete functionality</li>
+<li><code>dist/slim.js</code> is only the API wrapper (no filepicker or other UI)</li>
 </ul>
 <p>both of them available in minified versions (recommended)</p>
 <p>To use the SDK, just add the script to your app&#39;s HTML document.</p>
 <pre><code class="lang-html">&lt;script src=&quot;egnyte.min.js&quot;&gt;&lt;/script&gt;</code></pre>
 <p>After that, all SDK functionalities are available via global <code>Egnyte</code> constructor.</p>
-<p>If you wish to use filepicker with fonts matching main Egnyte UI, add <code>Open Sans</code> font too:</p>
-<pre><code class="lang-html">&lt;link href=&#39;https://fonts.googleapis.com/css?family=Open+Sans:400,600&#39; rel=&#39;stylesheet&#39; type=&#39;text/css&#39;&gt;
-&lt;script src=&quot;egnyte.min.js&quot;&gt;&lt;/script&gt;</code></pre>
+<p>To show Google Drive icons in the filepicker for files coming from Google Drive include the <code>googicons.css</code> from <code>dist/resources/</code></p>
+<h2 id="node-js">Node.js</h2>
+<pre><code>npm install --save egnyte-js-sdk</code></pre>
+<p>use:</p>
+<pre><code class="lang-javascript">var Egnyte = require(&#39;egnyte-js-sdk&#39;);</code></pre>
 <h1 id="building-and-dependencies">Building and dependencies</h1>
-<p>To build the project and run tests <code>nodeJS</code> is required in your system.</p>
+<p>To build the project and run tests <code>node.js</code> is required in your system.</p>
 <p>Install grunt comandline tools:</p>
 <pre><code>npm install -g grunt-cli</code></pre>
 <p>Install all dependencies:</p>

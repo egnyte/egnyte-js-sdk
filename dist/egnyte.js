@@ -658,6 +658,7 @@ var ENDPOINTS_tokenauth = require(25).tokenauth;
 
 
 function Auth(options) {
+    this.type = "Bearer";
     this.options = options;
     if (this.options.token) {
         this.token = this.options.token;
@@ -862,6 +863,13 @@ module.exports = Auth;
 var prompt = require(33)
 var helpers = require(35)
 
+function egmitifyDomain(domain) {
+    if (domain.indexOf('.') === -1) {
+        domain += '.egnyte.com';
+    }
+    return domain;
+}
+
 module.exports = function (root, resources) {
     root.API.auth.requestTokenIframeWithPrompt = function (targetNode, callback, denied, emptyPageURL) {
         prompt(targetNode, {
@@ -869,7 +877,7 @@ module.exports = function (root, resources) {
                 question: "Your egnyte domain address"
             },
             result: function (choice) {
-                root.setDomain(helpers.httpsURL(choice));
+                root.setDomain(helpers.httpsURL(egmitifyDomain(choice)));
                 root.API.auth.requestTokenIframe(targetNode, callback, denied, emptyPageURL);
             }
         });
@@ -1460,7 +1468,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         if (!forceNoAuth) {
-            opts.headers["Authorization"] = "Bearer " + this.auth.getToken();
+            opts.headers["Authorization"] = this.auth.type + " " + this.auth.getToken();
         }
         if (!callback) {
             return self.requestHandler(opts);
