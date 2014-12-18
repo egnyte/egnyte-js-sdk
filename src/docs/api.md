@@ -230,8 +230,7 @@ API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR
 API.storage.getFileStream | `path`,`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"...",id:"<version ID>"}` |
 API.storage.storeFile | `path`, `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
-API.storage.streamToChunks | `path`, `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. 
-Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
+API.storage.streamToChunks | `path`, `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
 API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
 API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
 API.storage.rename | `path`,  `new path` | alias for move|
@@ -242,16 +241,26 @@ API.storage.getNote | `node_id` | Resolves to a note object|
 API.storage.removeNote | `node_id` | Removes the note|
 API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
 
+### Storing a file - node.js
 
 
-### Storing a file
+```javascript
+var fileStream = fs.createReadStream('sample.txt')
+egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
+    .then(function(filemeta){
+        //
+    })
+
+```
+
+If the API responds with an error that you cannot store an empty file, it means you have to provide the `size` argument.
+
+### Storing a file - in the browser
 
 Storing a file requires a `Blob` compatible object. It can be created manually using the browser's `Blob` constructor or `BlobBuilder`. A file input in a form can also produce a blob: `fileInputNode.files[0]` is a `File` object, which actually extends `Blob`.
 
 To aid working with blobs cross-browser we recommend https://github.com/eligrey/Blob.js (a copy available in this repo in src/vendor/blob.js)
 
-
-_Example_
 
 
 ```javascript
