@@ -12,6 +12,7 @@ var ENDPOINTS_tokenauth = require("../enum/endpoints").tokenauth;
 
 
 function Auth(options) {
+    this.type = "Bearer";
     this.options = options;
     if (this.options.token) {
         this.token = this.options.token;

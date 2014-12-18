@@ -1,3 +1,9 @@
+### 1.3.0
+- Notes for files
+- Prompt widget
+- Auth flow with prompt for Egnyte domain
+- Plugins support beta
+
 ### 1.2.0
 - Password Grant flow for auth in node.js
 - Chunked upload (with streams for node)
