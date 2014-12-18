@@ -1141,6 +1141,7 @@ function Events(requestEngine) {
     this.requestEngine = requestEngine;
     decorators.install(this);
     this.addDecorator("filter", addFilter);
+    this.addDecorator("notMy", notMy);
 }
 
 function addFilter(opts, data) {
@@ -1155,6 +1156,12 @@ function addFilter(opts, data) {
             opts.params.type = data.type;
         }
     }
+    return opts;
+}
+
+function notMy(opts, data) {
+    opts.params || (opts.params = {});
+    opts.params.not_my = data ? data : "all";
     return opts;
 }
 
