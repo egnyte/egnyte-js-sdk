@@ -102,27 +102,13 @@ module.exports = function (grunt) {
             }
         },
         jasmine_node: {
-//            options: {
-//                match: grunt.option("filter") || '.',
-//                matchall: false,
-//                extensions: 'js',
-//                specNameMatcher: 'spec'
-//            },
             all: {
                 src:['spec'],
                 match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
-            },
-            browser_automation: {
-                src:['spec/browser_automation'],
-                match: grunt.option("filter") || '.',
-                matchall: false,
-                extensions: 'js',
-                specNameMatcher: ''
             }
-
         },
         nodeunit: {
             units: ['src/unittests/*.js']
