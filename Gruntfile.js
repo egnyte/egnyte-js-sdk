@@ -102,14 +102,26 @@ module.exports = function (grunt) {
             }
         },
         jasmine_node: {
-            options: {
+//            options: {
+//                match: grunt.option("filter") || '.',
+//                matchall: false,
+//                extensions: 'js',
+//                specNameMatcher: 'spec'
+//            },
+            all: {
+                src:['spec'],
                 match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
             },
-            all: ['spec/'],
-            browser_automation: ['spec/browser_automation']
+            browser_automation: {
+                src:['spec/browser_automation'],
+                match: grunt.option("filter") || '.',
+                matchall: false,
+                extensions: 'js',
+                specNameMatcher: ''
+            }
 
         },
         nodeunit: {
@@ -219,7 +231,7 @@ module.exports = function (grunt) {
 
 
     grunt.registerTask("test-browser", ["nodeunit:units", "build", "jasmine:all"]);
-    grunt.registerTask("test-node", ["jasmine_node"]);
+    grunt.registerTask("test-node", ["jasmine_node:all"]);
     grunt.registerTask("test", ["test-browser", "test-node"]);
     grunt.registerTask("build", ["clean", "browserify", "uglify", "copy"]);
     grunt.registerTask("dist", ["build", "markdown", "dependo"]);
