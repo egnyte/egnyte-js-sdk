@@ -400,7 +400,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -860,7 +860,7 @@
             },
             "isarray": {
               "version": "0.0.1",
-              "resolved": "http://npm.purato.com/isarray/-/isarray-0.0.1.tgz"
+              "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
             },
             "labeled-stream-splicer": {
               "version": "1.0.2",
@@ -1084,7 +1084,7 @@
               "dependencies": {
                 "minimist": {
                   "version": "1.1.0",
-                  "resolved": "http://npm.purato.com/minimist/-/minimist-1.1.0.tgz"
+                  "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.1.0.tgz"
                 }
               }
             },
@@ -1336,7 +1336,7 @@
                         },
                         "isarray": {
                           "version": "0.0.1",
-                          "resolved": "http://npm.purato.com/isarray/-/isarray-0.0.1.tgz"
+                          "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
                         },
                         "string_decoder": {
                           "version": "0.10.31",
@@ -1592,7 +1592,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -1902,7 +1902,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -2300,7 +2300,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -2614,7 +2614,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -2694,7 +2694,7 @@
         },
         "es5-shim": {
           "version": "4.0.3",
-          "resolved": "http://npm.purato.com/es5-shim/-/es5-shim-4.0.3.tgz"
+          "resolved": "https://registry.npmjs.org/es5-shim/-/es5-shim-4.0.3.tgz"
         },
         "grunt-lib-phantomjs": {
           "version": "0.6.0",
@@ -2722,7 +2722,7 @@
                   "dependencies": {
                     "minimist": {
                       "version": "0.0.8",
-                      "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                      "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                     }
                   }
                 },
@@ -2774,7 +2774,7 @@
                     },
                     "osenv": {
                       "version": "0.1.0",
-                      "resolved": "http://npm.purato.com/osenv/-/osenv-0.1.0.tgz"
+                      "resolved": "https://registry.npmjs.org/osenv/-/osenv-0.1.0.tgz"
                     },
                     "semver": {
                       "version": "4.1.0",
@@ -2886,15 +2886,15 @@
                       "dependencies": {
                         "asn1": {
                           "version": "0.1.11",
-                          "resolved": "http://npm.purato.com/asn1/-/asn1-0.1.11.tgz"
+                          "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.1.11.tgz"
                         },
                         "assert-plus": {
                           "version": "0.1.2",
-                          "resolved": "http://npm.purato.com/assert-plus/-/assert-plus-0.1.2.tgz"
+                          "resolved": "https://registry.npmjs.org/assert-plus/-/assert-plus-0.1.2.tgz"
                         },
                         "ctype": {
                           "version": "0.5.2",
-                          "resolved": "http://npm.purato.com/ctype/-/ctype-0.5.2.tgz"
+                          "resolved": "https://registry.npmjs.org/ctype/-/ctype-0.5.2.tgz"
                         }
                       }
                     },
@@ -3066,7 +3066,7 @@
                   "dependencies": {
                     "minimist": {
                       "version": "0.0.8",
-                      "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                      "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                     }
                   }
                 },
@@ -3382,7 +3382,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -3804,7 +3804,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -4489,7 +4489,7 @@
             },
             "minimist": {
               "version": "0.0.8",
-              "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+              "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
             },
             "mkdirp": {
               "version": "0.3.5",
@@ -4747,7 +4747,7 @@
                       "dependencies": {
                         "minimist": {
                           "version": "0.0.8",
-                          "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                          "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                         }
                       }
                     },
@@ -4861,7 +4861,7 @@
               "dependencies": {
                 "minimist": {
                   "version": "0.0.8",
-                  "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                  "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                 }
               }
             },
@@ -4969,8 +4969,8 @@
                   "dependencies": {
                     "minimist": {
                       "version": "0.0.8",
-                      "from": "minimist@http://npm.purato.com/minimist/-/minimist-0.0.8.tgz",
-                      "resolved": "http://npm.purato.com/minimist/-/minimist-0.0.8.tgz"
+                      "from": "minimist@https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz",
+                      "resolved": "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz"
                     }
                   }
                 }
@@ -5032,7 +5032,7 @@
         },
         "isarray": {
           "version": "0.0.1",
-          "resolved": "http://npm.purato.com/isarray/-/isarray-0.0.1.tgz"
+          "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
         },
         "string_decoder": {
           "version": "0.10.31",
@@ -5066,8 +5066,8 @@
               "dependencies": {
                 "delayed-stream": {
                   "version": "0.0.5",
-                  "from": "delayed-stream@http://npm.purato.com/delayed-stream/-/delayed-stream-0.0.5.tgz",
-                  "resolved": "http://npm.purato.com/delayed-stream/-/delayed-stream-0.0.5.tgz"
+                  "from": "delayed-stream@https://registry.npmjs.org/delayed-stream/-/delayed-stream-0.0.5.tgz",
+                  "resolved": "https://registry.npmjs.org/delayed-stream/-/delayed-stream-0.0.5.tgz"
                 }
               }
             },
@@ -5105,18 +5105,18 @@
           "dependencies": {
             "asn1": {
               "version": "0.1.11",
-              "from": "asn1@http://npm.purato.com/asn1/-/asn1-0.1.11.tgz",
-              "resolved": "http://npm.purato.com/asn1/-/asn1-0.1.11.tgz"
+              "from": "asn1@https://registry.npmjs.org/asn1/-/asn1-0.1.11.tgz",
+              "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.1.11.tgz"
             },
             "assert-plus": {
               "version": "0.1.2",
-              "from": "assert-plus@http://npm.purato.com/assert-plus/-/assert-plus-0.1.2.tgz",
-              "resolved": "http://npm.purato.com/assert-plus/-/assert-plus-0.1.2.tgz"
+              "from": "assert-plus@https://registry.npmjs.org/assert-plus/-/assert-plus-0.1.2.tgz",
+              "resolved": "https://registry.npmjs.org/assert-plus/-/assert-plus-0.1.2.tgz"
             },
             "ctype": {
               "version": "0.5.2",
-              "from": "ctype@http://npm.purato.com/ctype/-/ctype-0.5.2.tgz",
-              "resolved": "http://npm.purato.com/ctype/-/ctype-0.5.2.tgz"
+              "from": "ctype@https://registry.npmjs.org/ctype/-/ctype-0.5.2.tgz",
+              "resolved": "https://registry.npmjs.org/ctype/-/ctype-0.5.2.tgz"
             }
           }
         },
@@ -5178,7 +5178,7 @@
             },
             "isarray": {
               "version": "0.0.1",
-              "resolved": "http://npm.purato.com/isarray/-/isarray-0.0.1.tgz"
+              "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
             },
             "string_decoder": {
               "version": "0.10.31",
@@ -5197,8 +5197,8 @@
       "resolved": "https://registry.npmjs.org/vkey/-/vkey-1.0.0.tgz"
     },
     "xhr": {
-      "version": "1.16.1",
-      "resolved": "https://registry.npmjs.org/xhr/-/xhr-1.16.1.tgz",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/xhr/-/xhr-2.0.0.tgz",
       "dependencies": {
         "global": {
           "version": "4.3.0",

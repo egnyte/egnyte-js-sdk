@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=0.10.28"
   },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/egnyte/egnyte-js-sdk.git"
+  },
   "keywords": [
     "egnyte",
     "storage",
@@ -23,7 +27,7 @@
     "q": "1.0.1",
     "request": "2.40.0",
     "vkey": "1.0.0",
-    "xhr": "1.16.1"
+    "xhr": "^2.0.0"
   },
   "browser": {
     "q": "./src/lib/promises-browser.js",
