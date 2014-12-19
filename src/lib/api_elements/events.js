@@ -70,7 +70,7 @@ Events.prototype = {
                 if (options.current) {
                     options.current(start);
                 }
-                //start looping!
+                //returns controllong object
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
                     var count = options.count || defaultCount;
                     return requestEngine.promiseRequest(decorate({

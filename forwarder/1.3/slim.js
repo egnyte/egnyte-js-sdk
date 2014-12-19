@@ -1005,7 +1005,7 @@ module.exports = {
                     var instance = new Decorated;
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
-                    instance._decorations[name] = data;
+                    instance._decorations[name] = data || null;
                     exposeDecorators(instance);
                     return instance;
                 }
@@ -1162,7 +1162,7 @@ Events.prototype = {
                 if (options.current) {
                     options.current(start);
                 }
-                //start looping!
+                //returns controllong object
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
                     var count = options.count || defaultCount;
                     return requestEngine.promiseRequest(decorate({
@@ -2414,17 +2414,20 @@ module.exports = {
 },{}],28:[function(require,module,exports){
 var promises = require(26);
 module.exports = function (interval, func) {
-    var pointer,
+    var pointer, stopped = false,
         repeat = function () {
+            stopped = false;
             clearTimeout(pointer);
-            pointer = setTimeout(runner,1);
+            pointer = setTimeout(runner, 1);
         },
         runner = function () {
             promises({
                 interval: interval,
                 repeat: repeat
             }).then(func).then(function () {
-                pointer = setTimeout(runner, interval);
+                if (!stopped) {
+                    pointer = setTimeout(runner, interval);
+                }
             }).fail(function (e) {
                 console && console.error("Error in scheduled function", e);
             });
@@ -2432,6 +2435,7 @@ module.exports = function (interval, func) {
     runner();
     return {
         stop: function () {
+            stopped = true;
             clearTimeout(pointer);
         },
         forceRun: repeat
