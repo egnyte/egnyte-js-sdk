@@ -5,6 +5,8 @@
 |[Init and Authorize](#initialize-and-connect-to-api)|
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
+|[Permissions API](#permissions-api-helpers)|
+|[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
 
 ## Introduction
