@@ -95,19 +95,21 @@ module.exports = function (grunt) {
                     keepRunner: true,
                     helpers: ["spec/helpers/*.js"],
                     specs: 'spec/*.spec.js',
-                    '--web-security': false,
+                    // '--web-security': false,
                     '--local-to-remote-url-access': true,
                     '--ignore-ssl-errors': true
                 }
             }
         },
         jasmine_node: {
-            all: {
-                src:['spec'],
+            options: {
                 match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
+            },
+            all: {
+                src: ['spec'],
             }
         },
         nodeunit: {

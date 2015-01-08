@@ -10,7 +10,7 @@ if (!ImInBrowser) {
     process.setMaxListeners(0);
 }
 
-describe("Link API facade integration", function () {
+describe("Events API facade", function () {
 
     //our main testsubject
     var eg = Egnyte.init(egnyteDomain, {
@@ -19,7 +19,16 @@ describe("Link API facade integration", function () {
         QPS: 2
     });
 
-
+    function getFileContent(content) {
+        if (ImInBrowser) {
+            return content;
+        } else {
+            var s = new stream.Readable();
+            s.push(content);
+            s.push(null);
+            return s;
+        }
+    }
 
 
     if (!egnyteDomain || !APIToken) {
@@ -32,11 +41,12 @@ describe("Link API facade integration", function () {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
-    var testpath = "/Shared/SDKTests";
+    var testpath = "/Shared/SDKTests/t" + ~~(Math.random() * 99999);
 
     describe("Events fetcher", function () {
 
         var scheduler;
+
 
         afterEach(function () {
             if (scheduler) {
@@ -52,29 +62,31 @@ describe("Link API facade integration", function () {
             }).then(function () {
                 return eg.API.storage.createFolder(testpath)
                     .then(function (e) {
-                        if (OtherUsername) {
-                            return eg.API.perms.users([OtherUsername]).allowFullAccess()
+                        if (typeof OtherUsername !== "undefined") {
+                            return eg.API.perms.users([OtherUsername]).allowFullAccess(testpath)
                         }
-                    }).then(function() {
+                    }).then(function () {
                         done();
                     });
+            }).fail(function (e) {
+                console.error(e.stack);
             });
         });
 
-        
+
         //Following tests are sponsored by sour candy producers.
-        
-        
+
+
         it("Should get events", function (done) {
             var filePath = testpath + "/candy.txt";
             var events = 0;
 
-            eg.API.events.notMy().filter({
+            eg.API.events.filter({
                 folder: testpath
             }).listen({
                 //start: purposefully not provided
                 interval: 2000,
-                emit: function () {
+                emit: function (e) {
                     events++;
                 },
                 current: function (a) {
@@ -83,7 +95,7 @@ describe("Link API facade integration", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.storeFile(filePath, "sour")
+                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
                     .then(function (e) {
                         //give it time to get the events
                         setTimeout(function () {
@@ -120,7 +132,7 @@ describe("Link API facade integration", function () {
             }).then(function (sch) {
                 scheduler = sch;
                 scheduler.stop();
-                return eg.API.storage.storeFile(filePath, "sour")
+                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
                     .then(function (e) {
                         //give it time to get the events it shouldn't get
                         setTimeout(function () {
@@ -135,7 +147,7 @@ describe("Link API facade integration", function () {
         });
 
 
-        it("Should not get app's own events", function (done) {
+        it("Should not get app's own file events", function (done) {
             var filePath = testpath + "/candy.txt";
 
             eg.API.events.notMy().filter({
@@ -148,11 +160,38 @@ describe("Link API facade integration", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.storeFile(filePath, "sour")
+                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
                     .then(function (e) {
-                        expect(e.id).toBeTruthy();
-                        expect(e.path).toEqual(filePath);
+                        //give it time to get the events
+                        setTimeout(function () {
+                            scheduler.stop();
+                            done();
+                        }, 5000)
 
+                    });
+            }).fail(function (e) {
+                console.error(e.stack);
+            });
+
+        });
+
+        it("Should not get app's own note events", function (done) {
+            var filePath = testpath + "/candy.txt";
+            var noteId;
+
+            eg.API.events.notMy().filter({
+                folder: testpath
+            }).listen({
+                //start: purposefully not provided
+                interval: 2000,
+                emit: function (e) {
+                    expect(e.data.note_id).not.toEqual(noteId);
+                }
+            }).then(function (sch) {
+                scheduler = sch;
+                return eg.API.storage.addNote(filePath, "oh, that one is sour")
+                    .then(function (e) {
+                        noteId = e.id;
                         //give it time to get the events
                         setTimeout(function () {
                             scheduler.stop();
@@ -191,19 +230,14 @@ describe("Link API facade integration", function () {
                     }
                 }).then(function (sch) {
                     scheduler = sch;
-                    return eg.API.storage.storeFile(filePath, "sour")
+                    return eg.API.storage.storeFile(filePath, getFileContent("sour"))
                         .then(function (e) {
-                            expect(e.id).toBeTruthy();
-                            expect(e.path).toEqual(filePath);
-
 
                             return eg.API.storage.impersonate({
                                 username: OtherUsername
-                            }).storeFile(otherFilePath, "sour as ...much as possible");
+                            }).storeFile(otherFilePath, getFileContent("sour as ...much as possible"));
                         })
                         .then(function (e) {
-                            expect(e.id).toBeTruthy();
-                            expect(e.path).toEqual(filePath);
 
                             //give it time to get the events
                             setTimeout(function () {
@@ -221,6 +255,19 @@ describe("Link API facade integration", function () {
             });
 
         }
+
+        it("Needs to clean up after itself", function (done) {
+            eg.API.storage.exists(testpath).then(function (exists) {
+                if (exists) {
+                    return eg.API.storage.remove(testpath)
+                }
+            }).then(function () {
+                done();
+            }).fail(function (e) {
+                console.error(e.stack);
+                done()
+            });
+        })
 
 
 

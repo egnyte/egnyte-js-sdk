@@ -30,7 +30,7 @@ function addFilter(opts, data) {
 
 function notMy(opts, data) {
     opts.params || (opts.params = {});
-    opts.params.not_my = data ? data : "all";
+    opts.params.suppress = data ? data : "app";
     return opts;
 }
 
