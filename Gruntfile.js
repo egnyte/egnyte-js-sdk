@@ -102,12 +102,14 @@ module.exports = function (grunt) {
             }
         },
         jasmine_node: {
-            all: {
-                src:['spec'],
+            options: {
                 match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
+            },
+            all: {
+                src: ['spec'],
             }
         },
         nodeunit: {
