@@ -75,8 +75,8 @@ Model.prototype._set = function (m) {
             }
         });
     }
-    //force disabled selection on root
-    this.forbidSelection = !(-1 === this.opts.select.forbidden.indexOf(this.path));
+    //force disabled selection on root or other path
+    this.forbidSelection = helpers.contains(this.opts.select.forbidden,this.path);
     this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
     this.isMultiselectable = (this.opts.select.multiple);
     this._buildItems();
