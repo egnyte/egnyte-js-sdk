@@ -2471,8 +2471,8 @@ Model.prototype._set = function (m) {
             }
         });
     }
-    //force disabled selection on root
-    this.forbidSelection = !(-1 === this.opts.select.forbidden.indexOf(this.path));
+    //force disabled selection on root or other path
+    this.forbidSelection = helpers.contains(this.opts.select.forbidden,this.path);
     this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
     this.isMultiselectable = (this.opts.select.multiple);
     this._buildItems();
@@ -3256,6 +3256,16 @@ function each(collection, fun) {
         }
     }
 }
+
+function contains(arr, val) {
+    var found = false;
+    each(arr, function (v) {
+        if (v === val) {
+            found = true;
+        }
+    })
+    return found;
+}
 var disallowedChars = /[":<>|?*+&#\\]/;
 
 function normalizeURL(url) {
@@ -3286,6 +3296,7 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
+    contains: contains,
     each: each,
     normalizeURL: normalizeURL,
     httpsURL: function (url) {

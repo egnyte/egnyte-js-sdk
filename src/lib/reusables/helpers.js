@@ -13,6 +13,16 @@ function each(collection, fun) {
         }
     }
 }
+
+function contains(arr, val) {
+    var found = false;
+    each(arr, function (v) {
+        if (v === val) {
+            found = true;
+        }
+    })
+    return found;
+}
 var disallowedChars = /[":<>|?*+&#\\]/;
 
 function normalizeURL(url) {
@@ -43,6 +53,7 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
+    contains: contains,
     each: each,
     normalizeURL: normalizeURL,
     httpsURL: function (url) {
