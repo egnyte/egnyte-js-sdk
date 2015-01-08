@@ -14,6 +14,9 @@
   ],
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
+  "scripts": {
+    "test": "grunt test-node"
+  },
   "dependencies": {
     "chunking-streams": "0.0.7-b1",
     "pinkyswear": "2.2.2",
@@ -45,7 +48,6 @@
     "grunt-markdown": "^0.6.1",
     "node-lessify": "^0.0.5",
     "readable-stream": "~1.1.8",
-    "through2": "~0.5.1",
-    "zombie": "^2.3.0"
+    "through2": "~0.5.1"
   }
 }

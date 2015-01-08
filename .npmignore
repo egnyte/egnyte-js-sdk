@@ -1,0 +1,11 @@
+dist/
+docs/
+examples/
+forwarder/
+mock/
+spec/
+.gitignore
+spec/conf/apiaccess.js
+.grunt
+_SpecRunner.html
+TEST*.xml
