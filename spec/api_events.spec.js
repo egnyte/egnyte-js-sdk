@@ -174,6 +174,36 @@ describe("Events API facade", function () {
             });
 
         });
+        it("Should not get app's own file copy events", function (done) {
+            var filePath = testpath + "/candy.txt";
+            var filePath2 = testpath + "/stick.txt";
+            eg.API.storage.storeFile(filePath, getFileContent("sour"))
+                .then(function (e) {
+                    return eg.API.events.notMy().filter({
+                        folder: testpath
+                    }).listen({
+                        //start: purposefully not provided
+                        interval: 2000,
+                        emit: function (e) {
+                            expect(e.data.source_path).not.toEqual(filePath);
+                        }
+                    })
+                }).then(function (sch) {
+                    scheduler = sch;
+                    return eg.API.storage.copy(filePath, filePath2)
+                        .then(function (e) {
+                            //give it time to get the events
+                            setTimeout(function () {
+                                scheduler.stop();
+                                done();
+                            }, 5000)
+
+                        });
+                }).fail(function (e) {
+                    console.error(e.stack);
+                });
+
+        });
 
         it("Should not get app's own note events", function (done) {
             var filePath = testpath + "/candy.txt";
