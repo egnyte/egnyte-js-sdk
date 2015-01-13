@@ -1676,7 +1676,7 @@ function Storage(requestEngine) {
 }
 
 var storageProto = {};
-storageProto.exists = function (pathFromRoot, versionEntryId) {
+storageProto.exists = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1685,12 +1685,6 @@ storageProto.exists = function (pathFromRoot, versionEntryId) {
             method: "GET",
             url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
-
-        if (versionEntryId) {
-            opts.params = {
-                "entry_id": versionEntryId
-            };
-        }
 
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
@@ -1928,9 +1922,9 @@ storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
 }
 
 
-storageProto.remove = function (pathFromRoot) {
+storageProto.remove = function (pathFromRoot, versionEntryId) {
     var decorate = this.getDecorator();
-    return remove(this.requestEngine, decorate, pathFromRoot);
+    return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
 storageProto = helpers.extend(storageProto,notes);

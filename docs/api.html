@@ -378,8 +378,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </tr>
 <tr>
 <td>API.storage.get</td>
-<td><code>path</code>,<code>entryID(optional)</code></td>
-<td>Resolves to file or folder definition object. <code>entryID</code> is the identifier of the version of the file if the operation should be performed on a version</td>
+<td><code>path</code></td>
+<td>Resolves to file or folder definition object.</td>
 <td></td>
 </tr>
 <tr>
@@ -439,7 +439,7 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <tr>
 <td>API.storage.removeFileVersion</td>
 <td><code>path</code>, <code>version_ID</code></td>
-<td>Deletes a version of a file</td>
+<td>Deletes a version of a file, throws if version not provided (can&#39;t delete the whole file accidentally)</td>
 <td></td>
 </tr>
 <tr>
