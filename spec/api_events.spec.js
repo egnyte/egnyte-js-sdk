@@ -205,6 +205,34 @@ describe("Events API facade", function () {
 
         });
 
+        it("Should not get app's own folder events", function (done) {
+            var folderPath = testpath + "/sourcandy";
+
+            eg.API.events.notMy().filter({
+                folder: testpath
+            }).listen({
+                //start: purposefully not provided
+                interval: 2000,
+                emit: function (e) {
+                    expect(e.data.target_path).not.toEqual(folderPath);
+                }
+            }).then(function (sch) {
+                scheduler = sch;
+                return  eg.API.storage.createFolder(folderPath)
+                    .then(function (e) {
+                        //give it time to get the events
+                        setTimeout(function () {
+                            scheduler.stop();
+                            done();
+                        }, 5000)
+
+                    });
+            }).fail(function (e) {
+                console.error(e.stack);
+            });
+
+        });
+
         it("Should not get app's own note events", function (done) {
             var filePath = testpath + "/candy.txt";
             var noteId;
