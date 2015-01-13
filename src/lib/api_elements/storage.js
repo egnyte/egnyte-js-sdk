@@ -136,7 +136,7 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
             url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
-                "destination": "/" + newPath,
+                "destination": newPath,
             }
         };
         return requestEngine.promiseRequest(decorate(opts));
