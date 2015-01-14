@@ -227,7 +227,7 @@ All API helpers return promises.
 Method | Arguments | Description | Restrictions
 --- | --- | --- | ---
 API.storage.exists | `path`,`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.get | `path`,`entryID(optional)` | Resolves to file or folder definition object. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.get | `path` | Resolves to file or folder definition object.|
 API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
 API.storage.getFileStream | `path`,`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
 API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"...",id:"<version ID>"}` |
@@ -237,7 +237,7 @@ API.storage.move | `path`,  `new path` | Moves a file or folder to new path, res
 API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
 API.storage.rename | `path`,  `new path` | alias for move|
 API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file |
+API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
 API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
 API.storage.getNote | `node_id` | Resolves to a note object|
 API.storage.removeNote | `node_id` | Removes the note|
