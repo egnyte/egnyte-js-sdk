@@ -3,6 +3,8 @@
 - Prompt widget
 - Auth flow with prompt for Egnyte domain
 - Plugins support beta
+- Unified docs content for browser and node
+- Updated xhr to 2.0
 
 ### 1.2.0
 - Password Grant flow for auth in node.js
