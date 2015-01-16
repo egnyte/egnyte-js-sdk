@@ -5197,8 +5197,8 @@
       "resolved": "https://registry.npmjs.org/vkey/-/vkey-1.0.0.tgz"
     },
     "xhr": {
-      "version": "1.16.1",
-      "resolved": "https://registry.npmjs.org/xhr/-/xhr-1.16.1.tgz",
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/xhr/-/xhr-2.0.0.tgz",
       "dependencies": {
         "global": {
           "version": "4.3.0",

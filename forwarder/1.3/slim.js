@@ -1450,7 +1450,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
 enginePrototypeMethods.retryHandler = function (callback, retry) {
     var self = this;
     return function (error, response, body) {
-        //emulating the default XHR behavior
+        //build an error object for http errors
         if (!error && response.statusCode >= 400 && response.statusCode < 600) {
             error = new Error(body);
         }
