@@ -1,0 +1,233 @@
+@size: 40px;
+@barheight: 50px;
+@fontsize: 12px;
+@fontcl: #5E5F60;
+@fontclA: #fff;
+@fontclB: #777;
+@arrowHover: #4e4e4f;
+@framecl: #dbdbdb;
+@frameclA: #F2F3F3;
+@bodycl: #fff;
+@barcl: #f1f1f1;
+@btcl: #fafafa;
+@btclA: #3191f2;
+@btframecl: #ccc;
+@btframeclA: #2b82d9;
+@itemhover: #f1f5f8;
+@spacing: 10px;
+@smallspacing: 4px;
+
+@import "./shapes.less";
+
+.gradientByShadow(@v;@blur;@spread){
+     -webkit-box-shadow:inset 0 @v @blur @spread #000;
+     box-shadow:inset 0 @v @blur @spread #000;
+}
+
+//buttons and links
+.eg-btn{
+    display: inline-block;
+    line-height: @size/2;
+    height: @size/2;
+    text-align: center;
+    margin: 0 2*@smallspacing;
+    cursor: pointer;
+}
+
+//block-y button
+span.eg-btn{
+    padding: @smallspacing 15px;
+    background: @btcl;
+    border:1px solid @btframecl;
+    border-radius: 2px;
+    &:hover{
+    .gradientByShadow(-0.5*@size; 1.25*@size; -1.5*@size);
+    }
+    &:active{
+        .gradientByShadow(1px;5px;-4px);
+    }
+    &[disabled]{
+        opacity: 0.3;
+    }
+}
+//link lookalike
+a.eg-btn{
+    font-weight:600;
+    padding: @smallspacing;
+    border:1px solid transparent;
+    text-decoration: underline;
+}
+
+.eg-btn.eg-btn-prim{
+    background: @btclA;
+    border-color: @btframeclA;
+    color: @fontclA;
+}
+
+//big block elements
+.eg-box {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.eg-widget {
+    &:extend(.eg-box);
+    background: @bodycl;
+    border: 1px solid @framecl;
+    padding:0;
+    color: @fontcl;
+    font-size: @fontsize;
+    font-family: 'Open Sans', sans-serif;
+    & *{
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        vertical-align: middle;
+    }
+    & input{
+        padding: 0;
+    }
+    & a{
+    cursor:pointer;
+        &:hover{
+            text-decoration: underline;
+        }
+    }
+    & .eg-brand{
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;
+        width: @barheight;
+        height: @barheight;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index:3;
+    }
+}
+
+
+.eg-bar{
+    &:extend(.eg-box);
+    z-index: 1;
+    height: @barheight;
+    padding: @spacing;
+    background: @barcl;
+    border: 0 solid @framecl;
+    border-width: 1px 0 0 0;
+    &.eg-top{
+        box-shadow: 0px 1px 3px 0 @barcl;
+        //margin-top: -@barheight;
+        border-width: 0 0 1px 0;
+        padding-left:0;
+        background: @bodycl;
+    }
+    &>*{
+        //display:inline-block;
+        float:left;
+    }
+}
+.eg-bar-right>*{
+    float: right;
+}
+
+.eg-ctlgrp{
+    //&:extend(.eg-box);
+    padding: 2*@spacing;
+    &>* {
+        width: 99%;
+        margin: @spacing 0;
+    }
+}
+
+.eg-not{
+    visibility: hidden;
+}
+
+//prompt specific
+.eg-prompt{
+    padding-top: @size/2;
+}
+
+//picker specific
+
+.eg-picker {
+    height: 100%;
+    min-height: 300px;
+    & input{
+        margin: @spacing 2*@spacing;
+    }
+}
+
+.eg-picker a.eg-file:hover{
+    text-decoration: none;
+}
+
+
+//controls / ui elements
+
+.eg-picker ul{
+    padding: 0;
+    margin:0;
+    min-height: 300px - 2*@barheight;
+    overflow-y: scroll;
+}
+
+.eg-picker-pager{
+    float:right;
+}
+.eg-bar-right>.eg-picker-pager{
+    float:left;
+}
+
+
+.eg-picker-path{
+    min-width: 60%;
+    width: ~"calc( 100% - 110px )";
+    line-height: @barheight - 2 * @spacing;
+    color:@fontclB;
+    font-size: @fontsize+2;
+    &>a{
+        margin: 0 2px;
+        white-space: nowrap;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    &>a:last-child{
+        color:@fontcl;
+        font-size: @fontsize+4;
+    }
+}
+
+.eg-picker-item{
+    line-height: @size;
+    list-style: none;
+    padding: @smallspacing 0;
+    border-bottom: 1px solid @frameclA;
+    &:hover {
+        background: @itemhover;
+        outline: 1px solid @framecl;
+    }
+    &[aria-selected="true"] {
+        background: saturate(darken(@itemhover,5%),15%);
+    }
+    & *{
+        //vertical-align: middle;
+        display:inline-block;
+
+    }
+    &>a{
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 300px;
+        max-width: ~"calc(100% - 88px)";
+    }
+}
+
+
+
+

@@ -56,7 +56,7 @@
 <body>
     <div class="doc">
 
-        <h1 id="file-picker">File picker</h1>
+        <h1 id="widgets">Widgets</h1>
 <table>
 <thead>
 <tr>
@@ -65,10 +65,10 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="#file-picker-on-file-system-api">File picker on API</a></td>
+<td><a href="#file-picker-on-file-system-api">File picker</a></td>
 </tr>
 <tr>
-<td><a href="#remote-file-picker-no-api-">Remote file picker</a></td>
+<td><a href="#prompt-widget">prompt</a></td>
 </tr>
 </tbody>
 </table>
@@ -79,7 +79,7 @@
     });</code></pre>
 <p>(See API docs)</p>
 <h3 id="open-file-picker-">Open file picker:</h3>
-<pre><code class="lang-javascript">    //find a DOM node to put the picker iframe in:
+<pre><code class="lang-javascript">    //find a DOM node to put the picker in:
     var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
     //open file picker
     var picker = egnyte.filePicker(containerNode,options);</code></pre>
@@ -186,6 +186,28 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <h3 id="change-the-style">Change the style</h3>
 <p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
 <p>You can also modify the defaults to keep everything in one package. Change the colors in variables of <code>src/lib/filepicker_elements.view.less</code> and rebuild the package <code>grunt dist</code> (requires grunt and other dependencies installed via <code>npm</code>)</p>
+<h2 id="prompt-widget">Prompt widget</h2>
+<h3 id="open-prompt-">Open prompt:</h3>
+<pre><code class="lang-javascript">    //find a DOM node to work with:
+    var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
+    //open prompt
+    var promptObj = egnyte.prompt(containerNode,{
+        texts:{
+            question: &quot;What&#39;s your name&quot;
+        },
+        result:function(name){
+        //do stuff
+        }
+    });</code></pre>
+<p>The options are:</p>
+<ul>
+<li><code>result</code> <em>Function</em> - a callback to run when the user clicks ok. First argument is the string from user input</li>
+<li><code>barAlign</code> <em>String</em> - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
+<li><code>texts</code> <em>Map</em> of labels in the widget to replace with given replacements. Put your question in the <code>question</code> field </li>
+</ul>
+<h3 id="close-the-prompt">Close the prompt</h3>
+<p>Prompt can be closed without the user clicking the button:</p>
+<pre><code class="lang-javascript">    promptObj.close();</code></pre>
 
 
     </div>

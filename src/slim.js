@@ -1,30 +1,24 @@
-(function () {
-    "use strict";
+var helpers = require("./lib/reusables/helpers");
+var plugins = require("./lib/plugins");
+var defaults = require("./defaults.js");
 
-    var helpers = require("./lib/reusables/helpers");
-    var defaults = require("./defaults.js");
+module.exports = {
+    init: function init(egnyteDomainURL, opts) {
+        var options = helpers.extend({}, defaults, opts);
+        options.egnyteDomainURL = egnyteDomainURL ? helpers.normalizeURL(egnyteDomainURL) : null;
 
-    function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({},defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
-
-        return {
+        var exporting = {
             domain: options.egnyteDomainURL,
+            setDomain: function (d) {
+                this.domain = options.egnyteDomainURL = helpers.normalizeURL(d);
+            },
             API: require("./lib/api")(options)
         }
+        plugins.install(exporting);
 
-    }
-    //for commonJS
-    if (typeof module !== "undefined" && module.exports) {
-        module.exports = {
-            init: init
-        }
-    }
-    //for browsers. AMD works better with shims anyway
-    if (typeof window !== "undefined") {
-        window.Egnyte = {
-            init: init
-        }
-    }
+        return exporting;
 
-})();
+    },
+    plugin: plugins.define
+
+}

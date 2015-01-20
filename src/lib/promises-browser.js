@@ -29,16 +29,8 @@ Promises.defer = function () {
     };
 }
 
-Promises.allSettled = function (array) {
-    var collectiveDefere = Promises.defer();
-    var results = [];
-    var counter = array.length;
-    var resolver = function (num, item) {
-        results[num] = item;
-        if (--counter === 0) {
-            collectiveDefere.resolve(results);
-        }
-    }
+function settler(array, resolver) {
+
     helpers.each(array, function (promise, num) {
         promise.then(function (result) {
             resolver(num, {
@@ -52,6 +44,41 @@ Promises.allSettled = function (array) {
             });
         })
     });
+}
+
+Promises.all = function (array) {
+    var collectiveDefere = Promises.defer();
+    var results = [];
+    var counter = array.length;
+
+    settler(array, function (num, item) {
+        if (counter) {
+            if (item.state === "rejected") {
+                counter = 0;
+                collectiveDefere.reject(item.reason);
+            } else {
+                results[num] = item;
+                if (--counter === 0) {
+                    collectiveDefere.resolve(results);
+                }
+            }
+        }
+    })
+    return collectiveDefere.promise;
+}
+
+Promises.allSettled = function (array) {
+    var collectiveDefere = Promises.defer();
+    var results = [];
+    var counter = array.length;
+
+    settler(array, function (num, item) {
+        results[num] = item;
+        if (--counter === 0) {
+            collectiveDefere.resolve(results);
+        }
+    })
+
     return collectiveDefere.promise;
 }
 

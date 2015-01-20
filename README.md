@@ -11,6 +11,13 @@ This package contains:
 
 ## Installation
 
+### Node.js
+`npm install egnyte-js-sdk`
+
+### Browser
+
+Include one JavaScript file.
+
 `dist/` contains two builds:
 
  - `dist/egnyte.js` is the complete functionality (with UI)
@@ -19,26 +26,15 @@ This package contains:
 _File sizes_
 
 ```
-dist/egnyte.min.js minified: 46.23 kB gzipped: 10.12 kB
-dist/slim.min.js minified: 28.77 kB gzipped: 6.15 kB
+dist/egnyte.min.js minified: ~50 kB gzipped: ~11 kB
+dist/slim.min.js minified: ~30 kB gzipped: ~6 kB
 ```
 
 To use the SDK, just add the script to your app's HTML document.
 
 ## Usage
 
-See `docs/` or explore:
-
-[API](src/docs/api.md)  
-[File picker](src/docs/filepicker.md)  
-[Installation and tests](src/docs/installation.md)  
-
-If you support IE8 or 9 see [Legacy browsers support](src/docs/ie8or9.md) to enable the cross-origin forwarder.
-
-The `examples/` folder could also be helpful.
-
-To use the API in node.js see [Usage notes for node.js](src/docs/nodejs.md)
-
+See `docs/` locally or explore [documentation in markdown format](src/docs/index.md)  
 
 ## License
 

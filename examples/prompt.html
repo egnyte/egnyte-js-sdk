@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>prompt widget</title>
+    <script src="../dist/egnyte.js"></script>
+    <script src="../spec/conf/apiaccess_template.js"></script>
+
+    <style>
+        #there {
+            width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <p>This example demonstrates how to use the prompt widget.</p>
+
+    <div id="there">
+
+
+    </div>
+
+    <button onclick="openPrompt()">open prompt</button>
+    Take a look at the console.
+    <script>
+        var node = document.getElementById("there");
+
+
+
+        function openPrompt() {
+
+            var eg = Egnyte.init(egnyteDomain, {});
+
+            eg.prompt(node, {
+                texts: {
+                    question: "What's your name?",
+                    ok:"Call me that"
+                },
+                result: function (input) {
+                    console.log("user typed: " + input);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

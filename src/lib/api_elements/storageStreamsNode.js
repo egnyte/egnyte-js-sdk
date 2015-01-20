@@ -4,8 +4,7 @@ var promises = require("q");
 var chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
 
-
-var fscontent = "/fs-content";
+var ENDPOINTS = require("../enum/endpoints");
 
 function StreamsExtendedStorage() {
     StreamsExtendedStorage.super_.apply(this, arguments);
@@ -20,7 +19,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            uri: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot)
+            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot)
         }
 
         opts.headers = {};
@@ -33,6 +32,11 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
 
         return requestEngine.promiseRequest(decorate(opts), function (req) {
                 stream.pipe(req);
+                //for compatibility with streams created with request
+                //request returns a stream that is flowing, so we have to pause mannually and then it's hard to unpause at the right moment... so we're accepting a paused stream here too.
+                try {
+                    stream.resume();
+                } catch (e) {};
             })
             .then(function (result) { //result.response result.body
                 return ({
@@ -45,7 +49,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
 
 var uploadChunkSize = 10240; //10k chunks
 
-function streamToChunks(pathFromRoot, stream, mimeType /* optional */, sizeOverride /*optional*/ ) {
+function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOverride /*optional*/ ) {
     var self = this;
     var defer = promises.defer();
     var chunker = new SizeChunker({
@@ -89,10 +93,10 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */, sizeOverr
                 })
             } else {
                 chunkedUploader.sendChunk(buf, chunkNumber)
-                .fail(function (err) {
-                    //chunk failed. retry?
-                    defer.reject(err);
-                })
+                    .fail(function (err) {
+                        //chunk failed. retry?
+                        defer.reject(err);
+                    })
                 //accept another chunk async
                 next();
 
@@ -115,7 +119,7 @@ function getFileStream(pathFromRoot, versionEntryId) {
 
     var opts = {
         method: "GET",
-        url: requestEngine.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
     }
     if (versionEntryId) {
         opts.params = opts.qs = { //xhr and request differ here

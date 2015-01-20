@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>how to get API token</title>
-    <script src="../dist/slim.js"></script>
+    <script src="../dist/egnyte.js"></script>
     <style>
         #there {
             width: 400px;
@@ -22,9 +22,11 @@
     </div>
 
     <button onclick="requestToken()">request Token</button>
+    <button onclick="requestTokenDomain()">request Token and ask for domain</button>
     <script>
         var adomain;
         var akey;
+        var eg;
 
         function requestToken() {
             var node = document.getElementById("there");
@@ -35,7 +37,7 @@
             }
 
 
-            var eg = Egnyte.init(adomain, {
+            eg = Egnyte.init(adomain, {
                 key: akey,
                 mobile: true
             });
@@ -44,7 +46,29 @@
                 document.getElementById("token").innerHTML = "Your token: " + eg.API.auth.getToken();
             }, function () {
                 document.getElementById("token").innerHTML = "denied";
-            },"/");
+            }, "/");
+
+        }
+
+        function requestTokenDomain() {
+            var node = document.getElementById("there");
+
+            adomain = null;
+            if (!akey) {
+                akey = prompt("Your Public API key");
+            }
+
+
+            eg = Egnyte.init(adomain, {
+                key: akey,
+                mobile: true
+            });
+
+            eg.API.auth.requestTokenIframeWithPrompt(node, function () {
+                document.getElementById("token").innerHTML = "Your token: " + eg.API.auth.getToken();
+            }, function () {
+                document.getElementById("token").innerHTML = "denied";
+            }, "/");
 
         }
     </script>

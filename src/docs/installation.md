@@ -1,8 +1,10 @@
 # Installation
 
+## Browser
+
 `dist/` contains two builds:
- - `dist/egnyte.js` (~32KB minified) is the complete functionality
- - `dist/slim.js` (~10KB minified) is only the API wrapper (no filepicker)
+ - `dist/egnyte.js` is the complete functionality
+ - `dist/slim.js` is only the API wrapper (no filepicker or other UI)
  
 both of them available in minified versions (recommended)
 
@@ -14,16 +16,24 @@ To use the SDK, just add the script to your app's HTML document.
 
 After that, all SDK functionalities are available via global `Egnyte` constructor.
 
-If you wish to use filepicker with fonts matching main Egnyte UI, add `Open Sans` font too:
+To show Google Drive icons in the filepicker for files coming from Google Drive include the `googicons.css` from `dist/resources/`
 
-```html
-<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
-<script src="egnyte.min.js"></script>
-```  
+
+## Node.js
+
+```
+npm install --save egnyte-js-sdk
+```
+
+use:
+
+```javascript
+var Egnyte = require('egnyte-js-sdk');
+```
 
 # Building and dependencies
 
-To build the project and run tests `nodeJS` is required in your system.
+To build the project and run tests `node.js` is required in your system.
 
 Install grunt comandline tools:
 

@@ -13,7 +13,21 @@ function each(collection, fun) {
         }
     }
 }
+
+function contains(arr, val) {
+    var found = false;
+    each(arr, function (v) {
+        if (v === val) {
+            found = true;
+        }
+    })
+    return found;
+}
 var disallowedChars = /[":<>|?*+&#\\]/;
+
+function normalizeURL(url) {
+    return (url).replace(/\/*$/, "");
+};
 
 module.exports = {
     //simple extend function
@@ -31,15 +45,19 @@ module.exports = {
         return target;
     },
     noop: function () {},
-    id: function (a) {return a},
+    id: function (a) {
+        return a
+    },
     bindThis: function (that, func) {
         return function () {
             return func.apply(that, arguments);
         }
     },
+    contains: contains,
     each: each,
-    normalizeURL: function (url) {
-        return (url).replace(/\/*$/, "");
+    normalizeURL: normalizeURL,
+    httpsURL: function (url) {
+        return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
     encodeNameSafe: function (name) {
         if (!name) {

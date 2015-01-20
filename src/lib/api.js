@@ -9,11 +9,11 @@ var PermFacade = require("./api_elements/permissions");
 module.exports = function (options) {
     var auth = new AuthEngine(options);
     var requestEngine = new RequestEngine(auth, options);
-    
+
     var storage = new (streamsExtension(StorageFacade))(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
-    
+
     var api = {
         manual: requestEngine,
         auth: auth,

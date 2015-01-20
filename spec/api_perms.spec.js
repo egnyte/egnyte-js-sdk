@@ -99,6 +99,7 @@ describe("Permissions API facade integration", function () {
         it("Needs to clean up the folder", function (done) {
             eg.API.storage.remove(testpath)
                 .then(function (e) {
+                    expect(true).toBeTruthy();
                     done();
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);

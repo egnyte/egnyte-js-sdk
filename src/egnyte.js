@@ -1,25 +1,14 @@
-(function () {
-    "use strict";
+var slim = require("./slim");
+var filepicker = require("./lib/filepicker_elements/index")
+var prompt = require("./lib/prompt/index")
+var authPrompt = require("./lib/api_elements/authPrompt")
 
-    var helpers = require("./lib/reusables/helpers");
-    var defaults = require("./defaults.js");
+slim.plugin("filePicker", function (root, resources) {
+    root.filePicker = filepicker(resources.API);
+});
+slim.plugin("authPrompt", authPrompt);
+slim.plugin("prompt", function (root, resources) {
+    root.prompt = prompt;
+});
 
-    function init(egnyteDomainURL, opts) {
-        var options = helpers.extend({},defaults, opts);
-        options.egnyteDomainURL = helpers.normalizeURL(egnyteDomainURL);
-
-        var api = require("./lib/api")(options);
-      
-        return {
-            domain: options.egnyteDomainURL,
-            filePicker: require("./lib/filepicker/byapi")(api),
-            API: api
-        }
-
-    }
-
-    window.Egnyte = {
-        init: init
-    }
-
-})();
+module.exports = slim;

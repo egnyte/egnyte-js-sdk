@@ -11,20 +11,16 @@ module.exports = function (grunt) {
                     "dist/slim.js": ["src/slim.js"]
                 },
                 options: {
-                    transform: [
-                        'node-lessify'
-                    ],
+                    transform: ['node-lessify'],
+                    plugin: ['bundle-collapser/plugin'],
                     browserifyOptions: {
                         fullPaths: false,
                         insertGlobals: false,
-                        detectGlobals: false
-                        //,standalone: "Egnyte"
+                        detectGlobals: false,
+                        standalone: "Egnyte"
                     }
                 }
             }
-        },
-        unpathify: {
-            files: ["dist/egnyte.js", "dist/slim.js"]
         },
         uglify: {
             options: {
@@ -68,6 +64,25 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        dependo: {
+            main: {
+                options: {
+                    fileName: 'dependencyGraph.html'
+                }
+            },
+            filtered: {
+                options: {
+                    fileName: 'dependencyGraphFiltered.html',
+                    exclude: 'reusables|q/q'
+                }
+            },
+            options: {
+                outputPath: './docs/',
+                targetPath: './src',
+                fileName: 'dependencyGraph.html',
+                format: 'cjs'
+            }
+        },
 
         jasmine: {
             all: {
@@ -88,16 +103,17 @@ module.exports = function (grunt) {
         },
         jasmine_node: {
             options: {
-                match: 'spec.js',
+                match: grunt.option("filter") || '.',
                 matchall: false,
                 extensions: 'js',
                 specNameMatcher: 'spec'
             },
-            all: ['spec/']
+            all: {
+                src: ['spec'],
+            }
         },
         nodeunit: {
             units: ['src/unittests/*.js']
-            //,integration: ['tests/*_test.js']
         },
         connect: {
             server: {
@@ -189,7 +205,6 @@ module.exports = function (grunt) {
         }
     })
     grunt.loadNpmTasks("grunt-browserify");
-    grunt.loadNpmTasks('unpathify');
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-clean");
@@ -199,17 +214,18 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-connect-proxy');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
+    grunt.loadNpmTasks('grunt-dependo');
     grunt.loadNpmTasks('grunt-jasmine-node');
 
 
-    grunt.registerTask("test-browser", ["nodeunit:units", "dist", "jasmine:all"]);
-    grunt.registerTask("test-node", ["jasmine_node"]);
-    grunt.registerTask("test", ["test-browser","test-node"]);
-    grunt.registerTask("dist", ["clean", "markdown", "browserify", "unpathify", "uglify", "copy"]);
-    grunt.registerTask("build", ["dist"]);
-    grunt.registerTask("serve", ["dist", "connect:server"]);
+    grunt.registerTask("test-browser", ["nodeunit:units", "build", "jasmine:all"]);
+    grunt.registerTask("test-node", ["jasmine_node:all"]);
+    grunt.registerTask("test", ["test-browser", "test-node"]);
+    grunt.registerTask("build", ["clean", "browserify", "uglify", "copy"]);
+    grunt.registerTask("dist", ["build", "markdown", "dependo"]);
+    grunt.registerTask("serve", ["build", "connect:server"]);
     grunt.registerTask("serve:API", ["serve:api"]);
-    grunt.registerTask("serve:api", ["dist", "configureProxies:realAPI", "connect:realAPI"]);
+    grunt.registerTask("serve:api", ["build", "configureProxies:realAPI", "connect:realAPI"]);
 
     grunt.registerTask("default", ["test"]);
 }

@@ -5,6 +5,8 @@
 |[Init and Authorize](#initialize-and-connect-to-api)|
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
+|[Permissions API](#permissions-api-helpers)|
+|[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
 
 ## Introduction
@@ -48,7 +50,7 @@ The API has limits for the number of queries a single user can make. If one of t
 
 The SDK transparently handles user quota by default. All calls have a default retry policy - if the API responds with "Developer over QPS" error, a retry is scheduled to run after 1 second. A warning is logged to the browser's console to help spotting the problem.
 
-`API.auth.promiseRequest` and all the `API.storage.*` and `API.link.*` methods have a built-in mechanizm to delay calls that are made too fast, to avoid getting "Developer over QPS" errors at all. The delays are based on a declared QPS value. Most API keys have a 2 queries per second limit on users.
+`API.manual.promiseRequest` and all the `API.storage.*` etc. methods have a built-in mechanizm to delay calls that are made too fast, to avoid getting "Developer over QPS" errors at all. The delays are based on a declared QPS value. Most API keys have a 2 queries per second limit on users.
 
 To set your query per second quota to something else than 2, initialize with `QPS` option
 
@@ -66,19 +68,20 @@ To entirely disable the quota handling set `handleQuota` option to `false`
 ## Authorization methods
 
 
-Method | Arguments | Description
---- | --- | ---
+Method | Arguments | Description | Restrictions
+--- | --- | --- | ---
 API.auth.isAuthorized | | Returns `boolean` true if a token is present
 API.auth.setToken | `token` | Accepts a token string. New token overwrites the previous one
-API.auth.requestTokenReload | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload. (see examples/request_token.html)
-API.auth.requestTokenPopup | `success_callback`, `denied_callback`,`postmessage_sender` | Opens a new window or tab for the user. `postmessage_sender` is a fully qualified HTTPS URL to a copy of `dist/resources/token.html`. (see examples/request_token_popup.html)
-API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location. (see examples/request_token_iframe.html)
-API.auth.requestTokenByPassword | `username`, `password` | Performs authorization using login and password provided by the user and resolves to the access token. Using this auth method requires switching your API key settings to be an "internal application", which is only available for Egnyte partners. (Contact us if you need that)
-API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object
-API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options
-API.auth.getToken | | Returns the token string
-API.auth.dropToken | | Forgets the current token
-API.auth.getUserInfo | | Returns a promise that resolves to user info object
+API.auth.requestTokenReload | `success_callback`, `denied_callback` | Reloads the page to perform authorization and calls the appropriate callback synchronously once the token is available or denied after reload. (see examples/request_token.html) | browser only
+API.auth.requestTokenPopup | `success_callback`, `denied_callback`,`postmessage_sender` | Opens a new window or tab for the user. `postmessage_sender` is a fully qualified HTTPS URL to a copy of `dist/resources/token.html`. (see examples/request_token_popup.html) | browser only
+API.auth.requestTokenIframe | `node`, `success_callback`, `denied_callback`, `path` | Performs authorization in an iframe instead of reloading the page. Iframe is appended to `node`. `path` argument is used as a redirect target for log-in prompt completion. `path` defaults to current window location. (see examples/request_token_iframe.html) | browser only
+API.auth.requestTokenIframeWithPrompt | `node`, `success_callback`, `denied_callback`, `path` | Same as above, but will prompt for Egnyte domain address first. | browser only, not available in slim.js
+API.auth.requestTokenByPassword | `username`, `password` | Performs authorization using login and password provided by the user and resolves to the access token. Using this auth method requires switching your API key settings to be an "internal application", which is only available for Egnyte partners. (Contact us if you need that) | node.js only
+API.auth.authorizeXHR | `XHR object` | Adds authorization header to given XHR object| browser only
+API.auth.getHeaders | | Returns headers definition to add as headers to eg. jQuery.ajax options|
+API.auth.getToken | | Returns the token string|
+API.auth.dropToken | | Forgets the current token|
+API.auth.getUserInfo | | Returns a promise that resolves to user info object|
 
 ### Requesting tokens
 
@@ -92,7 +95,7 @@ API.auth.requestTokenReload(function(){
 });
 ```
 
-`API.auth.requestTokenPopup` method opens a window or tab with the log-in prompt. Once the user accepts or denies access, `postmessage_sender` is loaded in the window and the token is transmited to our main window. `postmessage_sender` must be a HTTPS URL pointing to a document, that calls `API.auth._postTokenUp()`
+`API.auth.requestTokenPopup` method opens a window or tab with the log-in prompt. Once the user accepts or denies access, `postmessage_sender` is loaded in the window and the token is transmited to our main window. `postmessage_sender` must be a HTTPS URL pointing to a document, that calls `API.auth._postTokenUp()`, like the `token.html` file in `dist/resources`.
 
 ```javascript
 API.auth.requestTokenPopup(
@@ -153,7 +156,7 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
 Method | Arguments | Description
 --- | --- | ---
 API.manual.getEndpoint | | Returns the public API endpoint root URL
-API.manual.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Returns the raw XHR object; Retries the call if server responds with "Developer over QPS"
+API.manual.sendRequest | `options`, `callback` | Sends an authorized request and calls the callback when finished (see examples below); Retries the call if server responds with "Developer over QPS"; Returns the raw XHR object in the browser and a `request` object in node.js
 API.manual.promiseRequest | `options` | Performs the same task as `sendRequest` but returns a simple promise instead of calling the callback (see examples below); Automatically delays a call if it could go over QPS quota; Retries the call if server responds with "Developer over QPS"
 
 ### How to make a request
@@ -221,34 +224,45 @@ Anywhere a response object is returned (except IE8/9, see Legacy support page) i
 
 All API helpers return promises.
 
-Method | Arguments | Description
---- | --- | ---
-API.storage.exists | `path`,`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version
-API.storage.get | `path`,`entryID(optional)` | Resolves to file or folder definition object. `entryID` is the identifier of the version of the file if the operation should be performed on a version
-API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version
-API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"...",id:"<version ID>"}` 
-API.storage.storeFile | `path`, `Blob_object`, `mimeType (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob). There one optional argument as well. This is MIME type of Blob to get stored.
-API.storage.startChunkedUpload || TBD
-API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
-API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`
-API.storage.rename | `path`,  `new path` | alias for move
-API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version
-API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file 
-API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` 
-API.storage.getNote | `node_id` | Resolves to a note object
-API.storage.removeNote | `node_id` | Removes the note
-API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)
+Method | Arguments | Description | Restrictions
+--- | --- | --- | ---
+API.storage.exists | `path`,`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.get | `path` | Resolves to file or folder definition object.|
+API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
+API.storage.getFileStream | `path`,`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
+API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
+API.storage.storeFile | `path`, `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
+API.storage.streamToChunks | `path`, `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
+API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.rename | `path`,  `new path` | alias for move|
+API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
+API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.storage.getNote | `node_id` | Resolves to a note object|
+API.storage.removeNote | `node_id` | Removes the note|
+API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+
+### Storing a file - node.js
 
 
+```javascript
+var fileStream = fs.createReadStream('sample.txt')
+egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
+    .then(function(filemeta){
+        //
+    })
 
-### Storing a file
+```
+
+If the API responds with an error that you cannot store an empty file, it means you have to provide the `size` argument.
+
+### Storing a file - in the browser
 
 Storing a file requires a `Blob` compatible object. It can be created manually using the browser's `Blob` constructor or `BlobBuilder`. A file input in a form can also produce a blob: `fileInputNode.files[0]` is a `File` object, which actually extends `Blob`.
 
 To aid working with blobs cross-browser we recommend https://github.com/eligrey/Blob.js (a copy available in this repo in src/vendor/blob.js)
 
-
-_Example_
 
 
 ```javascript
@@ -272,6 +286,17 @@ The `storeFile` method uses `FormData` constructor; documentation and detailed b
 ### Downloading a file
 
 It is possible to download a file to memory in modern browsers. A proof of concept of that can be found in `examples/filepicker_usecase.html`
+
+In node.js getFileStream resolves to a paused stream that has to be manually resumed when you're ready to accept its data.
+
+```javascript
+egnyte.API.storage.getFileStream(pathFromRoot)
+    .then(function(pausedResponse){
+        pausedResponse.pipe(whereverYouWant);
+        pausedResponse.resume(); //Be sure to resume the paused stream
+    });
+
+```
 
 
 ## Link API helpers
