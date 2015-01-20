@@ -58,8 +58,8 @@ if (ImInBrowser) {
 
             var picker = eg.filePicker(node, {
                 ready: function () {
-                    expect(node.querySelectorAll(".eg-picker-ok")[0].innerText.trim()).toEqual(text);
-                    expect(node.querySelectorAll(".eg-picker-close")[0].innerText.trim()).toEqual("Cancel");
+                    expect(node.querySelectorAll(".eg-picker-ok")[0].innerHTML.trim()).toEqual(text);
+                    expect(node.querySelectorAll(".eg-picker-close")[0].innerHTML.trim()).toEqual("Cancel");
 
                     picker.close();
 

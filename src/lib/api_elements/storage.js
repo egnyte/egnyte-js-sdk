@@ -103,7 +103,6 @@ storageProto.createFolder = function (pathFromRoot) {
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 201) {
             return {
-                id: result.response.headers["etag"],
                 path: pathFromRoot
             };
         }
