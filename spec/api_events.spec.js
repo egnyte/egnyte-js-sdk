@@ -218,7 +218,7 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return  eg.API.storage.createFolder(folderPath)
+                return eg.API.storage.createFolder(folderPath)
                     .then(function (e) {
                         //give it time to get the events
                         setTimeout(function () {
@@ -270,24 +270,11 @@ describe("Events API facade", function () {
                 var otherFilePath = testpath + "/candy2.txt";
                 var otherPathFound = false;
 
-                eg.API.events.notMy('user').filter({
+                var filteredEventsSource = eg.API.events.notMy('user').filter({
                     folder: testpath
-                }).listen({
-                    //start: purposefully not provided
-                    count: 10,
-                    interval: 2000,
-                    emit: function (e) {
-                        expect(e.data.target_path).not.toEqual(filePath);
-                        if (e.data.target_path === otherFilePath) {
-                            otherPathFound = true;
-                        }
-                    },
-                    current: function (a) {
-                        //should get an event id
-                        expect(a).toBeGreaterThan(0);
-                    }
-                }).then(function (sch) {
-                    scheduler = sch;
+                });
+
+                filteredEventsSource.getCursor().then(function (startEventId) {
                     return eg.API.storage.storeFile(filePath, getFileContent("sour"))
                         .then(function (e) {
 
@@ -296,15 +283,30 @@ describe("Events API facade", function () {
                             }).storeFile(otherFilePath, getFileContent("sour as ...much as possible"));
                         })
                         .then(function (e) {
-
+                            return filteredEventsSource.listen({
+                                start: startEventId,
+                                count: 10,
+                                interval: 2000, //can't be less
+                                emit: function (e) {
+                                    expect(e.data.target_path).not.toEqual(filePath);
+                                    if (e.data.target_path === otherFilePath) {
+                                        otherPathFound = true;
+                                    }
+                                },
+                                current: function (a) {
+                                    //should get an event id
+                                    expect(a).toBeGreaterThan(0);
+                                }
+                            })
+                        }).then(function (sch) {
+                            scheduler = sch;
                             //give it time to get the events
                             setTimeout(function () {
                                 scheduler.stop();
-                                expect(otherPathFound).toBeFalsy();
+                                expect(otherPathFound).toBeTruthy();
                                 done();
                             }, 5000)
-
-                        });
+                        })
 
                 }).fail(function (e) {
                     console.error(e.stack);
