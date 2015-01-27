@@ -34,7 +34,31 @@ To use the SDK, just add the script to your app's HTML document.
 
 ## Usage
 
-See `docs/` locally or explore [documentation in markdown format](src/docs/index.md)  
+See `docs/` locally or explore documentation in markdown format:
+
+
+### Table of contents
+
+* [Methods on top of Egnyte Public API](./src/docs/api.md)  
+* [API usage notes for node.js](./src/docs/nodejs.md)
+* [File picker widget](./src/docs/filepicker.md)  
+* [Installation and tests](./src/docs/installation.md)  
+
+
+
+If you support IE8 or IE9 see [Legacy browsers support](./src/docs/ie8or9.md) to enable the cross-origin forwarder.
+
+The `examples/` folder could also be helpful.
+
+## Browser support
+
+Firefox, Chrome, Opera, Safari 5+, IE10+ and multiple mobile browsers.
+
+All browsers that support Cross Origin Resource Sharing are supported. See: [CORS support table](http://caniuse.com/#feat=cors)
+
+The SDK code overall supports IE8 and IE9, but due to certain limitations in their implementations of Cross Origin Resource Sharing requests to Egnyte Public API cannot be authorized. 
+
+This SDK includes tools to bring support to IE8 and IE9, see [Legacy browsers support](./src/docs/ie8or9.md)
 
 ## License
 
