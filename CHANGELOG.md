@@ -1,3 +1,6 @@
+### 1.4.0
+- Events API
+
 ### 1.3.0
 - Notes for files
 - Prompt widget
