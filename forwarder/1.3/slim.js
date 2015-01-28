@@ -583,12 +583,11 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(20);
+var RequestEngine = require(19);
 var AuthEngine = require(12);
-var StorageFacade = require(21);
-var LinkFacade = require(17);
-var PermFacade = require(19);
-var Events = require(16);
+var StorageFacade = require(20);
+var LinkFacade = require(16);
+var PermFacade = require(18);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -597,13 +596,10 @@ module.exports = function (options) {
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
-    var events = new Events(requestEngine);
-    
     var api = {
         auth: auth,
         storage: storage,
         link: link,
-        events: events,
         perms: perms
     };
 
@@ -611,12 +607,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(22);
+            var responder = require(21);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(23);
+                var forwarder = require(22);
                 forwarder(options, api);
             }
         }
@@ -630,14 +626,14 @@ module.exports = function (options) {
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(24).userinfo;
-var ENDPOINTS_tokenauth = require(24).tokenauth;
+var ENDPOINTS_userinfo = require(23).userinfo;
+var ENDPOINTS_tokenauth = require(23).tokenauth;
 
 
 function Auth(options) {
@@ -843,9 +839,9 @@ Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
 },{}],13:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var ENDPOINTS = require(24);
+var promises = require(25);
+var helpers = require(27);
+var ENDPOINTS = require(23);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -955,7 +951,7 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
 
 }
 },{}],14:[function(require,module,exports){
-var helpers = require(29);
+var helpers = require(27);
 
 var defaultDecorators = {
 
@@ -999,7 +995,7 @@ module.exports = {
                     var instance = new Decorated;
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
-                    instance._decorations[name] = data || null;
+                    instance._decorations[name] = data;
                     exposeDecorators(instance);
                     return instance;
                 }
@@ -1084,121 +1080,11 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var every = require(28);
+var promises = require(25);
+var helpers = require(27);
 var decorators = require(14);
 
-var ENDPOINTS_events = require(24).events;
-var ENDPOINTS_eventscursor = require(24).eventscursor;
-
-function Events(requestEngine) {
-    this.requestEngine = requestEngine;
-    decorators.install(this);
-    this.addDecorator("filter", addFilter);
-    this.addDecorator("notMy", notMy);
-}
-
-function addFilter(opts, data) {
-    opts.params || (opts.params = {});
-    if (data.folder) {
-        opts.params.folder = data.folder;
-    }
-    if (data.type) {
-        if (data.type.join) {
-            opts.params.type = data.type.join("|");
-        } else {
-            opts.params.type = data.type;
-        }
-    }
-    return opts;
-}
-
-function notMy(opts, data) {
-    opts.params || (opts.params = {});
-    opts.params.suppress = data ? data : "app";
-    return opts;
-}
-
-
-
-var defaultCount = 20;
-
-//options.start
-//options.interval >2000
-//options.emit
-//options.current
-//returns {stop:function}
-Events.prototype = {
-    getCursor: function () {
-        var requestEngine = this.requestEngine;
-        return requestEngine.promiseRequest({
-            method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
-        }).then(function (result) {
-            return result.body.latest_event_id;
-        });
-    },
-    listen: function (options) {
-        var self = this;
-        var requestEngine = this.requestEngine;
-        var decorate = this.getDecorator();
-
-        return promises(true)
-            .then(function () {
-                if (!isNaN(options.start)) {
-                    return options.start;
-                } else {
-                    return self.getCursor();
-                }
-            }).then(function (initial) {
-                var start = initial;
-                if (options.current) {
-                    options.current(start);
-                }
-                //returns controllong object
-                return every(Math.max(options.interval || 30000, 2000), function (controller) {
-                    var count = options.count || defaultCount;
-                    return requestEngine.promiseRequest(decorate({
-                        method: "GET",
-                        url: requestEngine.getEndpoint() + ENDPOINTS_events,
-                        params: {
-                            id: start,
-                            count: count
-                        }
-                    })).then(function (result) {
-                        if (result.body) {
-                            start = result.body.latest_id;
-                            helpers.each(result.body.events, function (e) {
-                                setTimeout(function () {
-                                    options.emit(e);
-                                }, 0)
-                            });
-                            if (options.current) {
-                                options.current(start);
-                            }
-                            if (result.body.events.length >= count) {
-                                controller.repeat();
-                            }
-                        }
-                        if (options.heartbeat) {
-                            options.heartbeat(result);
-                        }
-                    });
-                })
-
-            });
-    }
-
-};
-
-module.exports = Events;
-},{}],17:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var decorators = require(14);
-
-var ENDPOINTS_links = require(24).links;
+var ENDPOINTS_links = require(23).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1289,11 +1175,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{}],18:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+},{}],17:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
 
-var ENDPOINTS_notes = require(24).notes;
+var ENDPOINTS_notes = require(23).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1368,12 +1254,12 @@ exports.removeNote = function (id) {
 
 
 
-},{}],19:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+},{}],18:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
 var decorators = require(14);
 
-var ENDPOINTS_perms = require(24).perms;
+var ENDPOINTS_perms = require(23).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1459,14 +1345,14 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 var errorify = require(15);
 var request = require(3);
 
@@ -1729,14 +1615,14 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],21:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+},{}],20:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
 var decorators = require(14);
-var notes = require(18);
+var notes = require(17);
 var chunkedUpload = require(13);
 
-var ENDPOINTS = require(24);
+var ENDPOINTS = require(23);
 
 
 function Storage(requestEngine) {
@@ -2001,10 +1887,10 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],22:[function(require,module,exports){
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],21:[function(require,module,exports){
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2063,11 +1949,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],23:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],22:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 
 
 
@@ -2197,26 +2083,24 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
     "fschunked": "/v1/fs-content-chunked",
     "notes": "/v1/notes",
     "links": "/v1/links",
-    "perms": "/v1/perms/folder",
-    "userinfo": "/v1/userinfo",
-    "events": "/v1/events",
-    "eventscursor": "/v1/events/cursor",
-    "tokenauth": "/puboauth/token"
+    "perms":"/v1/perms/folder",
+    "userinfo":"/v1/userinfo",
+    "tokenauth":"/puboauth/token"
 }
-},{}],25:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],24:[function(require,module,exports){
+var promises = require(25);
+var helpers = require(27);
+var dom = require(26);
+var messages = require(28);
 var decorators = require(14);
-var ENDPOINTS = require(24);
+var ENDPOINTS = require(23);
 
 var plugins = {};
 module.exports = {
@@ -2243,10 +2127,10 @@ module.exports = {
         });
     }
 };
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(29);
+var helpers = require(27);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2329,7 +2213,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2398,37 +2282,7 @@ module.exports = {
     }
 
 }
-},{}],28:[function(require,module,exports){
-var promises = require(26);
-module.exports = function (interval, func) {
-    var pointer, stopped = false,
-        repeat = function () {
-            stopped = false;
-            clearTimeout(pointer);
-            pointer = setTimeout(runner, 1);
-        },
-        runner = function () {
-            promises({
-                interval: interval,
-                repeat: repeat
-            }).then(func).then(function () {
-                if (!stopped) {
-                    pointer = setTimeout(runner, interval);
-                }
-            }).fail(function (e) {
-                console && console.error("Error in scheduled function", e);
-            });
-        }
-    runner();
-    return {
-        stop: function () {
-            stopped = true;
-            clearTimeout(pointer);
-        },
-        forceRun: repeat
-    }
-}
-},{}],29:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2503,8 +2357,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],30:[function(require,module,exports){
-var helpers = require(29);
+},{}],28:[function(require,module,exports){
+var helpers = require(27);
 
 
 //returns postMessage specific handler
@@ -2554,9 +2408,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],31:[function(require,module,exports){
-var helpers = require(29);
-var plugins = require(25);
+},{}],29:[function(require,module,exports){
+var helpers = require(27);
+var plugins = require(24);
 var defaults = require(10);
 
 module.exports = {
@@ -2579,5 +2433,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}]},{},[31])(31)
+},{}]},{},[29])(29)
 });
