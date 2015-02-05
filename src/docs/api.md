@@ -6,6 +6,7 @@
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
 |[Permissions API](#permissions-api-helpers)|
+|[Events](#events)|
 |[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
 
@@ -486,6 +487,60 @@ Returns
 
 ```
 
+## Events
+
+
+
+Method | Arguments | Description
+--- | --- | ---
+API.events.listen| `listenerConfiguration` | Polls the Events API for new events and emits them according to configuration. Resolves to an object with a single `stop` method that stops getting more events.
+API.events.getCursor| | Resolves to the latest event id
+
+
+listenerConfiguration:
+
+Name | | Description
+--- | --- | ---
+start |  | event id - get events that happened after that id. Fails if event is too old (.listen promise gets rejected). If not set, it will get only the events that happen since the moment of invocation.
+interval |  | miliseconds between making requests for events. minimum possible value is 2000, defaults to 30000
+emit | required | a function to call when an event is received. the function accepts one argument - event data object.
+current |  | function to call with the latest event id discovered
+heartbeat |  | a debug callback to be called whenever a request to events API is made.
+
+### Filtering
+
+Method | Arguments | Description
+--- | --- | ---
+API.events.notMy| `"user"`(optional) | Sets up filtering to ignore events caused by the same app that is querying events. If `"user"` is passed as first argument, only events caused by current user of the app are ignored. Returns `API.events`, so it's chainable
+API.events.filter| `filterDefinition` | Sets up filtering to only return events matching the definition. Can filter by folder path or event type or both. Returns `API.events`, so it's chainable
+
+filterDefinition:
+
+```javascript
+{
+    folder: "/folder/path", 
+    type: "file_system" or "note"
+}
+```
+
+**Example:**
+
+```javascript
+egnyte.API.events.notMy().filter({
+    folder: "/Shared/marketing/events"
+}).listen({
+    emit: function(eventData){
+        //process event
+    },
+    interval: 10000,
+    heartbeat: function(){
+        console.log("<3");
+    }
+}).then(function(polling){
+    //call polling.stop() to turn the listener off
+})
+       
+```
 
 ## Error handling
 
