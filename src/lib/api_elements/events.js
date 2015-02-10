@@ -99,7 +99,7 @@ Events.prototype = {
                             options.heartbeat(result);
                         }
                     });
-                })
+                }, options.error)
 
             });
     }

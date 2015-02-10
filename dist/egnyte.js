@@ -1224,7 +1224,7 @@ Events.prototype = {
                             options.heartbeat(result);
                         }
                     });
-                })
+                }, options.error)
 
             });
     }
@@ -3211,7 +3211,7 @@ module.exports = {
 }
 },{}],36:[function(require,module,exports){
 var promises = require(33);
-module.exports = function (interval, func) {
+module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
             stopped = false;
@@ -3222,12 +3222,16 @@ module.exports = function (interval, func) {
             promises({
                 interval: interval,
                 repeat: repeat
-            }).then(func).then(function () {
+            }).then(func).fail(function (e) {
+                if (errorHandler) {
+                    return errorHandler(e);
+                } else {
+                    console && console.error("Error in scheduled function", e);
+                }
+            }).then(function () {
                 if (!stopped) {
                     pointer = setTimeout(runner, interval);
                 }
-            }).fail(function (e) {
-                console && console.error("Error in scheduled function", e);
             });
         }
     runner();

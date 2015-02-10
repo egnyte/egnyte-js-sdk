@@ -504,6 +504,7 @@ Name | | Description
 start |  | event id - get events that happened after that id. Fails if event is too old (.listen promise gets rejected). If not set, it will get only the events that happen since the moment of invocation.
 interval |  | miliseconds between making requests for events. minimum possible value is 2000, defaults to 30000
 emit | required | a function to call when an event is received. the function accepts one argument - event data object.
+error |  | function to call when fetching events fails
 current |  | function to call with the latest event id discovered
 heartbeat |  | a debug callback to be called whenever a request to events API is made.
 
