@@ -77,6 +77,9 @@
 <td><a href="#permissions-api-helpers">Permissions API</a></td>
 </tr>
 <tr>
+<td><a href="#events">Events</a></td>
+</tr>
+<tr>
 <td><a href="#impersonation">Impersonation</a></td>
 </tr>
 <tr>
@@ -789,6 +792,106 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
         }],
     &quot;groups&quot;: []
 }</code></pre>
+<h2 id="events">Events</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.events.listen</td>
+<td><code>listenerConfiguration</code></td>
+<td>Polls the Events API for new events and emits them according to configuration. Resolves to an object with a single <code>stop</code> method that stops getting more events.</td>
+</tr>
+<tr>
+<td>API.events.getCursor</td>
+<td></td>
+<td>Resolves to the latest event id</td>
+</tr>
+</tbody>
+</table>
+<p>listenerConfiguration:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>start</td>
+<td></td>
+<td>event id - get events that happened after that id. Fails if event is too old (.listen promise gets rejected). If not set, it will get only the events that happen since the moment of invocation.</td>
+</tr>
+<tr>
+<td>interval</td>
+<td></td>
+<td>miliseconds between making requests for events. minimum possible value is 2000, defaults to 30000</td>
+</tr>
+<tr>
+<td>emit</td>
+<td>required</td>
+<td>a function to call when an event is received. the function accepts one argument - event data object.</td>
+</tr>
+<tr>
+<td>current</td>
+<td></td>
+<td>function to call with the latest event id discovered</td>
+</tr>
+<tr>
+<td>heartbeat</td>
+<td></td>
+<td>a debug callback to be called whenever a request to events API is made.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="filtering">Filtering</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.events.notMy</td>
+<td><code>&quot;user&quot;</code>(optional)</td>
+<td>Sets up filtering to ignore events caused by the same app that is querying events. If <code>&quot;user&quot;</code> is passed as first argument, only events caused by current user of the app are ignored. Returns <code>API.events</code>, so it&#39;s chainable</td>
+</tr>
+<tr>
+<td>API.events.filter</td>
+<td><code>filterDefinition</code></td>
+<td>Sets up filtering to only return events matching the definition. Can filter by folder path or event type or both. Returns <code>API.events</code>, so it&#39;s chainable</td>
+</tr>
+</tbody>
+</table>
+<p>filterDefinition:</p>
+<pre><code class="lang-javascript">{
+    folder: &quot;/folder/path&quot;, 
+    type: &quot;file_system&quot; or &quot;note&quot;
+}</code></pre>
+<p><strong>Example:</strong></p>
+<pre><code class="lang-javascript">egnyte.API.events.notMy().filter({
+    folder: &quot;/Shared/marketing/events&quot;
+}).listen({
+    emit: function(eventData){
+        //process event
+    },
+    interval: 10000,
+    heartbeat: function(){
+        console.log(&quot;&lt;3&quot;);
+    }
+}).then(function(polling){
+    //call polling.stop() to turn the listener off
+})</code></pre>
 <h2 id="error-handling">Error handling</h2>
 <p>All errors are returned in common format of a JavaScript error enhanced with additional fields</p>
 <table>
