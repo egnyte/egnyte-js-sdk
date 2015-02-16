@@ -1,7 +1,5 @@
-dist/
 docs/
 examples/
-forwarder/
 mock/
 spec/
 .gitignore
