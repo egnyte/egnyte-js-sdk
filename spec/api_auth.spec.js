@@ -66,11 +66,13 @@ describe("API auth", function () {
                 QPS: 2
             });
 
-            it('should be able to log in', function (done) {
+            it('should be able to log in and use the token', function (done) {
                 expect(eg2.API.auth.isAuthorized()).toBe(false);
                 eg2.API.auth.requestTokenByPassword(APIUsername, APIPassword).then(function () {
-                    console.log("token:",eg2.API.auth.getToken());
+                    console.log("token:", eg2.API.auth.getToken());
                     expect(eg2.API.auth.isAuthorized()).toBe(true);
+                    return eg2.API.storage.exists('/Shared');
+                }).then(function () {
                     done();
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);
@@ -80,7 +82,7 @@ describe("API auth", function () {
         });
     }
 
-    
+
 
 
 });
