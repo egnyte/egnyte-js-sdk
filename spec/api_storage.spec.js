@@ -287,11 +287,11 @@ describe("Storage API facade integration", function () {
 
         it("Can add a note to a file", function (done) {
             var words = "Tradition enforces enforcing tradition";
-            eg.API.storage.addNote(testpath, words)
+            eg.API.storage.addNote(testpath, "1 " + words)
                 .then(function (result) {
                     recentNoteId = result.id;
                     expect(result.id).toBeTruthy();
-                    return eg.API.storage.addNote(testpath, words); //adding another one for funzies
+                    return eg.API.storage.addNote(testpath, "2 " + words); //adding another one for funzies
                 })
                 .then(function () {
                     return eg.API.storage.getNote(recentNoteId);
@@ -306,20 +306,20 @@ describe("Storage API facade integration", function () {
 
         });
 
-        //        it("Can list notes", function (done) {
-        //            eg.API.storage.listNotes(testpath, {
-        //                count: 1,
-        //                offset: 1
-        //            })
-        //                .then(function (result) {
-        //                    console.log(result);
-        //                    done();
-        //                }).fail(function (e) {
-        //                    expect(this).toAutoFail(e);
-        //                    done();
-        //                });
-        //
-        //        });
+        it("Can list notes", function (done) {
+            eg.API.storage.listNotes(testpath, {
+                    count: 1,
+                    offset: 1
+                })
+                .then(function (result) {
+                    expect(result.notes.length).toBe(1);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
 
         it("Can delete the note", function (done) {
             eg.API.storage.removeNote(recentNoteId)
