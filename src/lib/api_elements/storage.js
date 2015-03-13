@@ -2,6 +2,7 @@ var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
 var notes = require("./notes");
+var lock = require("./lock");
 var chunkedUpload = require("./chunkedUpload");
 
 var ENDPOINTS = require("../enum/endpoints");
@@ -264,6 +265,7 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,lock);
 storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;

@@ -589,11 +589,11 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var RequestEngine = require(20);
+var RequestEngine = require(21);
 var AuthEngine = require(12);
-var StorageFacade = require(21);
+var StorageFacade = require(22);
 var LinkFacade = require(17);
-var PermFacade = require(19);
+var PermFacade = require(20);
 var Events = require(16);
 
 module.exports = function (options) {
@@ -617,12 +617,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(22);
+            var responder = require(23);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(23);
+                var forwarder = require(24);
                 forwarder(options, api);
             }
         }
@@ -636,14 +636,14 @@ module.exports = function (options) {
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+var promises = require(27);
+var helpers = require(30);
+var dom = require(28);
+var messages = require(31);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(24).userinfo;
-var ENDPOINTS_tokenauth = require(24).tokenauth;
+var ENDPOINTS_userinfo = require(25).userinfo;
+var ENDPOINTS_tokenauth = require(25).tokenauth;
 
 
 function Auth(options) {
@@ -849,9 +849,9 @@ Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
 },{}],13:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var ENDPOINTS = require(24);
+var promises = require(27);
+var helpers = require(30);
+var ENDPOINTS = require(25);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -961,7 +961,7 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
 
 }
 },{}],14:[function(require,module,exports){
-var helpers = require(29);
+var helpers = require(30);
 
 var defaultDecorators = {
 
@@ -1090,13 +1090,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var every = require(28);
+var promises = require(27);
+var helpers = require(30);
+var every = require(29);
 var decorators = require(14);
 
-var ENDPOINTS_events = require(24).events;
-var ENDPOINTS_eventscursor = require(24).eventscursor;
+var ENDPOINTS_events = require(25).events;
+var ENDPOINTS_eventscursor = require(25).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1200,11 +1200,11 @@ Events.prototype = {
 
 module.exports = Events;
 },{}],17:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+var promises = require(27);
+var helpers = require(30);
 var decorators = require(14);
 
-var ENDPOINTS_links = require(24).links;
+var ENDPOINTS_links = require(25).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1296,10 +1296,64 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 },{}],18:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+var promises = require(27);
+var helpers = require(30);
 
-var ENDPOINTS_notes = require(24).notes;
+var ENDPOINTS_fsmeta = require(25).fsmeta;
+
+exports.lock = function (pathFromRoot, lockToken, timeout) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "lock"
+        }
+        if (lockToken) {
+            body.lock_token = lockToken;
+        }
+        if (timeout) {
+            body.lock_timeout = timeout;
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        result.body.path = pathFromRoot;
+        return result.body;
+    });
+}
+
+
+exports.unlock = function (pathFromRoot, lockToken) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "unlock",
+            "lock_token": lockToken
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return {
+            path: pathFromRoot
+        };
+    });
+}
+},{}],19:[function(require,module,exports){
+var promises = require(27);
+var helpers = require(30);
+
+var ENDPOINTS_notes = require(25).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1374,12 +1428,12 @@ exports.removeNote = function (id) {
 
 
 
-},{}],19:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+},{}],20:[function(require,module,exports){
+var promises = require(27);
+var helpers = require(30);
 var decorators = require(14);
 
-var ENDPOINTS_perms = require(24).perms;
+var ENDPOINTS_perms = require(25).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1465,14 +1519,14 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+var promises = require(27);
+var helpers = require(30);
+var dom = require(28);
+var messages = require(31);
 var errorify = require(15);
 var request = require(3);
 
@@ -1735,14 +1789,15 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],21:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
+},{}],22:[function(require,module,exports){
+var promises = require(27);
+var helpers = require(30);
 var decorators = require(14);
-var notes = require(18);
+var notes = require(19);
+var lock = require(18);
 var chunkedUpload = require(13);
 
-var ENDPOINTS = require(24);
+var ENDPOINTS = require(25);
 
 
 function Storage(requestEngine) {
@@ -2002,15 +2057,16 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,lock);
 storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],22:[function(require,module,exports){
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],23:[function(require,module,exports){
+var helpers = require(30);
+var dom = require(28);
+var messages = require(31);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2069,11 +2125,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],23:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],24:[function(require,module,exports){
+var promises = require(27);
+var helpers = require(30);
+var dom = require(28);
+var messages = require(31);
 
 
 
@@ -2203,7 +2259,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2216,13 +2272,13 @@ module.exports={
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],25:[function(require,module,exports){
-var promises = require(26);
-var helpers = require(29);
-var dom = require(27);
-var messages = require(30);
+},{}],26:[function(require,module,exports){
+var promises = require(27);
+var helpers = require(30);
+var dom = require(28);
+var messages = require(31);
 var decorators = require(14);
-var ENDPOINTS = require(24);
+var ENDPOINTS = require(25);
 
 var plugins = {};
 module.exports = {
@@ -2249,10 +2305,10 @@ module.exports = {
         });
     }
 };
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(29);
+var helpers = require(30);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2335,7 +2391,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2404,8 +2460,8 @@ module.exports = {
     }
 
 }
-},{}],28:[function(require,module,exports){
-var promises = require(26);
+},{}],29:[function(require,module,exports){
+var promises = require(27);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -2438,7 +2494,7 @@ module.exports = function (interval, func, errorHandler) {
         forceRun: repeat
     }
 }
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2513,8 +2569,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],30:[function(require,module,exports){
-var helpers = require(29);
+},{}],31:[function(require,module,exports){
+var helpers = require(30);
 
 
 //returns postMessage specific handler
@@ -2564,9 +2620,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],31:[function(require,module,exports){
-var helpers = require(29);
-var plugins = require(25);
+},{}],32:[function(require,module,exports){
+var helpers = require(30);
+var plugins = require(26);
 var defaults = require(10);
 
 module.exports = {
@@ -2589,5 +2645,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}]},{},[31])(31)
+},{}]},{},[32])(32)
 });

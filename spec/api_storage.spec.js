@@ -284,68 +284,115 @@ describe("Storage API facade integration", function () {
 
         });
 
+        describe("locks", function () {
+            var token;
 
-        it("Can add a note to a file", function (done) {
-            var words = "Tradition enforces enforcing tradition";
-            eg.API.storage.addNote(testpath, "1 " + words)
-                .then(function (result) {
-                    recentNoteId = result.id;
-                    expect(result.id).toBeTruthy();
-                    return eg.API.storage.addNote(testpath, "2 " + words); //adding another one for funzies
-                })
-                .then(function () {
-                    return eg.API.storage.getNote(recentNoteId);
-                })
-                .then(function (noteObj) {
-                    expect(noteObj.message).toBe(words);
-                    done();
-                }).fail(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                });
+            it("Can lock a file", function (done) {
+                eg.API.storage.lock(testpath)
+                    .then(function (result) {
+                        token = result.lock_token;
+                        expect(result.lock_token).toBeTruthy();
+                        expect(result.timeout).toBeTruthy();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
 
-        });
+            });
 
-        it("Can list notes", function (done) {
-            eg.API.storage.listNotes(testpath, {
-                    count: 1,
-                    offset: 1
-                })
-                .then(function (result) {
-                    expect(result.notes.length).toBe(1);
-                    done();
-                }).fail(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                });
+            it("Can't unlock a file without a token", function (done) {
+                eg.API.storage.unlock(testpath, "foo")
+                    .then(function (result) {
+                        //just getting here is ok.
+                        expect(this).toAutoFail("unlocked");
+                        done();
+                    }).fail(function (e) {
+                        expect(e.response.statusCode).toEqual(404);
+                        expect(e.response.body.errorMessage).toBeTruthy();
+                        done();
+                    });
 
-        });
+            });
 
-        it("Can delete the note", function (done) {
-            eg.API.storage.removeNote(recentNoteId)
-                .then(function (result) {
-                    expect(result.response.statusCode).toEqual(200);
-                    done();
-                }).fail(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                });
+
+            it("Can unlock a file", function (done) {
+                eg.API.storage.unlock(testpath, token)
+                    .then(function (result) {
+                        //just getting here is ok.
+                        expect(result).toBeDefined();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
 
         });
+        describe("notes", function () {
+            it("Can add a note to a file", function (done) {
+                var words = "Tradition enforces enforcing tradition";
+                eg.API.storage.addNote(testpath, "1 " + words)
+                    .then(function (result) {
+                        recentNoteId = result.id;
+                        expect(result.id).toBeTruthy();
+                        return eg.API.storage.addNote(testpath, "2 " + words); //adding another one for funzies
+                    })
+                    .then(function () {
+                        return eg.API.storage.getNote(recentNoteId);
+                    })
+                    .then(function (noteObj) {
+                        expect(noteObj.message).toBe("1 " + words);
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
 
-        it("Can remove a stored file", function (done) {
-            eg.API.storage.remove(testpath)
-                .then(function () {
-                    return eg.API.storage.exists(testpath);
-                })
-                .then(function (e) {
-                    expect(e).toBe(false);
-                    done();
-                }).fail(function (e) {
-                    expect(this).toAutoFail(e);
-                    done();
-                });
+            });
 
+            it("Can list notes", function (done) {
+                eg.API.storage.listNotes(testpath, {
+                        count: 1,
+                        offset: 1
+                    })
+                    .then(function (result) {
+                        expect(result.notes.length).toBe(1);
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+            it("Can delete the note", function (done) {
+                eg.API.storage.removeNote(recentNoteId)
+                    .then(function (result) {
+                        expect(result.response.statusCode).toEqual(200);
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+            it("Can remove a stored file", function (done) {
+                eg.API.storage.remove(testpath)
+                    .then(function () {
+                        return eg.API.storage.exists(testpath);
+                    })
+                    .then(function (e) {
+                        expect(e).toBe(false);
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
         });
 
     });

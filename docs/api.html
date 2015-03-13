@@ -452,6 +452,18 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <td></td>
 </tr>
 <tr>
+<td>API.storage.lock</td>
+<td><code>path</code>, <code>timeout</code>, <code>previous token</code></td>
+<td>Locks a file, resolves to <code>{path: &quot;...&quot;, timeout:seconds,lock_token:&quot;...&quot;}</code>, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden</td>
+<td></td>
+</tr>
+<tr>
+<td>API.storage.unlock</td>
+<td><code>path</code>,<code>token</code></td>
+<td>Unlocks a file if the token is the one with which the lock was claimed</td>
+<td></td>
+</tr>
+<tr>
 <td>API.storage.getNote</td>
 <td><code>node_id</code></td>
 <td>Resolves to a note object</td>

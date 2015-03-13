@@ -589,9 +589,9 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var slim = require(41);
-var filepicker = require(29)
-var prompt = require(34)
+var slim = require(42);
+var filepicker = require(30)
+var prompt = require(35)
 var authPrompt = require(14)
 
 slim.plugin("filePicker", function (root, resources) {
@@ -604,11 +604,11 @@ slim.plugin("prompt", function (root, resources) {
 
 module.exports = slim;
 },{}],12:[function(require,module,exports){
-var RequestEngine = require(22);
+var RequestEngine = require(23);
 var AuthEngine = require(13);
-var StorageFacade = require(23);
+var StorageFacade = require(24);
 var LinkFacade = require(19);
-var PermFacade = require(21);
+var PermFacade = require(22);
 var Events = require(18);
 
 module.exports = function (options) {
@@ -632,12 +632,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(24);
+            var responder = require(25);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(25);
+                var forwarder = require(26);
                 forwarder(options, api);
             }
         }
@@ -651,14 +651,14 @@ module.exports = function (options) {
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(33);
-var helpers = require(37);
-var dom = require(35);
-var messages = require(38);
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var errorify = require(17);
 
-var ENDPOINTS_userinfo = require(26).userinfo;
-var ENDPOINTS_tokenauth = require(26).tokenauth;
+var ENDPOINTS_userinfo = require(27).userinfo;
+var ENDPOINTS_tokenauth = require(27).tokenauth;
 
 
 function Auth(options) {
@@ -864,8 +864,8 @@ Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
 },{}],14:[function(require,module,exports){
-var prompt = require(34)
-var helpers = require(37)
+var prompt = require(35)
+var helpers = require(38)
 
 function egmitifyDomain(domain) {
     if (domain.indexOf('.') === -1) {
@@ -888,9 +888,9 @@ module.exports = function (root, resources) {
     }
 };
 },{}],15:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
-var ENDPOINTS = require(26);
+var promises = require(34);
+var helpers = require(38);
+var ENDPOINTS = require(27);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -1000,7 +1000,7 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
 
 }
 },{}],16:[function(require,module,exports){
-var helpers = require(37);
+var helpers = require(38);
 
 var defaultDecorators = {
 
@@ -1129,13 +1129,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],18:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
-var every = require(36);
+var promises = require(34);
+var helpers = require(38);
+var every = require(37);
 var decorators = require(16);
 
-var ENDPOINTS_events = require(26).events;
-var ENDPOINTS_eventscursor = require(26).eventscursor;
+var ENDPOINTS_events = require(27).events;
+var ENDPOINTS_eventscursor = require(27).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1239,11 +1239,11 @@ Events.prototype = {
 
 module.exports = Events;
 },{}],19:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
+var promises = require(34);
+var helpers = require(38);
 var decorators = require(16);
 
-var ENDPOINTS_links = require(26).links;
+var ENDPOINTS_links = require(27).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1335,10 +1335,64 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 },{}],20:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
+var promises = require(34);
+var helpers = require(38);
 
-var ENDPOINTS_notes = require(26).notes;
+var ENDPOINTS_fsmeta = require(27).fsmeta;
+
+exports.lock = function (pathFromRoot, lockToken, timeout) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "lock"
+        }
+        if (lockToken) {
+            body.lock_token = lockToken;
+        }
+        if (timeout) {
+            body.lock_timeout = timeout;
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        result.body.path = pathFromRoot;
+        return result.body;
+    });
+}
+
+
+exports.unlock = function (pathFromRoot, lockToken) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "unlock",
+            "lock_token": lockToken
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return {
+            path: pathFromRoot
+        };
+    });
+}
+},{}],21:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+
+var ENDPOINTS_notes = require(27).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1413,12 +1467,12 @@ exports.removeNote = function (id) {
 
 
 
-},{}],21:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
+},{}],22:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
 var decorators = require(16);
 
-var ENDPOINTS_perms = require(26).perms;
+var ENDPOINTS_perms = require(27).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1504,14 +1558,14 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(33);
-var helpers = require(37);
-var dom = require(35);
-var messages = require(38);
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var errorify = require(17);
 var request = require(3);
 
@@ -1774,14 +1828,15 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],23:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
+},{}],24:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
 var decorators = require(16);
-var notes = require(20);
+var notes = require(21);
+var lock = require(20);
 var chunkedUpload = require(15);
 
-var ENDPOINTS = require(26);
+var ENDPOINTS = require(27);
 
 
 function Storage(requestEngine) {
@@ -2041,15 +2096,16 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,lock);
 storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],24:[function(require,module,exports){
-var helpers = require(37);
-var dom = require(35);
-var messages = require(38);
+},{}],25:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2108,11 +2164,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],25:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
-var dom = require(35);
-var messages = require(38);
+},{}],26:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 
 
 
@@ -2242,7 +2298,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2255,7 +2311,7 @@ module.exports={
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2268,8 +2324,8 @@ module.exports={
     "?": "Unknown error"
 }
 
-},{}],28:[function(require,module,exports){
-var helpers = require(37);
+},{}],29:[function(require,module,exports){
+var helpers = require(38);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2322,11 +2378,11 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-},{}],29:[function(require,module,exports){
-var helpers = require(37);
-var dom = require(35);
-var View = require(31);
-var Model = require(30);
+},{}],30:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var View = require(32);
+var Model = require(31);
 
 function noGoog(ext, mime) {
     return mime !== "goog";
@@ -2395,9 +2451,9 @@ function init(API) {
 }
 
 module.exports = init;
-},{}],30:[function(require,module,exports){
-var helpers = require(37);
-var exts = require(28);
+},{}],31:[function(require,module,exports){
+var helpers = require(38);
+var exts = require(29);
 
 
 
@@ -2582,16 +2638,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(35);
-var helpers = require(37);
-var texts = require(39);
-var jungle = require(42);
+var dom = require(36);
+var helpers = require(38);
+var texts = require(40);
+var jungle = require(43);
 
-require(40);
+require(41);
 
 var fontLoaded = false;
 
@@ -2896,7 +2952,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(27);
+var msgs = require(28);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -2971,13 +3027,13 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{}],32:[function(require,module,exports){
-var promises = require(33);
-var helpers = require(37);
-var dom = require(35);
-var messages = require(38);
+},{}],33:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var decorators = require(16);
-var ENDPOINTS = require(26);
+var ENDPOINTS = require(27);
 
 var plugins = {};
 module.exports = {
@@ -3004,10 +3060,10 @@ module.exports = {
         });
     }
 };
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(37);
+var helpers = require(38);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -3090,13 +3146,13 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{}],34:[function(require,module,exports){
-var helpers = require(37);
-var dom = require(35);
-var jungle = require(42);
-var texts = require(39);
+},{}],35:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var jungle = require(43);
+var texts = require(40);
 
-require(40);
+require(41);
 
 function openPrompt(node, setup) {
     if (!setup) {
@@ -3146,7 +3202,7 @@ function openPrompt(node, setup) {
 };
 
 module.exports = openPrompt;
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -3215,8 +3271,8 @@ module.exports = {
     }
 
 }
-},{}],36:[function(require,module,exports){
-var promises = require(33);
+},{}],37:[function(require,module,exports){
+var promises = require(34);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -3249,7 +3305,7 @@ module.exports = function (interval, func, errorHandler) {
         forceRun: repeat
     }
 }
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -3324,8 +3380,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],38:[function(require,module,exports){
-var helpers = require(37);
+},{}],39:[function(require,module,exports){
+var helpers = require(38);
 
 
 //returns postMessage specific handler
@@ -3375,7 +3431,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -3389,11 +3445,11 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],40:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:50px;position:absolute;top:0;right:0;z-index:3}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],41:[function(require,module,exports){
-var helpers = require(37);
-var plugins = require(32);
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:50px;position:absolute;top:0;right:0;z-index:3}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],42:[function(require,module,exports){
+var helpers = require(38);
+var plugins = require(33);
 var defaults = require(10);
 
 module.exports = {
@@ -3416,7 +3472,7 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

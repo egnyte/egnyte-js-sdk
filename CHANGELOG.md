@@ -1,5 +1,6 @@
 ### 1.4.0
 - Events API
+- Locks 
 
 ### 1.3.0
 - Notes for files
