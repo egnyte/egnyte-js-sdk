@@ -1644,6 +1644,9 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
             var retry = function () {
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry));
             };
+            if (this.beforeCallback) {
+                this.beforeCallback();
+            }
             return self.requestHandler(opts, self.retryHandler(callback, retry));
         }
     } else {
@@ -1714,7 +1717,9 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
                 self.auth.dropToken();
                 self.options.onInvalidToken();
             }
-
+            if (this.afterCallback) {
+                this.afterCallback();
+            }
             callback.call(this, error, response, body);
         }
     };
@@ -1787,6 +1792,10 @@ enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoA
     return defer.promise;
 }
 
+enginePrototypeMethods.setupBeforeAfterHooks = function (before, after) {
+    this.beforeCallback = before;
+    this.afterCallback = after;
+}
 
 //gets bound to this in the constructor and saved as this.queueHandler
 function _rollQueue() {

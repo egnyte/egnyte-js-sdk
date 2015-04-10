@@ -69,11 +69,16 @@ describe("Storage API facade integration", function () {
 
         var recentFileObject;
         var recentNoteId;
+        testpath = "/Shared/SDKTests" + "/bacon" + ~~(10000 * Math.random());
+        testpath2 = "/Shared/SDKTests" + "/unicorn" + ~~(10000 * Math.random());
+        testpath3 = "/Shared/SDKTests" + "/candy" + ~~(10000 * Math.random());
 
         it("Should claim that root exists", function (done) {
-            eg.API.storage.exists("/Private").then(function (e) {
+            eg.API.storage.exists("/Shared/SDKTests").then(function (e) {
                 expect(e).toBe(true);
                 done();
+            }, function () {
+                return eg.API.storage.createFolder("/Shared/SDKTests");
             }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
@@ -90,20 +95,7 @@ describe("Storage API facade integration", function () {
             });
 
         });
-        it("Should be able to fetch a private folder", function (done) {
-            eg.API.storage.get("/Private").then(function (e) {
-                expect(e["folders"]).toBeDefined();
-                //this test suite has unicorns and bacon, it can't get any better/
-                testpath = e.folders[0].path + "/bacon" + ~~(10000 * Math.random());
-                testpath2 = e.folders[0].path + "/unicorn" + ~~(10000 * Math.random());
-                testpath3 = e.folders[0].path + "/candy" + ~~(10000 * Math.random());
-                done();
-            }).fail(function (e) {
-                expect(this).toAutoFail(e);
-                done();
-            });
-
-        });
+   
         it("Can create a folder", function (done) {
             eg.API.storage.createFolder(testpath)
                 .then(function (e) {
@@ -288,7 +280,7 @@ describe("Storage API facade integration", function () {
             var token;
 
             it("Can lock a file", function (done) {
-                eg.API.storage.lock(testpath)
+                eg.API.storage.lock(testpath, null, 1800)
                     .then(function (result) {
                         token = result.lock_token;
                         expect(result.lock_token).toBeTruthy();
@@ -301,7 +293,23 @@ describe("Storage API facade integration", function () {
 
             });
 
-            it("Can't unlock a file without a token", function (done) {
+            it("tmp", function (done) {
+                eg.API.storage.impersonate({
+                        username: "dude"
+                    }).remove(testpath)
+                    .then(function (result) {
+                        //just getting here is ok.
+                        expect(this).toAutoFail("moved");
+                        done();
+                    }).fail(function (e) {
+                        console.log(JSON.stringify(e.response.body))
+                        expect(e.response.statusCode).toEqual(423);
+                        done();
+                    });
+
+            });
+
+            it("Can't unlock a file with an incorrect token", function (done) {
                 eg.API.storage.unlock(testpath, "foo")
                     .then(function (result) {
                         //just getting here is ok.
@@ -317,7 +325,7 @@ describe("Storage API facade integration", function () {
 
 
             it("Can unlock a file", function (done) {
-                eg.API.storage.unlock(testpath, token)
+                eg.API.storage.unlock(testpath)
                     .then(function (result) {
                         //just getting here is ok.
                         expect(result).toBeDefined();

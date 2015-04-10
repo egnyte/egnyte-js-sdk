@@ -20,6 +20,28 @@ describe("Permissions API facade integration", function () {
     });
 
 
+    function getTestBlob(txt) {
+        var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
+        if (ImInBrowser) {
+            // JavaScript file-like object...
+            //PhanthomJS has a broken Blob
+            try {
+                var blob = new Blob([content], {
+                    type: "text/xml"
+                });
+            } catch (e) {
+                //napaeeee!
+                var blob = content;
+            }
+            return blob;
+        } else {
+            var s = new stream.Readable();
+            s.push(content);
+            s.push(null);
+            return s;
+        }
+    }
+
 
 
     if (ImInBrowser) {
@@ -95,6 +117,54 @@ describe("Permissions API facade integration", function () {
 
         });
 
+        describe("Impersonated locking", function () {
+            var token;
+
+            it("Needs a file to lock", function (done) {
+                var blob = getTestBlob("hey!");
+
+                eg.API.storage.storeFile(testpath + "/aaa", blob)
+                    .then(function (e) {
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+            it("Can lock a file as other user", function (done) {
+                eg.API.storage.impersonate({
+                        username: "test"
+                    }).lock(testpath + "/aaa", null, 1800)
+                    .then(function (result) {
+                        token = result.lock_token;
+                        expect(result.lock_token).toBeTruthy();
+                        expect(result.timeout).toBeTruthy();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+            it("Can unlock a file as other user", function (done) {
+                eg.API.storage.impersonate({
+                        username: "test"
+                    }).unlock(testpath + "/aaa", token)
+                    .then(function (result) {
+                        //just getting here is ok.
+                        expect(result).toBeDefined();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+        });
 
         it("Needs to clean up the folder", function (done) {
             eg.API.storage.remove(testpath)
