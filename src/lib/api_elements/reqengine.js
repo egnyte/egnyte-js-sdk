@@ -84,8 +84,8 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
             var retry = function () {
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer));
             };
-            if (this.timerStart) {
-                timer = this.timerStart();
+            if (self.timerStart) {
+                timer = self.timerStart();
             }
             return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
         }
@@ -157,8 +157,8 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
                 self.auth.dropToken();
                 self.options.onInvalidToken();
             }
-            if (this.timerEnd) {
-                this.timerEnd(timer);
+            if (self.timerEnd) {
+                self.timerEnd(timer);
             }
             callback.call(this, error, response, body);
         }
