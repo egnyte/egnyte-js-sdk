@@ -7,3 +7,4 @@ APIKey = "12345" //API key for password grant
 APIUsername = "user";
 APIPassword = "foo";
 APIKeyImplicit = "9876543" //API key for implicit grant
+OtherUsername = "dude"; //other existing user (for impersonation)

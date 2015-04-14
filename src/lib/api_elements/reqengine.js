@@ -65,11 +65,10 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    var originalOpts = helpers.extend({}, opts);
-    //IE8/9 
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        opts.response = true;
-    }
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    var originalOpts = helpers.extend({}, opts); //just copying the object
+   
+    
 
     if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
@@ -80,10 +79,15 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
         if (!callback) {
             return self.requestHandler(opts);
         } else {
+            var timer;
             var retry = function () {
-                self.sendRequest(originalOpts, self.retryHandler(callback, retry));
+                self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer));
             };
-            return self.requestHandler(opts, self.retryHandler(callback, retry));
+            if (self.timerStart) {
+                timer = self.timerStart();
+            }
+            
+            return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
         }
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -93,7 +97,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
 
 }
 
-enginePrototypeMethods.retryHandler = function (callback, retry) {
+enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
     var self = this;
     return function (error, response, body) {
         //build an error object for http errors
@@ -153,7 +157,9 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
                 self.auth.dropToken();
                 self.options.onInvalidToken();
             }
-
+            if (self.timerEnd) {
+                self.timerEnd(timer);
+            }
             callback.call(this, error, response, body);
         }
     };
@@ -226,6 +232,10 @@ enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoA
     return defer.promise;
 }
 
+enginePrototypeMethods.setupTiming = function (getTimer, timeEnd) {
+    this.timerStart = getTimer;
+    this.timerEnd = timeEnd;
+}
 
 //gets bound to this in the constructor and saved as this.queueHandler
 function _rollQueue() {

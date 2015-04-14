@@ -256,15 +256,11 @@ for(i = 112; i < 136; ++i) {
 }
 
 },{}],3:[function(require,module,exports){
+"use strict";
 var window = require(4)
 var once = require(5)
 var parseHeaders = require(9)
 
-var messages = {
-    "0": "Internal XMLHttpRequest Error",
-    "4": "4xx Client Error",
-    "5": "5xx Server Error"
-}
 
 var XHR = window.XMLHttpRequest || noop
 var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
@@ -272,11 +268,84 @@ var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 module.exports = createXHR
 
 function createXHR(options, callback) {
+    function readystatechange() {
+        if (xhr.readyState === 4) {
+            loadFunc()
+        }
+    }
+
+    function getBody() {
+        // Chrome with requestType=blob throws errors arround when even testing access to responseText
+        var body = undefined
+
+        if (xhr.response) {
+            body = xhr.response
+        } else if (xhr.responseType === "text" || !xhr.responseType) {
+            body = xhr.responseText || xhr.responseXML
+        }
+
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
+        }
+
+        return body
+    }
+    
+    var failureResponse = {
+                body: undefined,
+                headers: {},
+                statusCode: 0,
+                method: method,
+                url: uri,
+                rawRequest: xhr
+            }
+    
+    function errorFunc(evt) {
+        clearTimeout(timeoutTimer)
+        if(!(evt instanceof Error)){
+            evt = new Error("" + (evt || "unknown") )
+        }
+        evt.statusCode = 0
+        callback(evt, failureResponse)
+    }
+
+    // will load the data & process the response in a special response object
+    function loadFunc() {
+        clearTimeout(timeoutTimer)
+        
+        var status = (xhr.status === 1223 ? 204 : xhr.status)
+        var response = failureResponse
+        var err = null
+        
+        if (status !== 0){
+            response = {
+                body: getBody(),
+                statusCode: status,
+                method: method,
+                headers: {},
+                url: uri,
+                rawRequest: xhr
+            }
+            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
+                response.headers = parseHeaders(xhr.getAllResponseHeaders())
+            }
+        } else {
+            err = new Error("Internal XMLHttpRequest Error")
+        }
+        callback(err, response, response.body)
+        
+    }
+    
     if (typeof options === "string") {
         options = { uri: options }
     }
 
     options = options || {}
+    if(typeof callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
     callback = once(callback)
 
     var xhr = options.xhr || null
@@ -289,18 +358,18 @@ function createXHR(options, callback) {
         }
     }
 
+    var key
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
     var headers = xhr.headers = options.headers || {}
     var sync = !!options.sync
     var isJson = false
-    var key
-    var load = options.response ? loadResponse : loadXhr
+    var timeoutTimer
 
     if ("json" in options) {
         isJson = true
-        headers["Accept"] = "application/json"
+        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
             headers["Content-Type"] = "application/json"
             body = JSON.stringify(options.json)
@@ -308,23 +377,24 @@ function createXHR(options, callback) {
     }
 
     xhr.onreadystatechange = readystatechange
-    xhr.onload = load
-    xhr.onerror = error
+    xhr.onload = loadFunc
+    xhr.onerror = errorFunc
     // IE9 must have onprogress be set to a unique function.
     xhr.onprogress = function () {
         // IE must die
     }
-    // hate IE
-    xhr.ontimeout = noop
+    xhr.ontimeout = errorFunc
     xhr.open(method, uri, !sync)
-                                    //backward compatibility
-    if (options.withCredentials || (options.cors && options.withCredentials !== false)) {
-        xhr.withCredentials = true
-    }
-
+    //has to be after open
+    xhr.withCredentials = !!options.withCredentials
+    
     // Cannot set timeout with sync request
-    if (!sync) {
-        xhr.timeout = "timeout" in options ? options.timeout : 5000
+    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
+    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
+    if (!sync && options.timeout > 0 ) {
+        timeoutTimer = setTimeout(function(){
+            xhr.abort("timeout");
+        }, options.timeout+2 );
     }
 
     if (xhr.setRequestHeader) {
@@ -351,89 +421,13 @@ function createXHR(options, callback) {
 
     return xhr
 
-    function readystatechange() {
-        if (xhr.readyState === 4) {
-            load()
-        }
-    }
 
-    function getBody() {
-        // Chrome with requestType=blob throws errors arround when even testing access to responseText
-        var body = null
-
-        if (xhr.response) {
-            body = xhr.response
-        } else if (xhr.responseType === 'text' || !xhr.responseType) {
-            body = xhr.responseText || xhr.responseXML
-        }
-
-        if (isJson) {
-            try {
-                body = JSON.parse(body)
-            } catch (e) {}
-        }
-
-        return body
-    }
-
-    function getStatusCode() {
-        return xhr.status === 1223 ? 204 : xhr.status
-    }
-
-    // if we're getting a none-ok statusCode, build & return an error
-    function errorFromStatusCode(status) {
-        var error = null
-        if (status === 0 || (status >= 400 && status < 600)) {
-            var message = (typeof body === "string" ? body : false) ||
-                messages[String(status).charAt(0)]
-            error = new Error(message)
-            error.statusCode = status
-        }
-
-        return error
-    }
-
-    // will load the data & process the response in a special response object
-    function loadResponse() {
-        var status = getStatusCode()
-        var error = errorFromStatusCode(status)
-        var response = {
-            body: getBody(),
-            statusCode: status,
-            statusText: xhr.statusText,
-            raw: xhr
-        }
-        if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
-            response.headers = parseHeaders(xhr.getAllResponseHeaders())
-        } else {
-            response.headers = {}
-        }
-
-        callback(error, response, response.body)
-    }
-
-    // will load the data and add some response properties to the source xhr
-    // and then respond with that
-    function loadXhr() {
-        var status = getStatusCode()
-        var error = errorFromStatusCode(status)
-
-        xhr.status = xhr.statusCode = status
-        xhr.body = getBody()
-        xhr.headers = parseHeaders(xhr.getAllResponseHeaders())
-
-        callback(error, xhr, xhr.body)
-    }
-
-    function error(evt) {
-        callback(evt, xhr)
-    }
 }
 
 
 function noop() {}
 
-},{}],4:[function(require,module,exports){
+},{"4":4,"5":5,"9":9}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window;
 } else if (typeof global !== "undefined") {
@@ -513,7 +507,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{}],7:[function(require,module,exports){
+},{"7":7}],7:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -578,20 +572,20 @@ module.exports = function (headers) {
 
   return result
 }
-},{}],10:[function(require,module,exports){
+},{"6":6,"8":8}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
-    forwarderAddress: "app/integ/forwarder/1.3/apiForwarder.html",
+    forwarderAddress: "app/integ/forwarder/1.4/apiForwarder.html",
     channelMarker: "'E",
     httpRequest: null,
     oldIEForwarder: false
     
 }
 },{}],11:[function(require,module,exports){
-var slim = require(39);
-var filepicker = require(28)
-var prompt = require(33)
+var slim = require(42);
+var filepicker = require(30)
+var prompt = require(35)
 var authPrompt = require(14)
 
 slim.plugin("filePicker", function (root, resources) {
@@ -603,12 +597,13 @@ slim.plugin("prompt", function (root, resources) {
 });
 
 module.exports = slim;
-},{}],12:[function(require,module,exports){
-var RequestEngine = require(21);
+},{"14":14,"30":30,"35":35,"42":42}],12:[function(require,module,exports){
+var RequestEngine = require(23);
 var AuthEngine = require(13);
-var StorageFacade = require(22);
-var LinkFacade = require(18);
-var PermFacade = require(20);
+var StorageFacade = require(24);
+var LinkFacade = require(19);
+var PermFacade = require(22);
+var Events = require(18);
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -617,10 +612,13 @@ module.exports = function (options) {
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
+    var events = new Events(requestEngine);
+    
     var api = {
         auth: auth,
         storage: storage,
         link: link,
+        events: events,
         perms: perms
     };
 
@@ -628,12 +626,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(23);
+            var responder = require(25);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(24);
+                var forwarder = require(26);
                 forwarder(options, api);
             }
         }
@@ -643,18 +641,18 @@ module.exports = function (options) {
 
     return api;
 };
-},{}],13:[function(require,module,exports){
+},{"13":13,"18":18,"19":19,"22":22,"23":23,"24":24,"25":25,"26":26}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(32);
-var helpers = require(35);
-var dom = require(34);
-var messages = require(36);
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var errorify = require(17);
 
-var ENDPOINTS_userinfo = require(25).userinfo;
-var ENDPOINTS_tokenauth = require(25).tokenauth;
+var ENDPOINTS_userinfo = require(27).userinfo;
+var ENDPOINTS_tokenauth = require(27).tokenauth;
 
 
 function Auth(options) {
@@ -859,9 +857,9 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{}],14:[function(require,module,exports){
-var prompt = require(33)
-var helpers = require(35)
+},{"17":17,"27":27,"34":34,"36":36,"38":38,"39":39}],14:[function(require,module,exports){
+var prompt = require(35)
+var helpers = require(38)
 
 function egmitifyDomain(domain) {
     if (domain.indexOf('.') === -1) {
@@ -883,10 +881,10 @@ module.exports = function (root, resources) {
         });
     }
 };
-},{}],15:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
-var ENDPOINTS = require(25);
+},{"35":35,"38":38}],15:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var ENDPOINTS = require(27);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -995,8 +993,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{}],16:[function(require,module,exports){
-var helpers = require(35);
+},{"27":27,"34":34,"38":38}],16:[function(require,module,exports){
+var helpers = require(38);
 
 var defaultDecorators = {
 
@@ -1040,7 +1038,7 @@ module.exports = {
                     var instance = new Decorated;
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
-                    instance._decorations[name] = data;
+                    instance._decorations[name] = data || null;
                     exposeDecorators(instance);
                     return instance;
                 }
@@ -1062,7 +1060,7 @@ module.exports = {
 
     }
 }
-},{}],17:[function(require,module,exports){
+},{"38":38}],17:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1125,11 +1123,121 @@ module.exports = function (result) {
     return error;
 }
 },{}],18:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
+var promises = require(34);
+var helpers = require(38);
+var every = require(37);
 var decorators = require(16);
 
-var ENDPOINTS_links = require(25).links;
+var ENDPOINTS_events = require(27).events;
+var ENDPOINTS_eventscursor = require(27).eventscursor;
+
+function Events(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
+    this.addDecorator("filter", addFilter);
+    this.addDecorator("notMy", notMy);
+}
+
+function addFilter(opts, data) {
+    opts.params || (opts.params = {});
+    if (data.folder) {
+        opts.params.folder = data.folder;
+    }
+    if (data.type) {
+        if (data.type.join) {
+            opts.params.type = data.type.join("|");
+        } else {
+            opts.params.type = data.type;
+        }
+    }
+    return opts;
+}
+
+function notMy(opts, data) {
+    opts.params || (opts.params = {});
+    opts.params.suppress = data ? data : "app";
+    return opts;
+}
+
+
+
+var defaultCount = 20;
+
+//options.start
+//options.interval >2000
+//options.emit
+//options.current
+//returns {stop:function}
+Events.prototype = {
+    getCursor: function () {
+        var requestEngine = this.requestEngine;
+        return requestEngine.promiseRequest({
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS_eventscursor
+        }).then(function (result) {
+            return result.body.latest_event_id;
+        });
+    },
+    listen: function (options) {
+        var self = this;
+        var requestEngine = this.requestEngine;
+        var decorate = this.getDecorator();
+
+        return promises(true)
+            .then(function () {
+                if (!isNaN(options.start)) {
+                    return options.start;
+                } else {
+                    return self.getCursor();
+                }
+            }).then(function (initial) {
+                var start = initial;
+                if (options.current) {
+                    options.current(start);
+                }
+                //returns controllong object
+                return every(Math.max(options.interval || 30000, 2000), function (controller) {
+                    var count = options.count || defaultCount;
+                    return requestEngine.promiseRequest(decorate({
+                        method: "GET",
+                        url: requestEngine.getEndpoint() + ENDPOINTS_events,
+                        params: {
+                            id: start,
+                            count: count
+                        }
+                    })).then(function (result) {
+                        if (result.body) {
+                            start = result.body.latest_id;
+                            helpers.each(result.body.events, function (e) {
+                                setTimeout(function () {
+                                    options.emit(e);
+                                }, 0)
+                            });
+                            if (options.current) {
+                                options.current(start);
+                            }
+                            if (result.body.events.length >= count) {
+                                controller.repeat();
+                            }
+                        }
+                        if (options.heartbeat) {
+                            options.heartbeat(result);
+                        }
+                    });
+                }, options.error)
+
+            });
+    }
+
+};
+
+module.exports = Events;
+},{"16":16,"27":27,"34":34,"37":37,"38":38}],19:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var decorators = require(16);
+
+var ENDPOINTS_links = require(27).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1220,11 +1328,65 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{}],19:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
+},{"16":16,"27":27,"34":34,"38":38}],20:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
 
-var ENDPOINTS_notes = require(25).notes;
+var ENDPOINTS_fsmeta = require(27).fsmeta;
+
+exports.lock = function (pathFromRoot, lockToken, timeout) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "lock"
+        }
+        if (lockToken) {
+            body.lock_token = lockToken;
+        }
+        if (timeout) {
+            body.lock_timeout = timeout;
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        result.body.path = pathFromRoot;
+        return result.body;
+    });
+}
+
+
+exports.unlock = function (pathFromRoot, lockToken) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var body = {
+            "action": "unlock",
+            "lock_token": lockToken
+        }
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            json: body
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return {
+            path: pathFromRoot
+        };
+    });
+}
+},{"27":27,"34":34,"38":38}],21:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+
+var ENDPOINTS_notes = require(27).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1299,12 +1461,12 @@ exports.removeNote = function (id) {
 
 
 
-},{}],20:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
+},{"27":27,"34":34,"38":38}],22:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
 var decorators = require(16);
 
-var ENDPOINTS_perms = require(25).perms;
+var ENDPOINTS_perms = require(27).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1390,14 +1552,14 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],21:[function(require,module,exports){
+},{"16":16,"27":27,"34":34,"38":38}],23:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(32);
-var helpers = require(35);
-var dom = require(34);
-var messages = require(36);
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var errorify = require(17);
 var request = require(3);
 
@@ -1458,11 +1620,10 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    var originalOpts = helpers.extend({}, opts);
-    //IE8/9 
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        opts.response = true;
-    }
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    var originalOpts = helpers.extend({}, opts); //just copying the object
+   
+    
 
     if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
@@ -1473,10 +1634,15 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
         if (!callback) {
             return self.requestHandler(opts);
         } else {
+            var timer;
             var retry = function () {
-                self.sendRequest(originalOpts, self.retryHandler(callback, retry));
+                self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer));
             };
-            return self.requestHandler(opts, self.retryHandler(callback, retry));
+            if (self.timerStart) {
+                timer = self.timerStart();
+            }
+            
+            return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
         }
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -1486,7 +1652,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
 
 }
 
-enginePrototypeMethods.retryHandler = function (callback, retry) {
+enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
     var self = this;
     return function (error, response, body) {
         //build an error object for http errors
@@ -1546,7 +1712,9 @@ enginePrototypeMethods.retryHandler = function (callback, retry) {
                 self.auth.dropToken();
                 self.options.onInvalidToken();
             }
-
+            if (self.timerEnd) {
+                self.timerEnd(timer);
+            }
             callback.call(this, error, response, body);
         }
     };
@@ -1619,6 +1787,10 @@ enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoA
     return defer.promise;
 }
 
+enginePrototypeMethods.setupTiming = function (getTimer, timeEnd) {
+    this.timerStart = getTimer;
+    this.timerEnd = timeEnd;
+}
 
 //gets bound to this in the constructor and saved as this.queueHandler
 function _rollQueue() {
@@ -1660,14 +1832,15 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],22:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
+},{"17":17,"3":3,"34":34,"36":36,"38":38,"39":39}],24:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
 var decorators = require(16);
-var notes = require(19);
+var notes = require(21);
+var lock = require(20);
 var chunkedUpload = require(15);
 
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(27);
 
 
 function Storage(requestEngine) {
@@ -1927,15 +2100,16 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
 }
 
 storageProto = helpers.extend(storageProto,notes);
+storageProto = helpers.extend(storageProto,lock);
 storageProto = helpers.extend(storageProto,chunkedUpload);
 
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],23:[function(require,module,exports){
-var helpers = require(35);
-var dom = require(34);
-var messages = require(36);
+},{"15":15,"16":16,"20":20,"21":21,"27":27,"34":34,"38":38}],25:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -1994,11 +2168,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
-var dom = require(34);
-var messages = require(36);
+},{"36":36,"38":38,"39":39}],26:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 
 
 
@@ -2128,18 +2302,20 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],25:[function(require,module,exports){
+},{"34":34,"36":36,"38":38,"39":39}],27:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
     "fschunked": "/v1/fs-content-chunked",
     "notes": "/v1/notes",
     "links": "/v1/links",
-    "perms":"/v1/perms/folder",
-    "userinfo":"/v1/userinfo",
-    "tokenauth":"/puboauth/token"
+    "perms": "/v1/perms/folder",
+    "userinfo": "/v1/userinfo",
+    "events": "/v1/events",
+    "eventscursor": "/v1/events/cursor",
+    "tokenauth": "/puboauth/token"
 }
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2152,8 +2328,8 @@ module.exports={
     "?": "Unknown error"
 }
 
-},{}],27:[function(require,module,exports){
-var helpers = require(35);
+},{}],29:[function(require,module,exports){
+var helpers = require(38);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2206,11 +2382,11 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-},{}],28:[function(require,module,exports){
-var helpers = require(35);
-var dom = require(34);
-var View = require(30);
-var Model = require(29);
+},{"38":38}],30:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var View = require(32);
+var Model = require(31);
 
 function noGoog(ext, mime) {
     return mime !== "goog";
@@ -2279,9 +2455,9 @@ function init(API) {
 }
 
 module.exports = init;
-},{}],29:[function(require,module,exports){
-var helpers = require(35);
-var exts = require(27);
+},{"31":31,"32":32,"36":36,"38":38}],31:[function(require,module,exports){
+var helpers = require(38);
+var exts = require(29);
 
 
 
@@ -2342,24 +2518,26 @@ Model.prototype.onerror = helpers.noop;
 
 Model.prototype._set = function (m) {
     var self = this;
-    this.path = m.path;
     this.page = 1;
-
     this.rawItems = [];
-    helpers.each(m.folders, function (f) {
-        self.rawItems.push(f);
-    });
-    //ignore files if they're not selectable
-    if (this.opts.select.file) {
-        helpers.each(m.files, function (f) {
-            if (!self.fileFilter || self.fileFilter(f)) {
-                self.rawItems.push(f);
-            }
+    if (m) {
+        this.path = m.path;
+
+        helpers.each(m.folders, function (f) {
+            self.rawItems.push(f);
         });
+        //ignore files if they're not selectable
+        if (this.opts.select.file) {
+            helpers.each(m.files, function (f) {
+                if (!self.fileFilter || self.fileFilter(f)) {
+                    self.rawItems.push(f);
+                }
+            });
+        }
     }
     //force disabled selection on root or other path
-    this.forbidSelection = helpers.contains(this.opts.select.forbidden,this.path);
-    this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
+    this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
+    this.totalPages = ~~(this.rawItems.length / this.pageSize) + 1;
     this.isMultiselectable = (this.opts.select.multiple);
     this._buildItems();
 
@@ -2399,6 +2577,7 @@ Model.prototype.fetch = function (path) {
         self._set(m);
     }).fail(function (e) {
         self.processing = false;
+        self._set();
         self.onerror(e);
     });
 }
@@ -2463,16 +2642,16 @@ Model.prototype.getCurrent = function () {
 }
 
 module.exports = Model;
-},{}],30:[function(require,module,exports){
+},{"29":29,"38":38}],32:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(34);
-var helpers = require(35);
-var texts = require(37);
-var jungle = require(40);
+var dom = require(36);
+var helpers = require(38);
+var texts = require(40);
+var jungle = require(43);
 
-require(38);
+require(41);
 
 var fontLoaded = false;
 
@@ -2777,7 +2956,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(26);
+var msgs = require(28);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -2852,13 +3031,13 @@ viewPrototypeMethods.kbNav_explore = function () {
 View.prototype = viewPrototypeMethods;
 
 module.exports = View;
-},{}],31:[function(require,module,exports){
-var promises = require(32);
-var helpers = require(35);
-var dom = require(34);
-var messages = require(36);
+},{"28":28,"36":36,"38":38,"40":40,"41":41,"43":43}],33:[function(require,module,exports){
+var promises = require(34);
+var helpers = require(38);
+var dom = require(36);
+var messages = require(39);
 var decorators = require(16);
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(27);
 
 var plugins = {};
 module.exports = {
@@ -2885,10 +3064,10 @@ module.exports = {
         });
     }
 };
-},{}],32:[function(require,module,exports){
+},{"16":16,"27":27,"34":34,"36":36,"38":38,"39":39}],34:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(35);
+var helpers = require(38);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2971,13 +3150,13 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{}],33:[function(require,module,exports){
-var helpers = require(35);
-var dom = require(34);
-var jungle = require(40);
-var texts = require(37);
+},{"1":1,"38":38}],35:[function(require,module,exports){
+var helpers = require(38);
+var dom = require(36);
+var jungle = require(43);
+var texts = require(40);
 
-require(38);
+require(41);
 
 function openPrompt(node, setup) {
     if (!setup) {
@@ -3027,7 +3206,7 @@ function openPrompt(node, setup) {
 };
 
 module.exports = openPrompt;
-},{}],34:[function(require,module,exports){
+},{"36":36,"38":38,"40":40,"41":41,"43":43}],36:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -3096,7 +3275,41 @@ module.exports = {
     }
 
 }
-},{}],35:[function(require,module,exports){
+},{"2":2}],37:[function(require,module,exports){
+var promises = require(34);
+module.exports = function (interval, func, errorHandler) {
+    var pointer, stopped = false,
+        repeat = function () {
+            stopped = false;
+            clearTimeout(pointer);
+            pointer = setTimeout(runner, 1);
+        },
+        runner = function () {
+            promises({
+                interval: interval,
+                repeat: repeat
+            }).then(func).fail(function (e) {
+                if (errorHandler) {
+                    return errorHandler(e);
+                } else {
+                    console && console.error("Error in scheduled function", e);
+                }
+            }).then(function () {
+                if (!stopped) {
+                    pointer = setTimeout(runner, interval);
+                }
+            });
+        }
+    runner();
+    return {
+        stop: function () {
+            stopped = true;
+            clearTimeout(pointer);
+        },
+        forceRun: repeat
+    }
+}
+},{"34":34}],38:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -3171,8 +3384,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],36:[function(require,module,exports){
-var helpers = require(35);
+},{}],39:[function(require,module,exports){
+var helpers = require(38);
 
 
 //returns postMessage specific handler
@@ -3222,7 +3435,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],37:[function(require,module,exports){
+},{"38":38}],40:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -3236,11 +3449,11 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:50px;position:absolute;top:0;right:0;z-index:3}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],39:[function(require,module,exports){
-var helpers = require(35);
-var plugins = require(31);
+},{}],42:[function(require,module,exports){
+var helpers = require(38);
+var plugins = require(33);
 var defaults = require(10);
 
 module.exports = {
@@ -3263,7 +3476,7 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}],40:[function(require,module,exports){
+},{"10":10,"12":12,"33":33,"38":38}],43:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

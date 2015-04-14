@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
@@ -24,10 +24,10 @@
   "dependencies": {
     "chunking-streams": "0.0.7-b1",
     "pinkyswear": "2.2.2",
-    "q": "1.0.1",
-    "request": "2.40.0",
+    "q": "1.1.2",
+    "request": "2.51.0",
     "vkey": "1.0.0",
-    "xhr": "^2.0.0"
+    "xhr": "2.0.1"
   },
   "browser": {
     "q": "./src/lib/promises-browser.js",
@@ -37,8 +37,8 @@
   "devDependencies": {
     "bundle-collapser": "^1.1.0",
     "concat-stream": "^1.4.6",
-    "grunt": "^0.4.4",
-    "grunt-browserify": "3.1.0",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "3.3.0",
     "grunt-connect-proxy": "^0.1.11",
     "grunt-contrib-clean": "^0.5.0",
     "grunt-contrib-connect": "^0.7.1",
@@ -48,7 +48,7 @@
     "grunt-contrib-uglify": "^0.4.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-dependo": "^0.1.2",
-    "grunt-jasmine-node": "fiznool/grunt-jasmine-node#v0.4.0",
+    "grunt-jasmine-nodejs": "^1.0.2",
     "grunt-markdown": "^0.6.1",
     "node-lessify": "^0.0.5",
     "readable-stream": "~1.1.8",

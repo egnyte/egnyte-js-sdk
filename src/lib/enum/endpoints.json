@@ -4,7 +4,9 @@
     "fschunked": "/v1/fs-content-chunked",
     "notes": "/v1/notes",
     "links": "/v1/links",
-    "perms":"/v1/perms/folder",
-    "userinfo":"/v1/userinfo",
-    "tokenauth":"/puboauth/token"
+    "perms": "/v1/perms/folder",
+    "userinfo": "/v1/userinfo",
+    "events": "/v1/events",
+    "eventscursor": "/v1/events/cursor",
+    "tokenauth": "/puboauth/token"
 }

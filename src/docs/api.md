@@ -6,6 +6,7 @@
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
 |[Permissions API](#permissions-api-helpers)|
+|[Events](#events)|
 |[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
 
@@ -43,6 +44,19 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
         token: YOURAPITOKEN
     });
 ```
+
+### Set defaults for http requests to API
+
+If you want to set some defaults for all requests (like request timeout) you can pass them to the init function:
+```javascript
+var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
+        requestDefaults: {
+            timeout: 30000
+        }
+    });
+```
+
+Defaults are added to the set of options passed to `xhr`(in browser) or `request`(in node) module. 
 
 ### User Quota (queries per second) handling
 
@@ -239,6 +253,8 @@ API.storage.rename | `path`,  `new path` | alias for move|
 API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
 API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
 API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.storage.lock | `path`, `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
+API.storage.unlock | `path`,`token` | Unlocks a file if the token is the one with which the lock was claimed |
 API.storage.getNote | `node_id` | Resolves to a note object|
 API.storage.removeNote | `node_id` | Removes the note|
 API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
@@ -486,6 +502,61 @@ Returns
 
 ```
 
+## Events
+
+
+
+Method | Arguments | Description
+--- | --- | ---
+API.events.listen| `listenerConfiguration` | Polls the Events API for new events and emits them according to configuration. Resolves to an object with a single `stop` method that stops getting more events.
+API.events.getCursor| | Resolves to the latest event id
+
+
+listenerConfiguration:
+
+Name | | Description
+--- | --- | ---
+start |  | event id - get events that happened after that id. Fails if event is too old (.listen promise gets rejected). If not set, it will get only the events that happen since the moment of invocation.
+interval |  | miliseconds between making requests for events. minimum possible value is 2000, defaults to 30000
+emit | required | a function to call when an event is received. the function accepts one argument - event data object.
+error |  | function to call when fetching events fails
+current |  | function to call with the latest event id discovered
+heartbeat |  | a debug callback to be called whenever a request to events API is made.
+
+### Filtering
+
+Method | Arguments | Description
+--- | --- | ---
+API.events.notMy| `"user"`(optional) | Sets up filtering to ignore events caused by the same app that is querying events. If `"user"` is passed as first argument, only events caused by current user of the app are ignored. Returns `API.events`, so it's chainable
+API.events.filter| `filterDefinition` | Sets up filtering to only return events matching the definition. Can filter by folder path or event type or both. Returns `API.events`, so it's chainable
+
+filterDefinition:
+
+```javascript
+{
+    folder: "/folder/path", 
+    type: "file_system" or "note"
+}
+```
+
+**Example:**
+
+```javascript
+egnyte.API.events.notMy().filter({
+    folder: "/Shared/marketing/events"
+}).listen({
+    emit: function(eventData){
+        //process event
+    },
+    interval: 10000,
+    heartbeat: function(){
+        console.log("<3");
+    }
+}).then(function(polling){
+    //call polling.stop() to turn the listener off
+})
+       
+```
 
 ## Error handling
 

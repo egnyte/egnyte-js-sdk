@@ -42,7 +42,7 @@ module.exports = {
                     var instance = new Decorated;
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
-                    instance._decorations[name] = data;
+                    instance._decorations[name] = data || null;
                     exposeDecorators(instance);
                     return instance;
                 }

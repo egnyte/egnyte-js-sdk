@@ -1,3 +1,8 @@
+### 1.4.0
+- Events API
+- Locks in storage 
+- request defaults
+
 ### 1.3.0
 - Notes for files
 - Prompt widget

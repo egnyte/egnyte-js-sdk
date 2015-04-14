@@ -60,24 +60,26 @@ Model.prototype.onerror = helpers.noop;
 
 Model.prototype._set = function (m) {
     var self = this;
-    this.path = m.path;
     this.page = 1;
-
     this.rawItems = [];
-    helpers.each(m.folders, function (f) {
-        self.rawItems.push(f);
-    });
-    //ignore files if they're not selectable
-    if (this.opts.select.file) {
-        helpers.each(m.files, function (f) {
-            if (!self.fileFilter || self.fileFilter(f)) {
-                self.rawItems.push(f);
-            }
+    if (m) {
+        this.path = m.path;
+
+        helpers.each(m.folders, function (f) {
+            self.rawItems.push(f);
         });
+        //ignore files if they're not selectable
+        if (this.opts.select.file) {
+            helpers.each(m.files, function (f) {
+                if (!self.fileFilter || self.fileFilter(f)) {
+                    self.rawItems.push(f);
+                }
+            });
+        }
     }
     //force disabled selection on root or other path
-    this.forbidSelection = helpers.contains(this.opts.select.forbidden,this.path);
-    this.totalPages = ~~ (this.rawItems.length / this.pageSize) + 1;
+    this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
+    this.totalPages = ~~(this.rawItems.length / this.pageSize) + 1;
     this.isMultiselectable = (this.opts.select.multiple);
     this._buildItems();
 
@@ -117,6 +119,7 @@ Model.prototype.fetch = function (path) {
         self._set(m);
     }).fail(function (e) {
         self.processing = false;
+        self._set();
         self.onerror(e);
     });
 }

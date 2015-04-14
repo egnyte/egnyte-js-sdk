@@ -60,6 +60,7 @@ The SDK code overall supports IE8 and IE9, but due to certain limitations in the
 
 This SDK includes tools to bring support to IE8 and IE9, see [Legacy browsers support](./src/docs/ie8or9.md)
 
+
 ## License
 
 Apache2 License
