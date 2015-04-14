@@ -38,11 +38,7 @@ function notMy(opts, data) {
 
 var defaultCount = 20;
 
-//options.start
-//options.interval >2000
-//options.emit
-//options.current
-//returns {stop:function}
+
 Events.prototype = {
     getCursor: function () {
         var requestEngine = this.requestEngine;
@@ -53,10 +49,46 @@ Events.prototype = {
             return result.body.latest_event_id;
         });
     },
-    listen: function (options) {
+    //options.start
+    //options.emit
+    //options.count (optional)
+    getUpdate: function (options) {
         var self = this;
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
+
+        return promises(true).then(function () {
+            if (!(options.start >= 0)) {
+                throw new Error("'start' option is required");
+            }
+            var count = options.count || defaultCount;
+            return requestEngine.promiseRequest(decorate({
+                method: "GET",
+                url: requestEngine.getEndpoint() + ENDPOINTS_events,
+                params: {
+                    id: options.start,
+                    count: count
+                }
+            }));
+        }).then(function (result) {
+            if (result.body && options.emit) {
+                helpers.each(result.body.events, function (e) {
+                    setTimeout(function () {
+                        options.emit(e);
+                    }, 0)
+                });
+            }
+            return result;
+        });
+    },
+    //options.start
+    //options.interval >2000
+    //options.emit
+    //options.current
+    //options.count (optional)
+    //returns {stop:function}
+    listen: function (options) {
+        var self = this;
 
         return promises(true)
             .then(function () {
@@ -73,21 +105,13 @@ Events.prototype = {
                 //returns controllong object
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
                     var count = options.count || defaultCount;
-                    return requestEngine.promiseRequest(decorate({
-                        method: "GET",
-                        url: requestEngine.getEndpoint() + ENDPOINTS_events,
-                        params: {
-                            id: start,
-                            count: count
-                        }
-                    })).then(function (result) {
+                    return self.getUpdate({
+                        count: count,
+                        emit: options.emit,
+                        start: start
+                    }).then(function (result) {
                         if (result.body) {
                             start = result.body.latest_id;
-                            helpers.each(result.body.events, function (e) {
-                                setTimeout(function () {
-                                    options.emit(e);
-                                }, 0)
-                            });
                             if (options.current) {
                                 options.current(start);
                             }
@@ -96,7 +120,7 @@ Events.prototype = {
                             }
                         }
                         if (options.heartbeat) {
-                            options.heartbeat(result);
+                            options.heartbeat(result.body);
                         }
                     });
                 }, options.error)

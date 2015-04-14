@@ -126,23 +126,15 @@ module.exports = function (grunt) {
                     hostname: "0.0.0.0",
                     base: ".",
                     protocol: "https",
-                    keepalive: true
-                }
-            },
-            corsmock: {
-                options: {
-                    port: 9991,
-                    hostname: "0.0.0.0",
-                    base: "mock/",
-                    protocol: "http",
                     keepalive: true,
                     middleware: function (connect, options, middlewares) {
                         // inject a custom middleware 
                         middlewares.unshift(function (req, res, next) {
-                            console.log(JSON.stringify(req.headers));
-                            res.setHeader('Access-Control-Allow-Origin', '*');
-                            res.setHeader('Access-Control-Allow-Methods', '*');
-                            return next();
+                            if (req.url.match(/mock/)) {
+                                setTimeout(next, 1000);
+                            } else {
+                                return next();
+                            }
                         });
 
                         return middlewares;
