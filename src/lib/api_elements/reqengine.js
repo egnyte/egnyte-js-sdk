@@ -65,11 +65,10 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    var originalOpts = helpers.extend({}, opts);
-    //IE8/9 
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        opts.response = true;
-    }
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    var originalOpts = helpers.extend({}, opts); //just copying the object
+   
+    
 
     if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
@@ -87,6 +86,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
             if (self.timerStart) {
                 timer = self.timerStart();
             }
+            
             return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
         }
     } else {

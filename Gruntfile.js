@@ -101,15 +101,19 @@ module.exports = function (grunt) {
                 }
             }
         },
-        jasmine_node: {
+        jasmine_nodejs: {
             options: {
-                match: grunt.option("filter") || '.',
-                matchall: false,
-                extensions: 'js',
-                specNameMatcher: 'spec'
+                specNameSuffix: 'spec.js',
+                reporters: {
+                    console: {
+                        colors: true,
+                        cleanStack: true,
+                        verbose: true
+                    }
+                }
             },
             all: {
-                src: ['spec'],
+                specs: ['spec/*' + (grunt.option("filter") ? grunt.option("filter") + "*" : '')]
             }
         },
         nodeunit: {
@@ -215,11 +219,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-markdown');
     grunt.loadNpmTasks('grunt-dependo');
-    grunt.loadNpmTasks('grunt-jasmine-node');
+    grunt.loadNpmTasks('grunt-jasmine-nodejs');
 
 
     grunt.registerTask("test-browser", ["nodeunit:units", "build", "jasmine:all"]);
-    grunt.registerTask("test-node", ["jasmine_node:all"]);
+    grunt.registerTask("test-node", ["jasmine_nodejs:all"]);
     grunt.registerTask("test", ["test-browser", "test-node"]);
     grunt.registerTask("build", ["clean", "browserify", "uglify", "copy"]);
     grunt.registerTask("dist", ["build", "markdown", "dependo"]);

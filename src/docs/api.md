@@ -45,6 +45,19 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
     });
 ```
 
+### Set defaults for http requests to API
+
+If you want to set some defaults for all requests (like request timeout) you can pass them to the init function:
+```javascript
+var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
+        requestDefaults: {
+            timeout: 30000
+        }
+    });
+```
+
+Defaults are added to the set of options passed to `xhr`(in browser) or `request`(in node) module. 
+
 ### User Quota (queries per second) handling
 
 The API has limits for the number of queries a single user can make. If one of the users of your app performs too many actions, the API endpoint will return `HTTP403` with the "Developer over QPS" error.

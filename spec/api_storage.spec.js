@@ -293,21 +293,6 @@ describe("Storage API facade integration", function () {
 
             });
 
-            it("tmp", function (done) {
-                eg.API.storage.impersonate({
-                        username: "dude"
-                    }).remove(testpath)
-                    .then(function (result) {
-                        //just getting here is ok.
-                        expect(this).toAutoFail("moved");
-                        done();
-                    }).fail(function (e) {
-                        console.log(JSON.stringify(e.response.body))
-                        expect(e.response.statusCode).toEqual(423);
-                        done();
-                    });
-
-            });
 
             it("Can't unlock a file with an incorrect token", function (done) {
                 eg.API.storage.unlock(testpath, "foo")

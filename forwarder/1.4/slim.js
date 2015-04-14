@@ -256,15 +256,11 @@ for(i = 112; i < 136; ++i) {
 }
 
 },{}],3:[function(require,module,exports){
+"use strict";
 var window = require(4)
 var once = require(5)
 var parseHeaders = require(9)
 
-var messages = {
-    "0": "Internal XMLHttpRequest Error",
-    "4": "4xx Client Error",
-    "5": "5xx Server Error"
-}
 
 var XHR = window.XMLHttpRequest || noop
 var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
@@ -272,11 +268,84 @@ var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 module.exports = createXHR
 
 function createXHR(options, callback) {
+    function readystatechange() {
+        if (xhr.readyState === 4) {
+            loadFunc()
+        }
+    }
+
+    function getBody() {
+        // Chrome with requestType=blob throws errors arround when even testing access to responseText
+        var body = undefined
+
+        if (xhr.response) {
+            body = xhr.response
+        } else if (xhr.responseType === "text" || !xhr.responseType) {
+            body = xhr.responseText || xhr.responseXML
+        }
+
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
+        }
+
+        return body
+    }
+    
+    var failureResponse = {
+                body: undefined,
+                headers: {},
+                statusCode: 0,
+                method: method,
+                url: uri,
+                rawRequest: xhr
+            }
+    
+    function errorFunc(evt) {
+        clearTimeout(timeoutTimer)
+        if(!(evt instanceof Error)){
+            evt = new Error("" + (evt || "unknown") )
+        }
+        evt.statusCode = 0
+        callback(evt, failureResponse)
+    }
+
+    // will load the data & process the response in a special response object
+    function loadFunc() {
+        clearTimeout(timeoutTimer)
+        
+        var status = (xhr.status === 1223 ? 204 : xhr.status)
+        var response = failureResponse
+        var err = null
+        
+        if (status !== 0){
+            response = {
+                body: getBody(),
+                statusCode: status,
+                method: method,
+                headers: {},
+                url: uri,
+                rawRequest: xhr
+            }
+            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
+                response.headers = parseHeaders(xhr.getAllResponseHeaders())
+            }
+        } else {
+            err = new Error("Internal XMLHttpRequest Error")
+        }
+        callback(err, response, response.body)
+        
+    }
+    
     if (typeof options === "string") {
         options = { uri: options }
     }
 
     options = options || {}
+    if(typeof callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
     callback = once(callback)
 
     var xhr = options.xhr || null
@@ -289,18 +358,18 @@ function createXHR(options, callback) {
         }
     }
 
+    var key
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
     var headers = xhr.headers = options.headers || {}
     var sync = !!options.sync
     var isJson = false
-    var key
-    var load = options.response ? loadResponse : loadXhr
+    var timeoutTimer
 
     if ("json" in options) {
         isJson = true
-        headers["Accept"] = "application/json"
+        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
             headers["Content-Type"] = "application/json"
             body = JSON.stringify(options.json)
@@ -308,23 +377,24 @@ function createXHR(options, callback) {
     }
 
     xhr.onreadystatechange = readystatechange
-    xhr.onload = load
-    xhr.onerror = error
+    xhr.onload = loadFunc
+    xhr.onerror = errorFunc
     // IE9 must have onprogress be set to a unique function.
     xhr.onprogress = function () {
         // IE must die
     }
-    // hate IE
-    xhr.ontimeout = noop
+    xhr.ontimeout = errorFunc
     xhr.open(method, uri, !sync)
-                                    //backward compatibility
-    if (options.withCredentials || (options.cors && options.withCredentials !== false)) {
-        xhr.withCredentials = true
-    }
-
+    //has to be after open
+    xhr.withCredentials = !!options.withCredentials
+    
     // Cannot set timeout with sync request
-    if (!sync) {
-        xhr.timeout = "timeout" in options ? options.timeout : 5000
+    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
+    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
+    if (!sync && options.timeout > 0 ) {
+        timeoutTimer = setTimeout(function(){
+            xhr.abort("timeout");
+        }, options.timeout+2 );
     }
 
     if (xhr.setRequestHeader) {
@@ -351,89 +421,13 @@ function createXHR(options, callback) {
 
     return xhr
 
-    function readystatechange() {
-        if (xhr.readyState === 4) {
-            load()
-        }
-    }
 
-    function getBody() {
-        // Chrome with requestType=blob throws errors arround when even testing access to responseText
-        var body = null
-
-        if (xhr.response) {
-            body = xhr.response
-        } else if (xhr.responseType === 'text' || !xhr.responseType) {
-            body = xhr.responseText || xhr.responseXML
-        }
-
-        if (isJson) {
-            try {
-                body = JSON.parse(body)
-            } catch (e) {}
-        }
-
-        return body
-    }
-
-    function getStatusCode() {
-        return xhr.status === 1223 ? 204 : xhr.status
-    }
-
-    // if we're getting a none-ok statusCode, build & return an error
-    function errorFromStatusCode(status) {
-        var error = null
-        if (status === 0 || (status >= 400 && status < 600)) {
-            var message = (typeof body === "string" ? body : false) ||
-                messages[String(status).charAt(0)]
-            error = new Error(message)
-            error.statusCode = status
-        }
-
-        return error
-    }
-
-    // will load the data & process the response in a special response object
-    function loadResponse() {
-        var status = getStatusCode()
-        var error = errorFromStatusCode(status)
-        var response = {
-            body: getBody(),
-            statusCode: status,
-            statusText: xhr.statusText,
-            raw: xhr
-        }
-        if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
-            response.headers = parseHeaders(xhr.getAllResponseHeaders())
-        } else {
-            response.headers = {}
-        }
-
-        callback(error, response, response.body)
-    }
-
-    // will load the data and add some response properties to the source xhr
-    // and then respond with that
-    function loadXhr() {
-        var status = getStatusCode()
-        var error = errorFromStatusCode(status)
-
-        xhr.status = xhr.statusCode = status
-        xhr.body = getBody()
-        xhr.headers = parseHeaders(xhr.getAllResponseHeaders())
-
-        callback(error, xhr, xhr.body)
-    }
-
-    function error(evt) {
-        callback(evt, xhr)
-    }
 }
 
 
 function noop() {}
 
-},{}],4:[function(require,module,exports){
+},{"4":4,"5":5,"9":9}],4:[function(require,module,exports){
 if (typeof window !== "undefined") {
     module.exports = window;
 } else if (typeof global !== "undefined") {
@@ -513,7 +507,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{}],7:[function(require,module,exports){
+},{"7":7}],7:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -578,7 +572,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{}],10:[function(require,module,exports){
+},{"6":6,"8":8}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -632,7 +626,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{}],12:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"20":20,"21":21,"22":22,"23":23,"24":24}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
@@ -848,7 +842,7 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{}],13:[function(require,module,exports){
+},{"15":15,"25":25,"27":27,"28":28,"30":30,"31":31}],13:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 var ENDPOINTS = require(25);
@@ -960,7 +954,7 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{}],14:[function(require,module,exports){
+},{"25":25,"27":27,"30":30}],14:[function(require,module,exports){
 var helpers = require(30);
 
 var defaultDecorators = {
@@ -1027,7 +1021,7 @@ module.exports = {
 
     }
 }
-},{}],15:[function(require,module,exports){
+},{"30":30}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1199,7 +1193,7 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{}],17:[function(require,module,exports){
+},{"14":14,"25":25,"27":27,"29":29,"30":30}],17:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 var decorators = require(14);
@@ -1295,7 +1289,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{}],18:[function(require,module,exports){
+},{"14":14,"25":25,"27":27,"30":30}],18:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 
@@ -1349,7 +1343,7 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{}],19:[function(require,module,exports){
+},{"25":25,"27":27,"30":30}],19:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 
@@ -1428,7 +1422,7 @@ exports.removeNote = function (id) {
 
 
 
-},{}],20:[function(require,module,exports){
+},{"25":25,"27":27,"30":30}],20:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 var decorators = require(14);
@@ -1519,7 +1513,7 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{}],21:[function(require,module,exports){
+},{"14":14,"25":25,"27":27,"30":30}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1587,11 +1581,10 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    var originalOpts = helpers.extend({}, opts);
-    //IE8/9 
-    if (typeof window !== "undefined" && window.XDomainRequest) {
-        opts.response = true;
-    }
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    var originalOpts = helpers.extend({}, opts); //just copying the object
+   
+    
 
     if (this.auth.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
@@ -1609,6 +1602,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
             if (self.timerStart) {
                 timer = self.timerStart();
             }
+            
             return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
         }
     } else {
@@ -1799,7 +1793,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{}],22:[function(require,module,exports){
+},{"15":15,"27":27,"28":28,"3":3,"30":30,"31":31}],22:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 var decorators = require(14);
@@ -2073,7 +2067,7 @@ storageProto = helpers.extend(storageProto,chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{}],23:[function(require,module,exports){
+},{"13":13,"14":14,"18":18,"19":19,"25":25,"27":27,"30":30}],23:[function(require,module,exports){
 var helpers = require(30);
 var dom = require(28);
 var messages = require(31);
@@ -2135,7 +2129,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],24:[function(require,module,exports){
+},{"28":28,"30":30,"31":31}],24:[function(require,module,exports){
 var promises = require(27);
 var helpers = require(30);
 var dom = require(28);
@@ -2269,7 +2263,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{}],25:[function(require,module,exports){
+},{"27":27,"28":28,"30":30,"31":31}],25:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2315,7 +2309,7 @@ module.exports = {
         });
     }
 };
-},{}],27:[function(require,module,exports){
+},{"14":14,"25":25,"27":27,"28":28,"30":30,"31":31}],27:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
 var helpers = require(30);
@@ -2401,7 +2395,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{}],28:[function(require,module,exports){
+},{"1":1,"30":30}],28:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2470,7 +2464,7 @@ module.exports = {
     }
 
 }
-},{}],29:[function(require,module,exports){
+},{"2":2}],29:[function(require,module,exports){
 var promises = require(27);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
@@ -2504,7 +2498,7 @@ module.exports = function (interval, func, errorHandler) {
         forceRun: repeat
     }
 }
-},{}],30:[function(require,module,exports){
+},{"27":27}],30:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2630,7 +2624,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{}],32:[function(require,module,exports){
+},{"30":30}],32:[function(require,module,exports){
 var helpers = require(30);
 var plugins = require(26);
 var defaults = require(10);
@@ -2655,5 +2649,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{}]},{},[32])(32)
+},{"10":10,"11":11,"26":26,"30":30}]},{},[32])(32)
 });
