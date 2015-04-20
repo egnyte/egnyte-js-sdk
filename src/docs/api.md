@@ -510,7 +510,7 @@ Method | Arguments | Description
 --- | --- | ---
 API.events.listen| `listenerConfiguration` | Polls the Events API for new events and emits them according to configuration. Resolves to an object with a single `stop` method that stops getting more events.
 API.events.getCursor| | Resolves to the latest event id
-
+API.events.getUpdate| `updateOptions` | Makes a single request for a list of events and resolves to the response. `getUpdate` is used internally by `listen`. 
 
 listenerConfiguration:
 
@@ -522,6 +522,15 @@ emit | required | a function to call when an event is received. the function acc
 error |  | function to call when fetching events fails
 current |  | function to call with the latest event id discovered
 heartbeat |  | a debug callback to be called whenever a request to events API is made.
+
+updateOptions:
+
+Name | | Description
+--- | --- | ---
+start | required | event id - get events that happened after that id. Fails if event is too old (promise gets rejected). 
+emit |  | a function to call for every event in the batch. the function accepts one argument - event data object. Optional, you can decide to use the raw output
+count |  | number of events to fetch. Maximum value is 100
+
 
 ### Filtering
 

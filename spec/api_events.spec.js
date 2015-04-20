@@ -150,23 +150,25 @@ describe("Events API facade", function () {
         it("Should not get app's own file events", function (done) {
             var filePath = testpath + "/candy.txt";
 
-            eg.API.events.notMy().filter({
-                folder: testpath
-            }).listen({
-                //start: purposefully not provided
-                interval: 2000,
-                emit: function (e) {
-                    expect(e.data.target_path).not.toEqual(filePath);
-                }
-            }).then(function (sch) {
-                scheduler = sch;
+            eg.API.events.getCursor().then(function (latestId) {
                 return eg.API.storage.storeFile(filePath, getFileContent("sour"))
-                    .then(function (e) {
-                        //give it time to get the events
-                        setTimeout(function () {
-                            scheduler.stop();
+                    .then(function () {
+                        return eg.API.events.notMy().filter({
+                            folder: testpath
+                        }).getUpdate({
+                            start: latestId,
+                            emit: function (e) {
+                                expect(e.data.target_path).not.toEqual(filePath);
+                            }
+                        }).then(function (resp) {
+                            expect(resp.body).toBeDefined();
+                            if (resp.body && resp.body.events) {
+                                for (var i = 0; i < resp.body.events.length; i++) {
+                                    expect(resp.body.events[i].data.target_path).not.toEqual(filePath);
+                                }
+                            }
                             done();
-                        }, 5000)
+                        });
 
                     });
             }).fail(function (e) {
@@ -174,6 +176,8 @@ describe("Events API facade", function () {
             });
 
         });
+
+
         it("Should not get app's own file copy events", function (done) {
             var filePath = testpath + "/candy.txt";
             var filePath2 = testpath + "/stick.txt";
