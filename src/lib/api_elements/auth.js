@@ -22,10 +22,19 @@ function Auth(options) {
 
 }
 
+
 var authPrototypeMethods = {};
 
+authPrototypeMethods._buildTokenQuery = function(redirect) {
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    if (this.options.scope) {
+        url += "&scope=" + this.options.scope;
+    }
+    return url;
+}
+
 authPrototypeMethods._reloadForToken = function () {
-    window.location.href = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+    window.location.href = this._buildTokenQuery(window.location.href);
 }
 
 authPrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
@@ -63,7 +72,7 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
         var locationObject = window.location;
 
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self._buildTokenQuery(emptyPageURL);
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -113,7 +122,7 @@ authPrototypeMethods._postTokenUp = function () {
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var url = this._buildTokenQuery(recvrURL);
         var win = window.open(url);
         win.name = this.options.channelMarker;
         var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {

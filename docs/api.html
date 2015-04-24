@@ -95,6 +95,7 @@
 <p>Initialize Egnyte SDK to use API with your key</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;https://mydomain.egnyte.com&quot;, {
         key: YOURAPIKEY,
+        scope: SCOPE_STRING //optional, scope value to send with token requests
         mobile: true      //optional, changes login prompt to mobile friendly
     });</code></pre>
 <p>Request an access token</p>

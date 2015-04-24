@@ -27,6 +27,7 @@ Initialize Egnyte SDK to use API with your key
 ```javascript
 var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
         key: YOURAPIKEY,
+        scope: SCOPE_STRING //optional, scope value to send with token requests
         mobile: true      //optional, changes login prompt to mobile friendly
     });
 ```
