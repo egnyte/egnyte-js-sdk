@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
