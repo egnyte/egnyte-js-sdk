@@ -1964,8 +1964,6 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
-
-
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
@@ -1988,34 +1986,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
-            path: pathFromRoot
-        });
-    });
-}
-
-
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var file = fileOrBlob;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-            body: file,
-        }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return ({
-            id: result.response.headers["etag"],
+            group_id: result.response.body.group_id,
             path: pathFromRoot
         });
     });
@@ -2084,9 +2055,9 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
     return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
-storageProto = helpers.extend(storageProto,notes);
-storageProto = helpers.extend(storageProto,lock);
-storageProto = helpers.extend(storageProto,chunkedUpload);
+storageProto = helpers.extend(storageProto, notes);
+storageProto = helpers.extend(storageProto, lock);
+storageProto = helpers.extend(storageProto, chunkedUpload);
 
 Storage.prototype = storageProto;
 
