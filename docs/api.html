@@ -95,6 +95,7 @@
 <p>Initialize Egnyte SDK to use API with your key</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;https://mydomain.egnyte.com&quot;, {
         key: YOURAPIKEY,
+        scope: SCOPE_STRING //optional, scope value to send with token requests
         mobile: true      //optional, changes login prompt to mobile friendly
     });</code></pre>
 <p>Request an access token</p>
@@ -832,6 +833,11 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
 <td></td>
 <td>Resolves to the latest event id</td>
 </tr>
+<tr>
+<td>API.events.getUpdate</td>
+<td><code>updateOptions</code></td>
+<td>Makes a single request for a list of events and resolves to the response. <code>getUpdate</code> is used internally by <code>listen</code>. </td>
+</tr>
 </tbody>
 </table>
 <p>listenerConfiguration:</p>
@@ -873,6 +879,33 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
 <td>heartbeat</td>
 <td></td>
 <td>a debug callback to be called whenever a request to events API is made.</td>
+</tr>
+</tbody>
+</table>
+<p>updateOptions:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>start</td>
+<td>required</td>
+<td>event id - get events that happened after that id. Fails if event is too old (promise gets rejected). </td>
+</tr>
+<tr>
+<td>emit</td>
+<td></td>
+<td>a function to call for every event in the batch. the function accepts one argument - event data object. Optional, you can decide to use the raw output</td>
+</tr>
+<tr>
+<td>count</td>
+<td></td>
+<td>number of events to fetch. Maximum value is 100</td>
 </tr>
 </tbody>
 </table>

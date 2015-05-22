@@ -666,10 +666,19 @@ function Auth(options) {
 
 }
 
+
 var authPrototypeMethods = {};
 
+authPrototypeMethods._buildTokenQuery = function(redirect) {
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    if (this.options.scope) {
+        url += "&scope=" + this.options.scope;
+    }
+    return url;
+}
+
 authPrototypeMethods._reloadForToken = function () {
-    window.location.href = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+    window.location.href = this._buildTokenQuery(window.location.href);
 }
 
 authPrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
@@ -707,7 +716,7 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
         var locationObject = window.location;
 
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self._buildTokenQuery(emptyPageURL);
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -757,7 +766,7 @@ authPrototypeMethods._postTokenUp = function () {
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var url = this._buildTokenQuery(recvrURL);
         var win = window.open(url);
         win.name = this.options.channelMarker;
         var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
@@ -2003,8 +2012,6 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
-
-
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
@@ -2027,34 +2034,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
-            path: pathFromRoot
-        });
-    });
-}
-
-
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var file = fileOrBlob;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-            body: file,
-        }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return ({
-            id: result.response.headers["etag"],
+            group_id: result.body.group_id,
             path: pathFromRoot
         });
     });
@@ -2123,9 +2103,9 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
     return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
-storageProto = helpers.extend(storageProto,notes);
-storageProto = helpers.extend(storageProto,lock);
-storageProto = helpers.extend(storageProto,chunkedUpload);
+storageProto = helpers.extend(storageProto, notes);
+storageProto = helpers.extend(storageProto, lock);
+storageProto = helpers.extend(storageProto, chunkedUpload);
 
 Storage.prototype = storageProto;
 
@@ -3304,11 +3284,11 @@ var promises = require(34);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
-            stopped = false;
             clearTimeout(pointer);
             pointer = setTimeout(runner, 1);
         },
         runner = function () {
+            var currentPointer = pointer;
             promises({
                 interval: interval,
                 repeat: repeat
@@ -3319,20 +3299,26 @@ module.exports = function (interval, func, errorHandler) {
                     console && console.error("Error in scheduled function", e);
                 }
             }).then(function () {
-                if (!stopped) {
+                //pointer changes only if repeat was called and there's no need to schedule next run this time
+                if (!stopped && currentPointer === pointer) {
                     pointer = setTimeout(runner, interval);
                 }
             });
-        }
+        };
+
     runner();
+
     return {
         stop: function () {
             stopped = true;
             clearTimeout(pointer);
         },
-        forceRun: repeat
-    }
-}
+        forceRun: function () {
+            stopped = false;
+            return repeat();
+        }
+    };
+};
 },{"34":34}],38:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {

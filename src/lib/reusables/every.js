@@ -2,11 +2,11 @@ var promises = require("q");
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
-            stopped = false;
             clearTimeout(pointer);
             pointer = setTimeout(runner, 1);
         },
         runner = function () {
+            var currentPointer = pointer;
             promises({
                 interval: interval,
                 repeat: repeat
@@ -17,17 +17,23 @@ module.exports = function (interval, func, errorHandler) {
                     console && console.error("Error in scheduled function", e);
                 }
             }).then(function () {
-                if (!stopped) {
+                //pointer changes only if repeat was called and there's no need to schedule next run this time
+                if (!stopped && currentPointer === pointer) {
                     pointer = setTimeout(runner, interval);
                 }
             });
-        }
+        };
+
     runner();
+
     return {
         stop: function () {
             stopped = true;
             clearTimeout(pointer);
         },
-        forceRun: repeat
-    }
-}
+        forceRun: function () {
+            stopped = false;
+            return repeat();
+        }
+    };
+};

@@ -1,3 +1,6 @@
+### 1.4.1
+- optional token scoping
+
 ### 1.4.0
 - Events API
 - Locks in storage 

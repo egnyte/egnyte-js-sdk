@@ -41,6 +41,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
             .then(function (result) { //result.response result.body
                 return ({
                     id: result.response.headers["etag"],
+                    group_id: result.body.group_id,
                     path: pathFromRoot
                 });
             });

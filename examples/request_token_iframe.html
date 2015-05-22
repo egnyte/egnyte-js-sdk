@@ -61,7 +61,8 @@
 
             eg = Egnyte.init(adomain, {
                 key: akey,
-                mobile: true
+                mobile: true,
+                scope:"Egnyte.filesystem Egnyte.link"
             });
 
             eg.API.auth.requestTokenIframeWithPrompt(node, function () {

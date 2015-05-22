@@ -651,10 +651,19 @@ function Auth(options) {
 
 }
 
+
 var authPrototypeMethods = {};
 
+authPrototypeMethods._buildTokenQuery = function(redirect) {
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    if (this.options.scope) {
+        url += "&scope=" + this.options.scope;
+    }
+    return url;
+}
+
 authPrototypeMethods._reloadForToken = function () {
-    window.location.href = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + window.location.href;
+    window.location.href = this._buildTokenQuery(window.location.href);
 }
 
 authPrototypeMethods._checkTokenResponse = function (success, denied, notoken, overrideWindow) {
@@ -692,7 +701,7 @@ authPrototypeMethods.requestTokenIframe = function (targetNode, callback, denied
         var locationObject = window.location;
 
         emptyPageURL = (emptyPageURL) ? locationObject.protocol + "//" + locationObject.host + emptyPageURL : locationObject.href;
-        var url = self.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + self.options.key + "&mobile=" + ~~(self.options.mobile) + "&redirect_uri=" + emptyPageURL;
+        var url = self._buildTokenQuery(emptyPageURL);
         var iframe = dom.createFrame(url, !!"scrollbars please");
         iframe.onload = function () {
             try {
@@ -742,7 +751,7 @@ authPrototypeMethods._postTokenUp = function () {
 authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
-        var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + recvrURL;
+        var url = this._buildTokenQuery(recvrURL);
         var win = window.open(url);
         win.name = this.options.channelMarker;
         var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
@@ -1124,11 +1133,7 @@ function notMy(opts, data) {
 
 var defaultCount = 20;
 
-//options.start
-//options.interval >2000
-//options.emit
-//options.current
-//returns {stop:function}
+
 Events.prototype = {
     getCursor: function () {
         var requestEngine = this.requestEngine;
@@ -1139,10 +1144,46 @@ Events.prototype = {
             return result.body.latest_event_id;
         });
     },
-    listen: function (options) {
+    //options.start
+    //options.emit
+    //options.count (optional)
+    getUpdate: function (options) {
         var self = this;
         var requestEngine = this.requestEngine;
         var decorate = this.getDecorator();
+
+        return promises(true).then(function () {
+            if (!(options.start >= 0)) {
+                throw new Error("'start' option is required");
+            }
+            var count = options.count || defaultCount;
+            return requestEngine.promiseRequest(decorate({
+                method: "GET",
+                url: requestEngine.getEndpoint() + ENDPOINTS_events,
+                params: {
+                    id: options.start,
+                    count: count
+                }
+            }));
+        }).then(function (result) {
+            if (result.body && options.emit) {
+                helpers.each(result.body.events, function (e) {
+                    setTimeout(function () {
+                        options.emit(e);
+                    }, 0)
+                });
+            }
+            return result;
+        });
+    },
+    //options.start
+    //options.interval >2000
+    //options.emit
+    //options.current
+    //options.count (optional)
+    //returns {stop:function}
+    listen: function (options) {
+        var self = this;
 
         return promises(true)
             .then(function () {
@@ -1159,21 +1200,13 @@ Events.prototype = {
                 //returns controllong object
                 return every(Math.max(options.interval || 30000, 2000), function (controller) {
                     var count = options.count || defaultCount;
-                    return requestEngine.promiseRequest(decorate({
-                        method: "GET",
-                        url: requestEngine.getEndpoint() + ENDPOINTS_events,
-                        params: {
-                            id: start,
-                            count: count
-                        }
-                    })).then(function (result) {
+                    return self.getUpdate({
+                        count: count,
+                        emit: options.emit,
+                        start: start
+                    }).then(function (result) {
                         if (result.body) {
                             start = result.body.latest_id;
-                            helpers.each(result.body.events, function (e) {
-                                setTimeout(function () {
-                                    options.emit(e);
-                                }, 0)
-                            });
                             if (options.current) {
                                 options.current(start);
                             }
@@ -1182,7 +1215,7 @@ Events.prototype = {
                             }
                         }
                         if (options.heartbeat) {
-                            options.heartbeat(result);
+                            options.heartbeat(result.body);
                         }
                     });
                 }, options.error)
@@ -1940,8 +1973,6 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
-
-
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
@@ -1964,34 +1995,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     }).then(function (result) { //result.response result.body
         return ({
             id: result.response.headers["etag"],
-            path: pathFromRoot
-        });
-    });
-}
-
-
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        var file = fileOrBlob;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-            body: file,
-        }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return ({
-            id: result.response.headers["etag"],
+            group_id: result.body.group_id,
             path: pathFromRoot
         });
     });
@@ -2060,9 +2064,9 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
     return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
-storageProto = helpers.extend(storageProto,notes);
-storageProto = helpers.extend(storageProto,lock);
-storageProto = helpers.extend(storageProto,chunkedUpload);
+storageProto = helpers.extend(storageProto, notes);
+storageProto = helpers.extend(storageProto, lock);
+storageProto = helpers.extend(storageProto, chunkedUpload);
 
 Storage.prototype = storageProto;
 
@@ -2469,11 +2473,11 @@ var promises = require(27);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
-            stopped = false;
             clearTimeout(pointer);
             pointer = setTimeout(runner, 1);
         },
         runner = function () {
+            var currentPointer = pointer;
             promises({
                 interval: interval,
                 repeat: repeat
@@ -2484,20 +2488,26 @@ module.exports = function (interval, func, errorHandler) {
                     console && console.error("Error in scheduled function", e);
                 }
             }).then(function () {
-                if (!stopped) {
+                                //pointer changes only if repeat was called and there's no need to schedule next run this time
+                if (!stopped && currentPointer === pointer) {
                     pointer = setTimeout(runner, interval);
                 }
             });
-        }
+        };
+
     runner();
+
     return {
         stop: function () {
             stopped = true;
             clearTimeout(pointer);
         },
-        forceRun: repeat
-    }
-}
+        forceRun: function () {
+            stopped = false;
+            return repeat();
+        }
+    };
+};
 },{"27":27}],30:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {

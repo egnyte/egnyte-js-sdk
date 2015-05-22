@@ -240,6 +240,7 @@ describe("Storage API facade integration", function () {
             eg.API.storage.storeFile(testpath, blob)
                 .then(function (e) {
                     expect(e.id).toBeTruthy();
+                    expect(e.group_id).toEqual(recentFileObject.group_id);
                     expect(e.path).toEqual(testpath);
                 })
                 .then(function () {
