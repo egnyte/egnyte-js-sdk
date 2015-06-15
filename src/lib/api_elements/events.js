@@ -2,6 +2,7 @@ var promises = require("q");
 var helpers = require('../reusables/helpers');
 var every = require('../reusables/every');
 var decorators = require("./decorators");
+var resourceIdSupplier = require("./resourceIdSupplier");
 
 var ENDPOINTS_events = require("../enum/endpoints").events;
 var ENDPOINTS_eventscursor = require("../enum/endpoints").eventscursor;
@@ -73,6 +74,7 @@ Events.prototype = {
         }).then(function (result) {
             if (result.body && options.emit) {
                 helpers.each(result.body.events, function (e) {
+                    resourceIdSupplier.forEvent(e);
                     setTimeout(function () {
                         options.emit(e);
                     }, 0)

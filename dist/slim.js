@@ -585,7 +585,7 @@ module.exports = {
 },{}],11:[function(require,module,exports){
 var RequestEngine = require(21);
 var AuthEngine = require(12);
-var StorageFacade = require(22);
+var StorageFacade = require(23);
 var LinkFacade = require(17);
 var PermFacade = require(20);
 var Events = require(16);
@@ -611,12 +611,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(23);
+            var responder = require(24);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(24);
+                var forwarder = require(25);
                 forwarder(options, api);
             }
         }
@@ -626,18 +626,18 @@ module.exports = function (options) {
 
     return api;
 };
-},{"12":12,"16":16,"17":17,"20":20,"21":21,"22":22,"23":23,"24":24}],12:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"20":20,"21":21,"23":23,"24":24,"25":25}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(27);
-var helpers = require(30);
-var dom = require(28);
-var messages = require(31);
+var promises = require(28);
+var helpers = require(31);
+var dom = require(29);
+var messages = require(32);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(25).userinfo;
-var ENDPOINTS_tokenauth = require(25).tokenauth;
+var ENDPOINTS_userinfo = require(26).userinfo;
+var ENDPOINTS_tokenauth = require(26).tokenauth;
 
 
 function Auth(options) {
@@ -851,10 +851,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"15":15,"25":25,"27":27,"28":28,"30":30,"31":31}],13:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
-var ENDPOINTS = require(25);
+},{"15":15,"26":26,"28":28,"29":29,"31":31,"32":32}],13:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
+var ENDPOINTS = require(26);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -963,8 +963,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"25":25,"27":27,"30":30}],14:[function(require,module,exports){
-var helpers = require(30);
+},{"26":26,"28":28,"31":31}],14:[function(require,module,exports){
+var helpers = require(31);
 
 var defaultDecorators = {
 
@@ -1030,7 +1030,7 @@ module.exports = {
 
     }
 }
-},{"30":30}],15:[function(require,module,exports){
+},{"31":31}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1093,13 +1093,14 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
-var every = require(29);
+var promises = require(28);
+var helpers = require(31);
+var every = require(30);
 var decorators = require(14);
+var resourceIdSupplier = require(22);
 
-var ENDPOINTS_events = require(25).events;
-var ENDPOINTS_eventscursor = require(25).eventscursor;
+var ENDPOINTS_events = require(26).events;
+var ENDPOINTS_eventscursor = require(26).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1168,6 +1169,7 @@ Events.prototype = {
         }).then(function (result) {
             if (result.body && options.emit) {
                 helpers.each(result.body.events, function (e) {
+                    resourceIdSupplier.forEvent(e);
                     setTimeout(function () {
                         options.emit(e);
                     }, 0)
@@ -1226,12 +1228,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"14":14,"25":25,"27":27,"29":29,"30":30}],17:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
+},{"14":14,"22":22,"26":26,"28":28,"30":30,"31":31}],17:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
 var decorators = require(14);
 
-var ENDPOINTS_links = require(25).links;
+var ENDPOINTS_links = require(26).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1322,11 +1324,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"14":14,"25":25,"27":27,"30":30}],18:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
+},{"14":14,"26":26,"28":28,"31":31}],18:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
 
-var ENDPOINTS_fsmeta = require(25).fsmeta;
+var ENDPOINTS_fsmeta = require(26).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1376,11 +1378,11 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"25":25,"27":27,"30":30}],19:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
+},{"26":26,"28":28,"31":31}],19:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
 
-var ENDPOINTS_notes = require(25).notes;
+var ENDPOINTS_notes = require(26).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1455,12 +1457,12 @@ exports.removeNote = function (id) {
 
 
 
-},{"25":25,"27":27,"30":30}],20:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
+},{"26":26,"28":28,"31":31}],20:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
 var decorators = require(14);
 
-var ENDPOINTS_perms = require(25).perms;
+var ENDPOINTS_perms = require(26).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1489,32 +1491,32 @@ function enlist(what) {
 
 var permsProto = {};
 
-permsProto.disallow = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "None");
+permsProto.disallow = function (fullPathOrId) {
+    return this.allow(fullPathOrId, "None");
 }
-permsProto.allowView = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Viewer");
+permsProto.allowView = function (fullPathOrId) {
+    return this.allow(fullPathOrId, "Viewer");
 }
-permsProto.allowEdit = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Editor");
+permsProto.allowEdit = function (fullPathOrId) {
+    return this.allow(fullPathOrId, "Editor");
 }
-permsProto.allowFullAccess = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Full");
+permsProto.allowFullAccess = function (fullPathOrId) {
+    return this.allow(fullPathOrId, "Full");
 }
-permsProto.allowOwnership = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Owner");
+permsProto.allowOwnership = function (fullPathOrId) {
+    return this.allow(fullPathOrId, "Owner");
 }
 
-permsProto.allow = function (pathFromRoot, permission) {
+permsProto.allow = function (fullPathOrId, permission) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
 
     return promises(true)
         .then(function () {
-            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+            fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + fullPathOrId,
                 json: {
                     "permission": permission
                 }
@@ -1525,16 +1527,16 @@ permsProto.allow = function (pathFromRoot, permission) {
         });
 };
 
-permsProto.getPerms = function (pathFromRoot) {
+permsProto.getPerms = function (fullPathOrId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
 
     return promises(true)
         .then(function () {
-            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+            fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + fullPathOrId
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body
@@ -1546,14 +1548,14 @@ permsProto.getPerms = function (pathFromRoot) {
 Perms.prototype = permsProto;
 
 module.exports = Perms;
-},{"14":14,"25":25,"27":27,"30":30}],21:[function(require,module,exports){
+},{"14":14,"26":26,"28":28,"31":31}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(27);
-var helpers = require(30);
-var dom = require(28);
-var messages = require(31);
+var promises = require(28);
+var helpers = require(31);
+var dom = require(29);
+var messages = require(32);
 var errorify = require(15);
 var request = require(3);
 
@@ -1826,15 +1828,47 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"15":15,"27":27,"28":28,"3":3,"30":30,"31":31}],22:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
+},{"15":15,"28":28,"29":29,"3":3,"31":31,"32":32}],22:[function(require,module,exports){
+function makeId(isFolder, theId) {
+    return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
+}
+
+function forEvent(obj) {
+    obj.data.resource_id = makeId(obj.data.is_folder, obj.data.target_group_id);
+    return obj;
+}
+
+function idStorageObject(obj) {
+    obj.resource_id = makeId(obj.is_folder, (obj.is_folder ? obj.folder_id : obj.group_id));
+    return obj;
+}
+
+function forResource(obj) {
+    idStorageObject(obj);
+    if (obj.is_folder) {
+        if (obj.files) {
+            obj.files = obj.files.map(idStorageObject)
+        }
+        if (obj.folders) {
+            obj.folders = obj.folders.map(idStorageObject)
+        }
+    }
+    return obj;
+}
+module.exports = {
+    forEvent: forEvent,
+    forResource: forResource
+}
+},{}],23:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
 var decorators = require(14);
 var notes = require(19);
 var lock = require(18);
 var chunkedUpload = require(13);
+var resourceIdSupplier = require(22);
 
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(26);
 
 
 function Storage(requestEngine) {
@@ -1843,14 +1877,14 @@ function Storage(requestEngine) {
 }
 
 var storageProto = {};
-storageProto.exists = function (pathFromRoot) {
+storageProto.exists = function (fullPathOrId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
         };
 
         return requestEngine.promiseRequest(decorate(opts));
@@ -1869,14 +1903,14 @@ storageProto.exists = function (pathFromRoot) {
     });
 }
 
-storageProto.get = function (pathFromRoot, versionEntryId) {
+storageProto.get = function (fullPathOrId, versionEntryId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
         };
 
         if (versionEntryId) {
@@ -1887,19 +1921,19 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
 
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
-        return result.body;
+        return resourceIdSupplier.forResource(result.body);
     });
 }
 
-storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
+storageProto.download = function (fullPathOrId, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId),
         }
         if (versionEntryId) {
             opts.params = {
@@ -1917,46 +1951,47 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     });
 }
 
-storageProto.createFolder = function (pathFromRoot) {
+storageProto.createFolder = function (fullPathOrId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
             json: {
                 "action": "add_folder"
             }
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
+        //TODO: get the API to return a folder object
         if (result.response.statusCode == 201) {
             return {
-                path: pathFromRoot
+                path: fullPathOrId
             };
         }
     });
 }
 
-storageProto.move = storageProto.rename = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "move");
+storageProto.move = storageProto.rename = function (fullPathOrId, newPath) {
+    return transfer(this.requestEngine, this.getDecorator(), fullPathOrId, newPath, "move");
 }
 
-storageProto.copy = function (pathFromRoot, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "copy");
+storageProto.copy = function (fullPathOrId, newPath) {
+    return transfer(this.requestEngine, this.getDecorator(), fullPathOrId, newPath, "copy");
 }
 
-function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
+function transfer(requestEngine, decorate, fullPathOrId, newPath, action) {
     return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
         }
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
             json: {
                 "action": action,
                 "destination": newPath,
@@ -1966,23 +2001,23 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return {
-                oldPath: pathFromRoot,
+                oldPath: fullPathOrId,
                 path: newPath
             };
         }
     });
 }
 
-storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
+storageProto.storeFile = function (fullPathOrId, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
         var file = fileOrBlob;
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId),
             body: file,
         }
 
@@ -1993,17 +2028,16 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
-        return ({
-            id: result.response.headers["etag"],
-            group_id: result.body.group_id,
-            path: pathFromRoot
-        });
+        var resolution = resourceIdSupplier.forResource(result.body);
+        resolution.path = fullPathOrId; //backward-compatibility
+        resolution.id = result.response.headers["etag"]; //backward-compatibility
+        return resolution;
     });
 }
 
 //currently not supported by back - end
 //
-//function storeFileMultipart(pathFromRoot, fileOrBlob) {
+//function storeFileMultipart(fullPathOrId, fileOrBlob) {
 //    return promises(true).then(function () {
 //        if (!window.FormData) {
 //            throw new Error("Unsupported browser");
@@ -2011,29 +2045,29 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 //        var file = fileOrBlob;
 //        var formData = new window.FormData();
 //        formData.append('file', file);
-//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+//        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
 //        var opts = {
 //            method: "POST",
-//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+//            url: api.getEndpoint() + fscontent + encodeURI(fullPathOrId),
 //            body: formData,
 //        };
 //        return api.promiseRequest(decorate(opts));
 //    }).then(function (result) { //result.response result.body
 //        return ({
 //            id: result.response.getResponseHeader("etag"),
-//            path: pathFromRoot
+//            path: fullPathOrId
 //        });
 //    });
 //}
 
 
 //private
-function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
+function remove(requestEngine, decorate, fullPathOrId, versionEntryId) {
     return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
         };
         if (versionEntryId) {
             opts.params = {
@@ -2047,21 +2081,21 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
     });
 }
 
-storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
+storageProto.removeFileVersion = function (fullPathOrId, versionEntryId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(requestEngine, decorate, pathFromRoot, versionEntryId)
+        return remove(requestEngine, decorate, fullPathOrId, versionEntryId)
     });
 }
 
 
-storageProto.remove = function (pathFromRoot, versionEntryId) {
+storageProto.remove = function (fullPathOrId, versionEntryId) {
     var decorate = this.getDecorator();
-    return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
+    return remove(this.requestEngine, decorate, fullPathOrId, versionEntryId);
 }
 
 storageProto = helpers.extend(storageProto, notes);
@@ -2071,10 +2105,10 @@ storageProto = helpers.extend(storageProto, chunkedUpload);
 Storage.prototype = storageProto;
 
 module.exports = Storage;
-},{"13":13,"14":14,"18":18,"19":19,"25":25,"27":27,"30":30}],23:[function(require,module,exports){
-var helpers = require(30);
-var dom = require(28);
-var messages = require(31);
+},{"13":13,"14":14,"18":18,"19":19,"22":22,"26":26,"28":28,"31":31}],24:[function(require,module,exports){
+var helpers = require(31);
+var dom = require(29);
+var messages = require(32);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2133,11 +2167,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"28":28,"30":30,"31":31}],24:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
-var dom = require(28);
-var messages = require(31);
+},{"29":29,"31":31,"32":32}],25:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
+var dom = require(29);
+var messages = require(32);
 
 
 
@@ -2267,7 +2301,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"27":27,"28":28,"30":30,"31":31}],25:[function(require,module,exports){
+},{"28":28,"29":29,"31":31,"32":32}],26:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2280,13 +2314,13 @@ module.exports={
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],26:[function(require,module,exports){
-var promises = require(27);
-var helpers = require(30);
-var dom = require(28);
-var messages = require(31);
+},{}],27:[function(require,module,exports){
+var promises = require(28);
+var helpers = require(31);
+var dom = require(29);
+var messages = require(32);
 var decorators = require(14);
-var ENDPOINTS = require(25);
+var ENDPOINTS = require(26);
 
 var plugins = {};
 module.exports = {
@@ -2313,10 +2347,10 @@ module.exports = {
         });
     }
 };
-},{"14":14,"25":25,"27":27,"28":28,"30":30,"31":31}],27:[function(require,module,exports){
+},{"14":14,"26":26,"28":28,"29":29,"31":31,"32":32}],28:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(30);
+var helpers = require(31);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2399,7 +2433,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":1,"30":30}],28:[function(require,module,exports){
+},{"1":1,"31":31}],29:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2468,8 +2502,8 @@ module.exports = {
     }
 
 }
-},{"2":2}],29:[function(require,module,exports){
-var promises = require(27);
+},{"2":2}],30:[function(require,module,exports){
+var promises = require(28);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -2508,7 +2542,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"27":27}],30:[function(require,module,exports){
+},{"28":28}],31:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2583,8 +2617,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],31:[function(require,module,exports){
-var helpers = require(30);
+},{}],32:[function(require,module,exports){
+var helpers = require(31);
 
 
 //returns postMessage specific handler
@@ -2634,9 +2668,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"30":30}],32:[function(require,module,exports){
-var helpers = require(30);
-var plugins = require(26);
+},{"31":31}],33:[function(require,module,exports){
+var helpers = require(31);
+var plugins = require(27);
 var defaults = require(10);
 
 module.exports = {
@@ -2659,5 +2693,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{"10":10,"11":11,"26":26,"30":30}]},{},[32])(32)
+},{"10":10,"11":11,"27":27,"31":31}]},{},[33])(33)
 });
