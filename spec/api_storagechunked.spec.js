@@ -103,9 +103,9 @@ describe("Storage API facade integration", function () {
 
             });
 
-            it("Can store a file stream htat is smaller than 1 chunk", function (done) {
+            it("Can store a file stream that is smaller than 1 chunk", function (done) {
                 var st = new stream.Readable();
-                st.push("Tradition enforces enforcing tradidion");
+                st.push("Tradition enforces enforcing tradition");
                 st.push(null);
                 eg.API.storage.path(testpath).streamToChunks(st, "text/plain")
                     .then(function (result) {
