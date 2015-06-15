@@ -3,7 +3,7 @@ var promises = require("q");
 var chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
 var resourceIdentifier = require("./resourceIdentifier");
-
+var PassThrough = require("stream").PassThrough;
 var ENDPOINTS = require("../enum/endpoints");
 
 var uploadChunkSize = 10240; //10k chunks
@@ -66,12 +66,14 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
         if (chunkNumber === 1) {
             if (stream._readableState.pipesCount === 0) {
                 //only one chunk. lol, pass on to the normal upload
-                storeFile.call(self, pathFromRoot, buf, mimeType, buf.size)
+                var bufferStream = new PassThrough();
+                bufferStream.end(buf);
+                storeFile.call(self, pathFromRoot, bufferStream, mimeType, buf.size)
                     .then(function (result) {
                         defer.resolve(result);
                     });
             } else {
-                self.startChunkedUpload(pathFromRoot, buf, mimeType)
+                self.internals.startChunkedUpload.call(self, pathFromRoot, buf, mimeType)
                     .then(function (chunked) {
                         chunkedUploader = chunked;
                         next();
