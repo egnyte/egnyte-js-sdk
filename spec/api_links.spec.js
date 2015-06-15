@@ -70,13 +70,13 @@ describe("Link API facade integration", function () {
         var recentLink;
 
         it("Needs a file to link to", function (done) {
-            eg.API.storage.get("/Private")
+            eg.API.storage.path("/Private").get()
                 .then(function (e) {
                     expect(e["folders"]).toBeDefined();
                     //this test suite has unicorns and bacon, it can't get any better/
                     testpath = e.folders[0].path + "/bacon" + ~~(10000 * Math.random());
                     var blob = getTestBlob("hey!");
-                    return eg.API.storage.storeFile(testpath, blob)
+                    return eg.API.storage.path(testpath).storeFile(blob)
                 })
                 .then(function (e) {
                     recentFile = e;
@@ -175,7 +175,7 @@ describe("Link API facade integration", function () {
 
 
         it("Needs to clean up the file", function (done) {
-            eg.API.storage.remove(testpath)
+            eg.API.storage.path(testpath).remove()
                 .then(function () {
                     expect(true).toBeTruthy();
                     done();

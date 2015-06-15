@@ -4,6 +4,7 @@ var decorators = require("./decorators");
 var notes = require("./notes");
 var lock = require("./lock");
 var chunkedUpload = require("./chunkedUpload");
+var resourceIdentifier = require("./resourceIdentifier");
 
 var ENDPOINTS = require("../enum/endpoints");
 
@@ -239,6 +240,6 @@ storageProto = helpers.extend(storageProto, notes);
 storageProto = helpers.extend(storageProto, lock);
 storageProto = helpers.extend(storageProto, chunkedUpload);
 
-Storage.prototype = storageProto;
+Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;

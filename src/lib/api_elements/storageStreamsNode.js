@@ -1,18 +1,14 @@
-var util = require("util");
 var helpers = require('../reusables/helpers');
 var promises = require("q");
 var chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
+var resourceIdentifier = require("./resourceIdentifier");
 
 var ENDPOINTS = require("../enum/endpoints");
 
-function StreamsExtendedStorage() {
-    StreamsExtendedStorage.super_.apply(this, arguments);
-    //already has a decorator
-};
+var uploadChunkSize = 10240; //10k chunks
 
-
-function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional, not so much*/ ) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional, if we start using multipart*/ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -48,8 +44,6 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
     });
 }
 
-var uploadChunkSize = 10240; //10k chunks
-
 function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOverride /*optional*/ ) {
     var self = this;
     var defer = promises.defer();
@@ -72,7 +66,7 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
         if (chunkNumber === 1) {
             if (stream._readableState.pipesCount === 0) {
                 //only one chunk. lol, pass on to the normal upload
-                StreamsExtendedStorage.super_.prototype.storeFile.call(self, pathFromRoot, buf, mimeType, buf.size)
+                storeFile.call(self, pathFromRoot, buf, mimeType, buf.size)
                     .then(function (result) {
                         defer.resolve(result);
                     });
@@ -98,7 +92,7 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
                         //chunk failed. retry?
                         defer.reject(err);
                     })
-                //accept another chunk async
+                    //accept another chunk async
                 next();
 
             }
@@ -148,16 +142,8 @@ function getFileStream(pathFromRoot, versionEntryId) {
     return defer.promise;
 }
 
-
-module.exports = function (Storage) {
-
-    util.inherits(StreamsExtendedStorage, Storage);
-
-    StreamsExtendedStorage.prototype.getFileStream = getFileStream;
-    StreamsExtendedStorage.prototype.storeFile = storeFile;
-    StreamsExtendedStorage.prototype.streamToChunks = streamToChunks;
-
-
-    return StreamsExtendedStorage;
-
+module.exports = {
+    storeFile: storeFile,
+    streamToChunks: streamToChunks,
+    getFileStream: getFileStream
 };

@@ -33,7 +33,7 @@ if (ImInBrowser) {
                 token: APIToken,
                 oldIEForwarder: true, //opt in for IE8/9 support
             });
-            eg.API.storage.exists("/jiberish").then(function (e) {
+            eg.API.storage.path("/jiberish").exists().then(function (e) {
                 expect(true).toBeTruthy();
                 done();
             })
@@ -47,14 +47,14 @@ if (ImInBrowser) {
                 oldIEForwarder: true, //opt in for IE8/9 support
                 QPS: 1
             });
-            eg.API.storage.exists("/jiberish").then(function (e) {
+            eg.API.storage.path("/jiberish").exists().then(function (e) {
                 t1 = +new Date();
             }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
 
-            eg.API.storage.exists("/jiberish").then(function (e) {
+            eg.API.storage.path("/jiberish").exists().then(function (e) {
                 t2 = +new Date();
                 //assuming 404 is quite stable in terms of response time
                 //but the response can be cached and the second one is faster
@@ -74,14 +74,14 @@ if (ImInBrowser) {
                 oldIEForwarder: true, //opt in for IE8/9 support
                 QPS: 2
             });
-            eg.API.storage.exists("/jiberish").then(function (e) {
+            eg.API.storage.path("/jiberish").exists().then(function (e) {
                 t1 = +new Date();
             }).fail(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
 
-            eg.API.storage.exists("/jiberish").then(function (e) {
+            eg.API.storage.path("/jiberish").exists().then(function (e) {
                 t2 = +new Date();
                 //assuming 404 is quite stable in terms of response time
                 //but the response can be cached and the second one is faster
@@ -103,14 +103,14 @@ if (ImInBrowser) {
             });
 
             //filling up the query queue
-            eg.API.storage.exists("/jiberish");
+            eg.API.storage.path("/jiberish").exists();
 
             setTimeout(function () {
                 var t1 = 0,
                     t2 = 0;
 
                 t1 = +new Date();
-                eg.API.storage.exists("/jiberish").then(function (e) {
+                eg.API.storage.path("/jiberish").exists().then(function (e) {
                     t2 = +new Date();
                     //assuming response comes in less than 800ms
                     expect(t2 - t1).toBeLessThan(800);
@@ -126,7 +126,7 @@ if (ImInBrowser) {
                     t2 = 0;
 
                 t1 = +new Date();
-                eg.API.storage.exists("/jiberish").then(function (e) {
+                eg.API.storage.path("/jiberish").exists().then(function (e) {
                     t2 = +new Date();
                     //assuming response comes in less than 800ms
                     expect(t2 - t1).toBeGreaterThan(800);
@@ -188,7 +188,7 @@ describe("API Quota response", function () {
 
         var manyRequests = [];
         for (var i = 0; i < 12; i++) {
-            manyRequests.push(eg.API.storage.exists("/jiberish"));
+            manyRequests.push(eg.API.storage.path("/jiberish").exists());
         }
         eg.API.manual.Promise.all(manyRequests).then(function () {
             expect(this).toAutoFail("Quota not reached, no 403 response");

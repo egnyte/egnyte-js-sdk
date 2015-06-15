@@ -55,12 +55,12 @@ describe("Events API facade", function () {
         })
 
         it("Needs a folder to work with", function (done) {
-            eg.API.storage.exists(testpath).then(function (exists) {
+            eg.API.storage.path(testpath).exists().then(function (exists) {
                 if (exists) {
-                    return eg.API.storage.remove(testpath)
+                    return eg.API.storage.path(testpath).remove()
                 }
             }).then(function () {
-                return eg.API.storage.createFolder(testpath)
+                return eg.API.storage.path(testpath).createFolder()
                     .then(function (e) {
                         if (typeof OtherUsername !== "undefined") {
                             return eg.API.perms.users([OtherUsername]).allowFullAccess(testpath)
@@ -95,7 +95,7 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
+                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
                     .then(function (e) {
                         //give it time to get the events
                         setTimeout(function () {
@@ -132,7 +132,7 @@ describe("Events API facade", function () {
             }).then(function (sch) {
                 scheduler = sch;
                 scheduler.stop();
-                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
+                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
                     .then(function (e) {
                         //give it time to get the events it shouldn't get
                         setTimeout(function () {
@@ -151,7 +151,7 @@ describe("Events API facade", function () {
             var filePath = testpath + "/candy.txt";
 
             eg.API.events.getCursor().then(function (latestId) {
-                return eg.API.storage.storeFile(filePath, getFileContent("sour"))
+                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
                     .then(function () {
                         return eg.API.events.notMy().filter({
                             folder: testpath
@@ -180,7 +180,7 @@ describe("Events API facade", function () {
         it("Should not get app's own file copy events", function (done) {
             var filePath = testpath + "/candy.txt";
             var filePath2 = testpath + "/stick.txt";
-            eg.API.storage.storeFile(filePath, getFileContent("sour"))
+            eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
                 .then(function (e) {
                     return eg.API.events.notMy().filter({
                         folder: testpath
@@ -193,7 +193,7 @@ describe("Events API facade", function () {
                     })
                 }).then(function (sch) {
                     scheduler = sch;
-                    return eg.API.storage.copy(filePath, filePath2)
+                    return eg.API.storage.path(filePath).copy(filePath2)
                         .then(function (e) {
                             //give it time to get the events
                             setTimeout(function () {
@@ -221,7 +221,7 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.createFolder(folderPath)
+                return eg.API.storage.path(folderPath).createFolder()
                     .then(function (e) {
                         //give it time to get the events
                         setTimeout(function () {
@@ -250,7 +250,7 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.addNote(filePath, "oh, that one is sour")
+                return eg.API.storage.path(filePath).addNote("oh, that one is sour")
                     .then(function (e) {
                         noteId = e.id;
                         //give it time to get the events
@@ -278,12 +278,12 @@ describe("Events API facade", function () {
                 });
 
                 filteredEventsSource.getCursor().then(function (startEventId) {
-                    return eg.API.storage.storeFile(filePath, getFileContent("sour"))
+                    return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
                         .then(function (e) {
 
                             return eg.API.storage.impersonate({
                                 username: OtherUsername
-                            }).storeFile(otherFilePath, getFileContent("sour as ...much as possible"));
+                            }).path(otherFilePath).storeFile(getFileContent("sour as ...much as possible"));
                         })
                         .then(function (e) {
                             return filteredEventsSource.listen({
@@ -320,9 +320,9 @@ describe("Events API facade", function () {
         }
 
         it("Needs to clean up after itself", function (done) {
-            eg.API.storage.exists(testpath).then(function (exists) {
+            eg.API.storage.path(testpath).exists().then(function (exists) {
                 if (exists) {
-                    return eg.API.storage.remove(testpath)
+                    return eg.API.storage.path(testpath).remove()
                 }
             }).then(function () {
                 done();

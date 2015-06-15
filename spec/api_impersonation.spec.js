@@ -52,7 +52,7 @@ describe("Impersonation", function () {
             expect(eg.API.storage._decorations).not.toBeDefined();
             done();
         }
-        impersonatedStorageAPI.exists("/Private").then(after, after);
+        impersonatedStorageAPI.path("/Private").exists().then(after, after);
 
     });
 
@@ -80,7 +80,7 @@ describe("Impersonation", function () {
             expect(eg.API.storage._decorations).not.toBeDefined();
             done();
         }
-        impersonatedStorageAPI.exists("/Private").then(after, after);
+        impersonatedStorageAPI.path("/Private").exists().then(after, after);
 
     });
 
@@ -111,8 +111,8 @@ describe("Impersonation", function () {
 
     it("Should add a header to the call", function (done) {
         eg.API.storage.impersonate({
-            username: "inexistentdude"
-        }).exists("/Private")
+                username: "inexistentdude"
+            }).path("/Private").exists()
             .fail(function (e) {
                 expect(e.statusCode).toEqual(400);
                 done();

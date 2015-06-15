@@ -103,6 +103,7 @@ module.exports = function (grunt) {
         },
         jasmine_nodejs: {
             options: {
+                stopOnFailure: false,
                 specNameSuffix: 'spec.js',
                 reporters: {
                     console: {

@@ -98,7 +98,7 @@ describe("Item names / ", function () {
     describe("Good names:", function () {
         it("BTW. basePath needs to be known at this point", function (done) {
             if (!basePath) {
-                eg.API.storage.get("/Private").then(function (e) {
+                eg.API.storage.path("/Private").get().then(function (e) {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
@@ -117,21 +117,21 @@ describe("Item names / ", function () {
 
             it("BTW. file leftovers from previous tests need to be destroyed", function (done) {
                 expect(fname).toBeDefined();
-                eg.API.storage.remove(basePath + "/" + fname).then(done, done);
+                eg.API.storage.path(basePath + "/" + fname).remove().then(done, done);
             });
 
 
 
             it("should create a folder called " + fname, function (done) {
-                eg.API.storage.createFolder(basePath + "/" + fname)
+                eg.API.storage.path(basePath + "/" + fname).createFolder()
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
-                        return eg.API.storage.get(e.path);
+                        return eg.API.storage.path(e.path).get();
                     })
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
                         expect(e.name).toEqual(fname);
-                        return eg.API.storage.remove(basePath + "/" + fname);
+                        return eg.API.storage.path(basePath + "/" + fname).remove();
                     })
                     .then(function (e) {
                         done();
@@ -144,15 +144,15 @@ describe("Item names / ", function () {
 
             it("should store a file called " + fname, function (done) {
                 var blob = getTestBlob("foo");
-                eg.API.storage.storeFile(basePath + "/" + fname, blob)
+                eg.API.storage.path(basePath + "/" + fname).storeFile(blob)
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
-                        return eg.API.storage.get(e.path);
+                        return eg.API.storage.path(e.path).get();
                     })
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
                         expect(e.name).toEqual(fname);
-                        return eg.API.storage.remove(basePath + "/" + fname);
+                        return eg.API.storage.path(basePath + "/" + fname).remove();
                     })
                     .then(function (e) {
                         done();
@@ -170,7 +170,7 @@ describe("Item names / ", function () {
     describe("Bad folder names: ", function () {
         it("BTW. basePath needs to be known at this point", function (done) {
             if (!basePath) {
-                eg.API.storage.get("/Private").then(function (e) {
+                eg.API.storage.path("/Private").get().then(function (e) {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
@@ -186,9 +186,9 @@ describe("Item names / ", function () {
         badFolders.forEach(function (fname) {
 
             it("should NOT create a folder called " + fname, function (done) {
-                eg.API.storage.createFolder(basePath + "/" + fname)
+                eg.API.storage.path(basePath + "/" + fname).createFolder()
                     .then(function (e) {
-                        return eg.API.storage.remove(basePath + "/" + fname);
+                        return eg.API.storage.path(basePath + "/" + fname).remove();
                     })
                     .then(function (e) {
                         expect(this).toAutoFail(e);
@@ -206,7 +206,7 @@ describe("Item names / ", function () {
     describe("Bad file names: ", function () {
         it("BTW. basePath needs to be known at this point", function (done) {
             if (!basePath) {
-                eg.API.storage.get("/Private").then(function (e) {
+                eg.API.storage.path("/Private").get().then(function (e) {
                     basePath = e.folders[0].path;
                     expect(basePath).toBeTruthy();
                     done();
@@ -224,9 +224,9 @@ describe("Item names / ", function () {
             it("sould NOT store a file called " + fname, function (done) {
                 var blob = getTestBlob("foo");
 
-                eg.API.storage.storeFile(basePath + "/" + fname, blob)
+                eg.API.storage.path(basePath + "/" + fname).storeFile(blob)
                     .then(function (e) {
-                        eg.API.storage.remove(basePath + "/" + fname);
+                        eg.API.storage.path(basePath + "/" + fname).remove();
                         expect(this).toAutoFail(e);
                         done();
                     }).fail(function (e) {
