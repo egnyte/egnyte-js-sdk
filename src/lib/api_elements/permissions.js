@@ -31,32 +31,32 @@ function enlist(what) {
 
 var permsProto = {};
 
-permsProto.disallow = function (fullPathOrId) {
-    return this.allow(fullPathOrId, "None");
+permsProto.disallow = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "None");
 }
-permsProto.allowView = function (fullPathOrId) {
-    return this.allow(fullPathOrId, "Viewer");
+permsProto.allowView = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Viewer");
 }
-permsProto.allowEdit = function (fullPathOrId) {
-    return this.allow(fullPathOrId, "Editor");
+permsProto.allowEdit = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Editor");
 }
-permsProto.allowFullAccess = function (fullPathOrId) {
-    return this.allow(fullPathOrId, "Full");
+permsProto.allowFullAccess = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Full");
 }
-permsProto.allowOwnership = function (fullPathOrId) {
-    return this.allow(fullPathOrId, "Owner");
+permsProto.allowOwnership = function (pathFromRoot) {
+    return this.allow(pathFromRoot, "Owner");
 }
 
-permsProto.allow = function (fullPathOrId, permission) {
+permsProto.allow = function (pathFromRoot, permission) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
 
     return promises(true)
         .then(function () {
-            fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
+            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + fullPathOrId,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
                 json: {
                     "permission": permission
                 }
@@ -67,16 +67,16 @@ permsProto.allow = function (fullPathOrId, permission) {
         });
 };
 
-permsProto.getPerms = function (fullPathOrId) {
+permsProto.getPerms = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
 
     return promises(true)
         .then(function () {
-            fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
+            pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + fullPathOrId
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body

@@ -4,7 +4,6 @@ var decorators = require("./decorators");
 var notes = require("./notes");
 var lock = require("./lock");
 var chunkedUpload = require("./chunkedUpload");
-var resourceIdSupplier = require("./resourceIdSupplier");
 
 var ENDPOINTS = require("../enum/endpoints");
 
@@ -15,14 +14,14 @@ function Storage(requestEngine) {
 }
 
 var storageProto = {};
-storageProto.exists = function (fullPathOrId) {
+storageProto.exists = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         return requestEngine.promiseRequest(decorate(opts));
@@ -41,14 +40,14 @@ storageProto.exists = function (fullPathOrId) {
     });
 }
 
-storageProto.get = function (fullPathOrId, versionEntryId) {
+storageProto.get = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -59,19 +58,19 @@ storageProto.get = function (fullPathOrId, versionEntryId) {
 
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
-        return resourceIdSupplier.forResource(result.body);
+        return result.body;
     });
 }
 
-storageProto.download = function (fullPathOrId, versionEntryId, isBinary) {
+storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = {
@@ -89,47 +88,46 @@ storageProto.download = function (fullPathOrId, versionEntryId, isBinary) {
     });
 }
 
-storageProto.createFolder = function (fullPathOrId) {
+storageProto.createFolder = function (pathFromRoot) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
         };
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
-        //TODO: get the API to return a folder object
         if (result.response.statusCode == 201) {
             return {
-                path: fullPathOrId
+                path: pathFromRoot
             };
         }
     });
 }
 
-storageProto.move = storageProto.rename = function (fullPathOrId, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), fullPathOrId, newPath, "move");
+storageProto.move = storageProto.rename = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "move");
 }
 
-storageProto.copy = function (fullPathOrId, newPath) {
-    return transfer(this.requestEngine, this.getDecorator(), fullPathOrId, newPath, "copy");
+storageProto.copy = function (pathFromRoot, newPath) {
+    return transfer(this.requestEngine, this.getDecorator(), pathFromRoot, newPath, "copy");
 }
 
-function transfer(requestEngine, decorate, fullPathOrId, newPath, action) {
+function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     return promises(true).then(function () {
         if (!newPath) {
             throw new Error("Cannot move to empty path");
         }
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
             json: {
                 "action": action,
                 "destination": newPath,
@@ -139,23 +137,23 @@ function transfer(requestEngine, decorate, fullPathOrId, newPath, action) {
     }).then(function (result) { //result.response result.body
         if (result.response.statusCode == 200) {
             return {
-                oldPath: fullPathOrId,
+                oldPath: pathFromRoot,
                 path: newPath
             };
         }
     });
 }
 
-storageProto.storeFile = function (fullPathOrId, fileOrBlob, mimeType /* optional */ ) {
+storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
         var file = fileOrBlob;
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
             body: file,
         }
 
@@ -166,16 +164,17 @@ storageProto.storeFile = function (fullPathOrId, fileOrBlob, mimeType /* optiona
 
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
-        var resolution = resourceIdSupplier.forResource(result.body);
-        resolution.path = fullPathOrId; //backward-compatibility
-        resolution.id = result.response.headers["etag"]; //backward-compatibility
-        return resolution;
+        return ({
+            id: result.response.headers["etag"],
+            group_id: result.body.group_id,
+            path: pathFromRoot
+        });
     });
 }
 
 //currently not supported by back - end
 //
-//function storeFileMultipart(fullPathOrId, fileOrBlob) {
+//function storeFileMultipart(pathFromRoot, fileOrBlob) {
 //    return promises(true).then(function () {
 //        if (!window.FormData) {
 //            throw new Error("Unsupported browser");
@@ -183,29 +182,29 @@ storageProto.storeFile = function (fullPathOrId, fileOrBlob, mimeType /* optiona
 //        var file = fileOrBlob;
 //        var formData = new window.FormData();
 //        formData.append('file', file);
-//        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
+//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 //        var opts = {
 //            method: "POST",
-//            url: api.getEndpoint() + fscontent + encodeURI(fullPathOrId),
+//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
 //            body: formData,
 //        };
 //        return api.promiseRequest(decorate(opts));
 //    }).then(function (result) { //result.response result.body
 //        return ({
 //            id: result.response.getResponseHeader("etag"),
-//            path: fullPathOrId
+//            path: pathFromRoot
 //        });
 //    });
 //}
 
 
 //private
-function remove(requestEngine, decorate, fullPathOrId, versionEntryId) {
+function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId) || "";
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(fullPathOrId),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
@@ -219,21 +218,21 @@ function remove(requestEngine, decorate, fullPathOrId, versionEntryId) {
     });
 }
 
-storageProto.removeFileVersion = function (fullPathOrId, versionEntryId) {
+storageProto.removeFileVersion = function (pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
         if (!versionEntryId) {
             throw new Error("Version ID (second argument) is missing");
         }
-        return remove(requestEngine, decorate, fullPathOrId, versionEntryId)
+        return remove(requestEngine, decorate, pathFromRoot, versionEntryId)
     });
 }
 
 
-storageProto.remove = function (fullPathOrId, versionEntryId) {
+storageProto.remove = function (pathFromRoot, versionEntryId) {
     var decorate = this.getDecorator();
-    return remove(this.requestEngine, decorate, fullPathOrId, versionEntryId);
+    return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
 storageProto = helpers.extend(storageProto, notes);

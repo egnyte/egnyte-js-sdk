@@ -3,7 +3,6 @@ var helpers = require('../reusables/helpers');
 var promises = require("q");
 var chunkingStreams = require('chunking-streams');
 var SizeChunker = chunkingStreams.SizeChunker;
-var resourceIdSupplier = require("./resourceIdSupplier");
 
 var ENDPOINTS = require("../enum/endpoints");
 
@@ -13,14 +12,14 @@ function StreamsExtendedStorage() {
 };
 
 
-function storeFile(fullPathOrId, stream, mimeType /* optional */ , size /*optional, not so much*/ ) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional, not so much*/ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId)
+            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot)
         }
 
         opts.headers = {};
@@ -40,17 +39,18 @@ function storeFile(fullPathOrId, stream, mimeType /* optional */ , size /*option
                 } catch (e) {};
             })
             .then(function (result) { //result.response result.body
-                var resolution = resourceIdSupplier.forResource(result.body);
-                resolution.path = fullPathOrId; //backward-compatibility
-                resolution.id = result.response.headers["etag"]; //backward-compatibility
-                return resolution;
+                return ({
+                    id: result.response.headers["etag"],
+                    group_id: result.body.group_id,
+                    path: pathFromRoot
+                });
             });
     });
 }
 
 var uploadChunkSize = 10240; //10k chunks
 
-function streamToChunks(fullPathOrId, stream, mimeType /* optional */ , sizeOverride /*optional*/ ) {
+function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOverride /*optional*/ ) {
     var self = this;
     var defer = promises.defer();
     var chunker = new SizeChunker({
@@ -72,12 +72,12 @@ function streamToChunks(fullPathOrId, stream, mimeType /* optional */ , sizeOver
         if (chunkNumber === 1) {
             if (stream._readableState.pipesCount === 0) {
                 //only one chunk. lol, pass on to the normal upload
-                StreamsExtendedStorage.super_.prototype.storeFile.call(self, fullPathOrId, buf, mimeType, buf.size)
+                StreamsExtendedStorage.super_.prototype.storeFile.call(self, pathFromRoot, buf, mimeType, buf.size)
                     .then(function (result) {
                         defer.resolve(result);
                     });
             } else {
-                self.startChunkedUpload(fullPathOrId, buf, mimeType)
+                self.startChunkedUpload(pathFromRoot, buf, mimeType)
                     .then(function (chunked) {
                         chunkedUploader = chunked;
                         next();
@@ -98,7 +98,7 @@ function streamToChunks(fullPathOrId, stream, mimeType /* optional */ , sizeOver
                         //chunk failed. retry?
                         defer.reject(err);
                     })
-                    //accept another chunk async
+                //accept another chunk async
                 next();
 
             }
@@ -112,15 +112,15 @@ function streamToChunks(fullPathOrId, stream, mimeType /* optional */ , sizeOver
     return defer.promise;
 }
 
-function getFileStream(fullPathOrId, versionEntryId) {
+function getFileStream(pathFromRoot, versionEntryId) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
-    fullPathOrId = helpers.encodeNameSafe(fullPathOrId);
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
     var defer = promises.defer();
 
     var opts = {
         method: "GET",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(fullPathOrId),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
     }
     if (versionEntryId) {
         opts.params = opts.qs = { //xhr and request differ here
