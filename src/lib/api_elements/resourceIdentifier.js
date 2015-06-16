@@ -31,7 +31,7 @@ module.exports = function (APIPrototype) {
             return wrap(this, makeId(false, groupId), APIPrototype)
         },
         folderId: function (folderId) {
-            return wrap(this, makeId(false, folderId), APIPrototype)
+            return wrap(this, makeId(true, folderId), APIPrototype)
         },
         path: function (path) {
             return wrap(this, path, APIPrototype)
