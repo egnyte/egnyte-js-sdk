@@ -63,7 +63,7 @@ describe("Events API facade", function () {
                 return eg.API.storage.path(testpath).createFolder()
                     .then(function (e) {
                         if (typeof OtherUsername !== "undefined") {
-                            return eg.API.perms.users([OtherUsername]).allowFullAccess(testpath)
+                            return eg.API.perms.users([OtherUsername]).path(testpath).allowFullAccess()
                         }
                     }).then(function () {
                         done();

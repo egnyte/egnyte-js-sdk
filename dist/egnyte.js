@@ -1498,6 +1498,7 @@ exports.removeNote = function (id) {
 var promises = require(35);
 var helpers = require(39);
 var decorators = require(16);
+var resourceIdentifier = require(24);
 
 var ENDPOINTS_perms = require(28).perms;
 
@@ -1529,19 +1530,19 @@ function enlist(what) {
 var permsProto = {};
 
 permsProto.disallow = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "None");
+    return permsProto.allow.call(this, pathFromRoot, "None");
 }
 permsProto.allowView = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Viewer");
+    return permsProto.allow.call(this, pathFromRoot, "Viewer");
 }
 permsProto.allowEdit = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Editor");
+    return permsProto.allow.call(this, pathFromRoot, "Editor");
 }
 permsProto.allowFullAccess = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Full");
+    return permsProto.allow.call(this, pathFromRoot, "Full");
 }
 permsProto.allowOwnership = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Owner");
+    return permsProto.allow.call(this, pathFromRoot, "Owner");
 }
 
 permsProto.allow = function (pathFromRoot, permission) {
@@ -1581,11 +1582,10 @@ permsProto.getPerms = function (pathFromRoot) {
         });
 };
 
-
-Perms.prototype = permsProto;
+Perms.prototype = resourceIdentifier(permsProto);
 
 module.exports = Perms;
-},{"16":16,"28":28,"35":35,"39":39}],23:[function(require,module,exports){
+},{"16":16,"24":24,"28":28,"35":35,"39":39}],23:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
@@ -1899,7 +1899,7 @@ module.exports = function (APIPrototype) {
             return wrap(this, makeId(false, groupId), APIPrototype)
         },
         folderId: function (folderId) {
-            return wrap(this, makeId(false, folderId), APIPrototype)
+            return wrap(this, makeId(true, folderId), APIPrototype)
         },
         path: function (path) {
             return wrap(this, path, APIPrototype)
