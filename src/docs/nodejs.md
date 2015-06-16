@@ -10,7 +10,7 @@ All API methods work as described in main docs, below are descriptions of node-s
 
 ```javascript
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, "text/plain", 1105)
     .then(function(filemeta){
         //
     })
@@ -22,7 +22,7 @@ Resolves to the same signature as `storeFile` and fails if any chunk failed to u
 
 ```
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.streamToChunks(pathFromRoot, fileStream, "text/plain" )
+egnyte.API.storage.path(pathFromRoot).streamToChunks(fileStream, "text/plain" )
     .then(function(filemeta){
         //
     })
@@ -34,7 +34,7 @@ This method resolves its promise to the response object of the API, with a pause
 
 
 ```javascript
-egnyte.API.storage.getFileStream(pathFromRoot)
+egnyte.API.storage.path(pathFromRoot).getFileStream()
     .then(function(pausedResponse){
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream

@@ -1,3 +1,6 @@
+### 2.0.0
+- Change in resource identification for files and folders
+
 ### 1.4.1
 - optional token scoping
 

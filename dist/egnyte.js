@@ -1429,7 +1429,7 @@ exports.addNote = function (pathFromRoot, body) {
         var opts = {
             method: "POST",
             url: requestEngine.getEndpoint() + ENDPOINTS_notes,
-            json:{
+            json: {
                 "path": pathFromRoot,
                 "body": body,
             }
@@ -1457,14 +1457,14 @@ exports.listNotes = function (pathFromRoot, params) {
             "file": encodeURI(pathFromRoot)
         }, params);
 
-        return requestEngine.promiseRequest(decorate(opts)).then(function(result){
+        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
             return result.body;
         });
     });
 
 }
 
-exports.getNote = function (id) {
+exports.getNote = function (path, id) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1478,7 +1478,7 @@ exports.getNote = function (id) {
     });
 
 }
-exports.removeNote = function (id) {
+exports.removeNote = function (path, id) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1490,10 +1490,6 @@ exports.removeNote = function (id) {
     });
 
 }
-
-
-
-
 },{"28":28,"35":35,"39":39}],22:[function(require,module,exports){
 var promises = require(35);
 var helpers = require(39);

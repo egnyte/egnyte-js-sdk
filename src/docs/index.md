@@ -4,7 +4,7 @@
 
 * [Methods on top of Egnyte Public API](./api.html)  
 * [API usage notes for node.js](./nodejs.html)
-* [File picker widget](./filepicker.html)  
+* [File picker widget](./widgets.html)  
 * [Installation and tests](./installation.html)  
 
 

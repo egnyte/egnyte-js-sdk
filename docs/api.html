@@ -383,118 +383,141 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </thead>
 <tbody>
 <tr>
-<td>API.storage.exists</td>
-<td><code>path</code>,<code>entryID(optional)</code></td>
+<td>API.storage.<identification>.exists</td>
+<td><code>entryID(optional)</code></td>
 <td>Resolves to true if file exists and false if it doesn&#39;t, rethrows errors if different than 404. <code>entryID</code> is the identifier of the version of the file if the operation should be performed on a version</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.get</td>
-<td><code>path</code></td>
+<td>API.storage.<identification>.get</td>
+<td></td>
 <td>Resolves to file or folder definition object.</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.download</td>
-<td><code>path</code>,<code>entryID(optional)</code> , <code>isBinary</code></td>
+<td>API.storage.<identification>.download</td>
+<td><code>entryID(optional)</code> , <code>isBinary</code></td>
 <td>Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. <code>xhr.responseType</code> is set to <code>arraybuffer</code> if <code>isBinary</code> is true (to get the gist of what this method can do take a look at <code>examples/filepicker_usecase.html</code>). <code>entryID</code> is the identifier of the version of the file if the operation should be performed on a version</td>
 <td>browser only</td>
 </tr>
 <tr>
-<td>API.storage.getFileStream</td>
-<td><code>path</code>,<code>entryID(optional)</code></td>
+<td>API.storage.<identification>.getFileStream</td>
+<td><code>entryID(optional)</code></td>
 <td>Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently.</td>
 <td>node.js only</td>
 </tr>
 <tr>
-<td>API.storage.createFolder</td>
-<td><code>path</code></td>
+<td>API.storage.<identification>.createFolder</td>
+<td></td>
 <td>Creates a folder at the given path, resolves to <code>{path:&quot;...&quot;}</code> or fails if folder can&#39;t be created (also if it already exists)</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.storeFile</td>
-<td><code>path</code>, <code>Blob or Stream</code>, <code>mimeType (optional)</code>, <code>size (optional)</code></td>
+<td>API.storage.<identification>.storeFile</td>
+<td><code>Blob or Stream</code>, <code>mimeType (optional)</code>, <code>size (optional)</code></td>
 <td>Uploads a file and stores at the given path, resolves to <code>{path:&quot;...&quot;,id:&quot;&lt;version ID&gt;&quot;}</code> (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument.</td>
 <td><code>size</code> argument only works in node.js</td>
 </tr>
 <tr>
-<td>API.storage.streamToChunks</td>
-<td><code>path</code>, <code>Stream</code>, <code>mimeType (optional)</code>, <code>chunksize(optional)</code></td>
+<td>API.storage.<identification>.streamToChunks</td>
+<td><code>Stream</code>, <code>mimeType (optional)</code>, <code>chunksize(optional)</code></td>
 <td>splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big. Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload</td>
 <td>node.js only</td>
 </tr>
 <tr>
-<td>API.storage.move</td>
-<td><code>path</code>,  <code>new path</code></td>
+<td>API.storage.<identification>.move</td>
+<td><code>new path</code></td>
 <td>Moves a file or folder to new path, resolves to <code>{path:&quot;...&quot;, oldPath:&quot;...&quot;}</code></td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.copy</td>
-<td><code>path</code>,  <code>new path</code></td>
+<td>API.storage.<identification>.copy</td>
+<td><code>new path</code></td>
 <td>Copies a file or folder to new path, resolves to <code>{path:&quot;...&quot;, oldPath:&quot;...&quot;}</code></td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.rename</td>
-<td><code>path</code>,  <code>new path</code></td>
+<td>API.storage.<identification>.rename</td>
+<td><code>new path</code></td>
 <td>alias for move</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.remove</td>
-<td><code>path</code>,<code>entryID(optional)</code></td>
+<td>API.storage.<identification>.remove</td>
+<td><code>entryID(optional)</code></td>
 <td>Deletes a file or folder. <code>entryID</code> is the identifier of the version of the file if the operation should be performed on a version</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.removeFileVersion</td>
-<td><code>path</code>, <code>version_ID</code></td>
+<td>API.storage.<identification>.removeFileVersion</td>
+<td><code>version_ID</code></td>
 <td>Deletes a version of a file, throws if version not provided (can&#39;t delete the whole file accidentally)</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.addNote</td>
-<td><code>path</code>, <code>note_text</code></td>
+<td>API.storage.<identification>.addNote</td>
+<td><code>note_text</code></td>
 <td>Adds a note on file, resolves to <code>{id:&quot;note-id&quot;}</code></td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.lock</td>
-<td><code>path</code>, <code>previous token</code>, <code>timeout</code></td>
+<td>API.storage.<identification>.lock</td>
+<td><code>previous token</code>, <code>timeout</code></td>
 <td>Locks a file, resolves to <code>{path: &quot;...&quot;, timeout:seconds,lock_token:&quot;...&quot;}</code>, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.unlock</td>
-<td><code>path</code>,<code>token</code></td>
+<td>API.storage.<identification>.unlock</td>
+<td><code>token</code></td>
 <td>Unlocks a file if the token is the one with which the lock was claimed</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.getNote</td>
+<td>API.storage.<identification>.getNote</td>
 <td><code>node_id</code></td>
-<td>Resolves to a note object</td>
+<td>Resolves to a note object. identification is ignired</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.removeNote</td>
+<td>API.storage.<identification>.removeNote</td>
 <td><code>node_id</code></td>
-<td>Removes the note</td>
+<td>Removes the note. identification is ignored</td>
 <td></td>
 </tr>
 <tr>
-<td>API.storage.listNotes</td>
-<td><code>path</code>, <code>query_params</code></td>
+<td>API.storage.<identification>.listNotes</td>
+<td><code>query_params</code></td>
 <td>Resolves to an object with pagination options and <code>notes</code> field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)</td>
 <td></td>
 </tr>
 </tbody>
 </table>
+<h3 id="identification">Identification</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Argument </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.*.path</td>
+<td>full path to file, starting with / </td>
+</tr>
+<tr>
+<td>API.*.fileId</td>
+<td>group_id of the file</td>
+</tr>
+<tr>
+<td>API.*.folderId</td>
+<td>folder_id of the folder</td>
+</tr>
+</tbody>
+</table>
 <h3 id="storing-a-file-node-js">Storing a file - node.js</h3>
 <pre><code class="lang-javascript">var fileStream = fs.createReadStream(&#39;sample.txt&#39;)
-egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1105)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quot;, 1105)
     .then(function(filemeta){
         //
     })</code></pre>
@@ -506,7 +529,7 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
 
     var file = $(&quot;input.avatarfile&quot;)[0].files[0]
 
-    egnyte.API.storage.storeFile(&quot;/Private/mydata/avatar.png&quot;, file, &quot;image/png&quot;)
+    egnyte.API.storage.path(&quot;/Private/mydata/avatar.png&quot;).storeFile(file, &quot;image/png&quot;)
        .then(function (response, body) {
             //upload successful
         },function(error, response, body){
@@ -518,7 +541,7 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
 <h3 id="downloading-a-file">Downloading a file</h3>
 <p>It is possible to download a file to memory in modern browsers. A proof of concept of that can be found in <code>examples/filepicker_usecase.html</code></p>
 <p>In node.js getFileStream resolves to a paused stream that has to be manually resumed when you&#39;re ready to accept its data.</p>
-<pre><code class="lang-javascript">egnyte.API.storage.getFileStream(pathFromRoot)
+<pre><code class="lang-javascript">egnyte.API.storage.path(pathFromRoot).getFileStream()
     .then(function(pausedResponse){
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
@@ -742,50 +765,73 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
 <td>Returns <code>API.perms</code> instance scoped to a certain set of groups.</td>
 </tr>
 <tr>
-<td>API.perms.allow</td>
-<td><code>folderPath</code>, <code>accessLevel</code></td>
+<td>API.perms.<identification>.allow</td>
+<td><code>accessLevel</code></td>
 <td>Sets certain permissions on the given folder for the users/groups it&#39;s scoped to. Second argument is one of &quot;None&quot;, &quot;Viewer&quot;, &quot;Editor&quot;, &quot;Full&quot;, &quot;Owner&quot;</td>
 </tr>
 <tr>
-<td>API.perms.disallow</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.disallow</td>
+<td></td>
 <td>Sets permissions on the given folder to &quot;None&quot;  for the users/groups it&#39;s scoped to.</td>
 </tr>
 <tr>
-<td>API.perms.allowView</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.allowView</td>
+<td></td>
 <td>Sets permissions on the given folder to &quot;Viewer&quot; for the users/groups it&#39;s scoped to.</td>
 </tr>
 <tr>
-<td>API.perms.allowEdit</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.allowEdit</td>
+<td></td>
 <td>Sets permissions on the given folder to &quot;Editor&quot; for the users/groups it&#39;s scoped to.</td>
 </tr>
 <tr>
-<td>API.perms.allowFullAccess</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.allowFullAccess</td>
+<td></td>
 <td>Sets permissions on the given folder to &quot;Full&quot; for the users/groups it&#39;s scoped to.</td>
 </tr>
 <tr>
-<td>API.perms.allowOwnership</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.allowOwnership</td>
+<td></td>
 <td>Sets permissions on the given folder to &quot;Owner&quot; for the users/groups it&#39;s scoped to.</td>
 </tr>
 <tr>
-<td>API.perms.getPerms</td>
-<td><code>folderPath</code></td>
+<td>API.perms.<identification>.getPerms</td>
+<td></td>
 <td>Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="identification">Identification</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Argument </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.*.path</td>
+<td>full path to file, starting with / </td>
+</tr>
+<tr>
+<td>API.*.fileId</td>
+<td>group_id of the file</td>
+</tr>
+<tr>
+<td>API.*.folderId</td>
+<td>folder_id of the folder</td>
 </tr>
 </tbody>
 </table>
 <h3 id="setting-permissions-for-users-and-groups">Setting permissions for users and groups</h3>
 <p>Scoping to users and groups can be merged </p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).allowEdit(&quot;/Shared/marketing/events&quot;)</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()</code></pre>
 <p>Scoping again will override the previous setting, so the example below will only set permissions for &quot;andy&quot;.</p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).allowEdit(&quot;/Shared/marketing/events&quot;)</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()</code></pre>
 <h3 id="getting-permissions-for-users-and-groups">Getting permissions for users and groups</h3>
 <p>All permissions for folder:</p>
-<pre><code class="lang-javascript">egnyte.API.perms.getPerms(&quot;/Shared/marketing/events&quot;)</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.path(&quot;/Shared/marketing/events&quot;).getPerms()</code></pre>
 <p>Returns</p>
 <pre><code>{
     &quot;users&quot;: [{
@@ -804,7 +850,7 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
         }]
 }</code></pre>
 <p>Filtered permissions information:</p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).getPerms(&quot;/Shared/marketing/events&quot;)</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).path(&quot;/Shared/marketing/events&quot;).getPerms()</code></pre>
 <p>Returns</p>
 <pre><code>{
     &quot;users&quot;: [{
@@ -945,7 +991,7 @@ egnyte.API.storage.storeFile(pathFromRoot, fileStream, &quot;text/plain&quot;, 1
     },
     interval: 10000,
     heartbeat: function(){
-        console.log(&quot;&lt;3&quot;);
+        console.log(&quot;.&quot;);
     }
 }).then(function(polling){
     //call polling.stop() to turn the listener off
@@ -987,7 +1033,7 @@ egnyte.API.link.impersonate({email:&quot;username@example.com&quot;}).createLink
 <p>You can store an impersonated facade to use multiple times or pass it along to other components that don&#39;t need to have access to username, but need to perform on behalf of that user.</p>
 <pre><code class="lang-javascript">var impersonatedStorage = egnyte.API.storage.impersonate({username:&quot;username&quot;});
 
-impersonatedStorage.exists(&quot;/path...&quot;);</code></pre>
+impersonatedStorage.path(&quot;/path...&quot;).exists();</code></pre>
 <h2 id="providing-your-own-http-request-implementation">Providing your own http request implementation</h2>
 <p>You can provide a request function as the <code>httpRequest</code> option.</p>
 <p>It has to accept an <code>options</code> object and a result callback <code>function(error, responseObject, responseBody)</code></p>

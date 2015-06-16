@@ -241,31 +241,39 @@ All API helpers return promises.
 
 Method | Arguments | Description | Restrictions
 --- | --- | --- | ---
-API.storage.exists | `path`,`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.get | `path` | Resolves to file or folder definition object.|
-API.storage.download | `path`,`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
-API.storage.getFileStream | `path`,`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
-API.storage.createFolder | `path` | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
-API.storage.storeFile | `path`, `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
-API.storage.streamToChunks | `path`, `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
-API.storage.move | `path`,  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
-API.storage.copy | `path`,  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
-API.storage.rename | `path`,  `new path` | alias for move|
-API.storage.remove | `path`,`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.removeFileVersion | `path`, `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
-API.storage.addNote | `path`, `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
-API.storage.lock | `path`, `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
-API.storage.unlock | `path`,`token` | Unlocks a file if the token is the one with which the lock was claimed |
-API.storage.getNote | `node_id` | Resolves to a note object|
-API.storage.removeNote | `node_id` | Removes the note|
-API.storage.listNotes | `path`, `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+API.storage.<identification>.exists |`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.<identification>.get | | Resolves to file or folder definition object.|
+API.storage.<identification>.download |`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
+API.storage.<identification>.getFileStream |`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
+API.storage.<identification>.createFolder | | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
+API.storage.<identification>.storeFile | `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
+API.storage.<identification>.streamToChunks | `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
+API.storage.<identification>.move |  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.<identification>.copy |  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.<identification>.rename |  `new path` | alias for move|
+API.storage.<identification>.remove |`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.<identification>.removeFileVersion | `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
+API.storage.<identification>.addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.storage.<identification>.lock | `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
+API.storage.<identification>.unlock |`token` | Unlocks a file if the token is the one with which the lock was claimed |
+API.storage.<identification>.getNote | `node_id` | Resolves to a note object. identification is ignired|
+API.storage.<identification>.removeNote | `node_id` | Removes the note. identification is ignored|
+API.storage.<identification>.listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+
+### Identification
+
+Method | Argument 
+--- | --- | ---
+API.*.path | full path to file, starting with / 
+API.*.fileId | group_id of the file
+API.*.folderId | folder_id of the folder
 
 ### Storing a file - node.js
 
 
 ```javascript
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.storeFile(pathFromRoot, fileStream, "text/plain", 1105)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, "text/plain", 1105)
     .then(function(filemeta){
         //
     })
@@ -287,7 +295,7 @@ $(".myForm").on("submit",function(){
 
     var file = $("input.avatarfile")[0].files[0]
 
-    egnyte.API.storage.storeFile("/Private/mydata/avatar.png", file, "image/png")
+    egnyte.API.storage.path("/Private/mydata/avatar.png").storeFile(file, "image/png")
        .then(function (response, body) {
             //upload successful
         },function(error, response, body){
@@ -307,7 +315,7 @@ It is possible to download a file to memory in modern browsers. A proof of conce
 In node.js getFileStream resolves to a paused stream that has to be manually resumed when you're ready to accept its data.
 
 ```javascript
-egnyte.API.storage.getFileStream(pathFromRoot)
+egnyte.API.storage.path(pathFromRoot).getFileStream()
     .then(function(pausedResponse){
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
@@ -430,28 +438,35 @@ Method | Arguments | Description
 --- | --- | ---
 API.perms.users| `users[]` | Returns `API.perms` instance scoped to a certain set of users.
 API.perms.groups| `groups[]` | Returns `API.perms` instance scoped to a certain set of groups.
-API.perms.allow | `folderPath`, `accessLevel` | Sets certain permissions on the given folder for the users/groups it's scoped to. Second argument is one of "None", "Viewer", "Editor", "Full", "Owner"
-API.perms.disallow| `folderPath` | Sets permissions on the given folder to "None"  for the users/groups it's scoped to.
-API.perms.allowView| `folderPath` | Sets permissions on the given folder to "Viewer" for the users/groups it's scoped to.
-API.perms.allowEdit| `folderPath` | Sets permissions on the given folder to "Editor" for the users/groups it's scoped to.
-API.perms.allowFullAccess| `folderPath` | Sets permissions on the given folder to "Full" for the users/groups it's scoped to.
-API.perms.allowOwnership| `folderPath` | Sets permissions on the given folder to "Owner" for the users/groups it's scoped to.
-API.perms.getPerms| `folderPath` | Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.
+API.perms.<identification>.allow | `accessLevel` | Sets certain permissions on the given folder for the users/groups it's scoped to. Second argument is one of "None", "Viewer", "Editor", "Full", "Owner"
+API.perms.<identification>.disallow|  | Sets permissions on the given folder to "None"  for the users/groups it's scoped to.
+API.perms.<identification>.allowView|  | Sets permissions on the given folder to "Viewer" for the users/groups it's scoped to.
+API.perms.<identification>.allowEdit|  | Sets permissions on the given folder to "Editor" for the users/groups it's scoped to.
+API.perms.<identification>.allowFullAccess|  | Sets permissions on the given folder to "Full" for the users/groups it's scoped to.
+API.perms.<identification>.allowOwnership|  | Sets permissions on the given folder to "Owner" for the users/groups it's scoped to.
+API.perms.<identification>.getPerms|  | Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.
 
+### Identification
+
+Method | Argument 
+--- | --- | ---
+API.*.path | full path to file, starting with / 
+API.*.fileId | group_id of the file
+API.*.folderId | folder_id of the folder
 
 ### Setting permissions for users and groups
  
 Scoping to users and groups can be merged 
  
 ```javascript
-egnyte.API.perms.users(["tommy","margaret"]).groups(["All Power Users"]).allowEdit("/Shared/marketing/events")
+egnyte.API.perms.users(["tommy","margaret"]).groups(["All Power Users"]).path("/Shared/marketing/events").allowEdit()
        
 ```
 
 Scoping again will override the previous setting, so the example below will only set permissions for "andy".
 
 ```javascript
-egnyte.API.perms.users(["tommy","margaret"]).users(["andy"]).allowEdit("/Shared/marketing/events")
+egnyte.API.perms.users(["tommy","margaret"]).users(["andy"]).path("/Shared/marketing/events").allowEdit()
        
 ```
 
@@ -460,7 +475,7 @@ egnyte.API.perms.users(["tommy","margaret"]).users(["andy"]).allowEdit("/Shared/
 All permissions for folder:
  
 ```javascript
-egnyte.API.perms.getPerms("/Shared/marketing/events")
+egnyte.API.perms.path("/Shared/marketing/events").getPerms()
        
 ```
 Returns
@@ -488,7 +503,7 @@ Filtered permissions information:
 
 
 ```javascript
-egnyte.API.perms.users(["tommy"]).getPerms("/Shared/marketing/events")
+egnyte.API.perms.users(["tommy"]).path("/Shared/marketing/events").getPerms()
        
 ```
 Returns
@@ -559,7 +574,7 @@ egnyte.API.events.notMy().filter({
     },
     interval: 10000,
     heartbeat: function(){
-        console.log("<3");
+        console.log(".");
     }
 }).then(function(polling){
     //call polling.stop() to turn the listener off
@@ -595,7 +610,7 @@ You can store an impersonated facade to use multiple times or pass it along to o
 ```javascript
 var impersonatedStorage = egnyte.API.storage.impersonate({username:"username"});
 
-impersonatedStorage.exists("/path...");
+impersonatedStorage.path("/path...").exists();
 ```
 
 ## Providing your own http request implementation
