@@ -17,13 +17,13 @@ function Perms(requestEngine) {
 function enlist(what) {
     return function (opts, data) {
         switch (opts.method) {
-        case 'GET':
-            opts.params || (opts.params = {});
-            opts.params[what] = data.join("|");
-            break;
-        case 'POST':
-            opts.json[what] = data;
-            break;
+            case 'GET':
+                opts.params || (opts.params = {});
+                opts.params[what] = data.join("|");
+                break;
+            case 'POST':
+                opts.json[what] = data;
+                break;
         }
         return opts;
     }
@@ -85,6 +85,8 @@ permsProto.getPerms = function (pathFromRoot) {
         });
 };
 
-Perms.prototype = resourceIdentifier(permsProto);
+Perms.prototype = resourceIdentifier(permsProto, {
+    pathPrefix: "/folder"
+});
 
 module.exports = Perms;

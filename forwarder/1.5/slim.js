@@ -1475,13 +1475,13 @@ function Perms(requestEngine) {
 function enlist(what) {
     return function (opts, data) {
         switch (opts.method) {
-        case 'GET':
-            opts.params || (opts.params = {});
-            opts.params[what] = data.join("|");
-            break;
-        case 'POST':
-            opts.json[what] = data;
-            break;
+            case 'GET':
+                opts.params || (opts.params = {});
+                opts.params[what] = data.join("|");
+                break;
+            case 'POST':
+                opts.json[what] = data;
+                break;
         }
         return opts;
     }
@@ -1543,7 +1543,9 @@ permsProto.getPerms = function (pathFromRoot) {
         });
 };
 
-Perms.prototype = resourceIdentifier(permsProto);
+Perms.prototype = resourceIdentifier(permsProto, {
+    pathPrefix: "/folder"
+});
 
 module.exports = Perms;
 },{"14":14,"22":22,"26":26,"28":28,"31":31}],21:[function(require,module,exports){
@@ -1854,7 +1856,7 @@ function wrap(self, pathOrId, APIPrototype) {
 }
 
 
-module.exports = function (APIPrototype) {
+module.exports = function (APIPrototype, opts) {
     return {
         fileId: function (groupId) {
             return wrap(this, makeId(false, groupId), APIPrototype)
@@ -1863,6 +1865,9 @@ module.exports = function (APIPrototype) {
             return wrap(this, makeId(true, folderId), APIPrototype)
         },
         path: function (path) {
+            if (opts && opts.pathPrefix) {
+                path = opts.pathPrefix + path;
+            }
             return wrap(this, path, APIPrototype)
         },
         internals: APIPrototype
@@ -2318,7 +2323,7 @@ module.exports={
     "fschunked": "/v1/fs-content-chunked",
     "notes": "/v1/notes",
     "links": "/v1/links",
-    "perms": "/v1/perms/folder",
+    "perms": "/v1/perms",
     "userinfo": "/v1/userinfo",
     "events": "/v1/events",
     "eventscursor": "/v1/events/cursor",

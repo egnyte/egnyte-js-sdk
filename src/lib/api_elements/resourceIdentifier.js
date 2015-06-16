@@ -25,7 +25,7 @@ function wrap(self, pathOrId, APIPrototype) {
 }
 
 
-module.exports = function (APIPrototype) {
+module.exports = function (APIPrototype, opts) {
     return {
         fileId: function (groupId) {
             return wrap(this, makeId(false, groupId), APIPrototype)
@@ -34,6 +34,9 @@ module.exports = function (APIPrototype) {
             return wrap(this, makeId(true, folderId), APIPrototype)
         },
         path: function (path) {
+            if (opts && opts.pathPrefix) {
+                path = opts.pathPrefix + path;
+            }
             return wrap(this, path, APIPrototype)
         },
         internals: APIPrototype
