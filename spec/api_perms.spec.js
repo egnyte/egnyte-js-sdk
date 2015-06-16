@@ -87,10 +87,10 @@ describe("Permissions API facade integration", function () {
 
         it("Can set basic permissions", function (done) {
             //would be nice to create the user first...
-            eg.API.perms.users(["test", "banana"]).allowEdit(testpath)
+            eg.API.perms.users(["test", "banana"]).path(testpath).allowEdit()
                 .then(function (e) {
                     expect(e.statusCode).toEqual(200); //actually checking if it exists
-                    return eg.API.perms.users(["test"]).getPerms(testpath);
+                    return eg.API.perms.users(["test"]).path(testpath).getPerms();
                 }).then(function (e) {
                     expect(e.users.length).toBeGreaterThan(0);
                     expect(e.users[0].subject).toBe("test");
@@ -103,10 +103,10 @@ describe("Permissions API facade integration", function () {
         });
 
         it("Can filter permissions", function (done) {
-            eg.API.perms.users(["JohnnyIHardlyKnewYa"]).getPerms(testpath)
+            eg.API.perms.users(["JohnnyIHardlyKnewYa"]).path(testpath).getPerms()
                 .then(function (e) {
                     expect(e.users.length).toEqual(0);
-                    return eg.API.perms.getPerms(testpath);
+                    return eg.API.perms.path(testpath).getPerms();
                 }).then(function (e) {
                     expect(e.users.length).toBeGreaterThan(0);
                     done();
