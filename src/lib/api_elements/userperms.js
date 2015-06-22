@@ -9,7 +9,7 @@ function UserPerms(requestEngine) {
     decorators.install(this);
 
     this.addDecorator("path", pointFolder("folder"));
-    this.addDecorator("folderId", pointFolder("folderId"));
+    this.addDecorator("folderId", pointFolder("folder_id"));
 
 }
 
