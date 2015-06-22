@@ -89,4 +89,7 @@ Perms.prototype = resourceIdentifier(permsProto, {
     pathPrefix: "/folder"
 });
 
+//to prevent confusion in users
+delete Perms.prototype.fileId;
+
 module.exports = Perms;

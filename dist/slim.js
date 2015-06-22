@@ -588,6 +588,7 @@ var AuthEngine = require(12);
 var StorageFacade = require(23);
 var LinkFacade = require(17);
 var PermFacade = require(20);
+var UserPerms = require(24);
 var Events = require(16);
 
 module.exports = function (options) {
@@ -597,6 +598,7 @@ module.exports = function (options) {
     var storage = new StorageFacade(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
+    var userPerms = new UserPerms(requestEngine);
     var events = new Events(requestEngine);
     
     var api = {
@@ -604,19 +606,20 @@ module.exports = function (options) {
         storage: storage,
         link: link,
         events: events,
-        perms: perms
+        perms: perms,
+        userPerms: userPerms
     };
 
     //onlt in IE8 and IE9
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(24);
+            var responder = require(25);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(25);
+                var forwarder = require(26);
                 forwarder(options, api);
             }
         }
@@ -626,18 +629,18 @@ module.exports = function (options) {
 
     return api;
 };
-},{"12":12,"16":16,"17":17,"20":20,"21":21,"23":23,"24":24,"25":25}],12:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(28);
-var helpers = require(31);
-var dom = require(29);
-var messages = require(32);
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(26).userinfo;
-var ENDPOINTS_tokenauth = require(26).tokenauth;
+var ENDPOINTS_userinfo = require(27).userinfo;
+var ENDPOINTS_tokenauth = require(27).tokenauth;
 
 
 function Auth(options) {
@@ -851,10 +854,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"15":15,"26":26,"28":28,"29":29,"31":31,"32":32}],13:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
-var ENDPOINTS = require(26);
+},{"15":15,"27":27,"29":29,"30":30,"32":32,"33":33}],13:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var ENDPOINTS = require(27);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -963,8 +966,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"26":26,"28":28,"31":31}],14:[function(require,module,exports){
-var helpers = require(31);
+},{"27":27,"29":29,"32":32}],14:[function(require,module,exports){
+var helpers = require(32);
 
 var defaultDecorators = {
 
@@ -1030,7 +1033,7 @@ module.exports = {
 
     }
 }
-},{"31":31}],15:[function(require,module,exports){
+},{"32":32}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1093,13 +1096,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
-var every = require(30);
+var promises = require(29);
+var helpers = require(32);
+var every = require(31);
 var decorators = require(14);
 
-var ENDPOINTS_events = require(26).events;
-var ENDPOINTS_eventscursor = require(26).eventscursor;
+var ENDPOINTS_events = require(27).events;
+var ENDPOINTS_eventscursor = require(27).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1226,12 +1229,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"14":14,"26":26,"28":28,"30":30,"31":31}],17:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
+},{"14":14,"27":27,"29":29,"31":31,"32":32}],17:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 
-var ENDPOINTS_links = require(26).links;
+var ENDPOINTS_links = require(27).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1322,11 +1325,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"14":14,"26":26,"28":28,"31":31}],18:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
+},{"14":14,"27":27,"29":29,"32":32}],18:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 
-var ENDPOINTS_fsmeta = require(26).fsmeta;
+var ENDPOINTS_fsmeta = require(27).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1376,11 +1379,11 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"26":26,"28":28,"31":31}],19:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
+},{"27":27,"29":29,"32":32}],19:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 
-var ENDPOINTS_notes = require(26).notes;
+var ENDPOINTS_notes = require(27).notes;
 
 exports.addNote = function (pathFromRoot, body) {
     var requestEngine = this.requestEngine;
@@ -1451,13 +1454,13 @@ exports.removeNote = function (path, id) {
     });
 
 }
-},{"26":26,"28":28,"31":31}],20:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
+},{"27":27,"29":29,"32":32}],20:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS_perms = require(26).perms;
+var ENDPOINTS_perms = require(27).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1543,15 +1546,18 @@ Perms.prototype = resourceIdentifier(permsProto, {
     pathPrefix: "/folder"
 });
 
+//to prevent confusion in users
+delete Perms.prototype.fileId;
+
 module.exports = Perms;
-},{"14":14,"22":22,"26":26,"28":28,"31":31}],21:[function(require,module,exports){
+},{"14":14,"22":22,"27":27,"29":29,"32":32}],21:[function(require,module,exports){
 var quotaRegex = /^<h1>Developer Over Qps/i;
 
 
-var promises = require(28);
-var helpers = require(31);
-var dom = require(29);
-var messages = require(32);
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 var errorify = require(15);
 var request = require(3);
 
@@ -1824,8 +1830,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"15":15,"28":28,"29":29,"3":3,"31":31,"32":32}],22:[function(require,module,exports){
-var helpers = require(31);
+},{"15":15,"29":29,"3":3,"30":30,"32":32,"33":33}],22:[function(require,module,exports){
+var helpers = require(32);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1870,16 +1876,16 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"31":31}],23:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
+},{"32":32}],23:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 var notes = require(19);
 var lock = require(18);
 var chunkedUpload = require(13);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS = require(26);
+var ENDPOINTS = require(27);
 
 
 function Storage(requestEngine) {
@@ -2116,10 +2122,55 @@ storageProto = helpers.extend(storageProto, chunkedUpload);
 Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
-},{"13":13,"14":14,"18":18,"19":19,"22":22,"26":26,"28":28,"31":31}],24:[function(require,module,exports){
-var helpers = require(31);
-var dom = require(29);
-var messages = require(32);
+},{"13":13,"14":14,"18":18,"19":19,"22":22,"27":27,"29":29,"32":32}],24:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var decorators = require(14);
+
+var ENDPOINTS_perms = require(27).perms;
+
+function UserPerms(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
+
+    this.addDecorator("path", pointFolder("folder"));
+    this.addDecorator("folderId", pointFolder("folderId"));
+
+}
+
+function pointFolder(what) {
+    return function (opts, data) {
+        opts.params || (opts.params = {});
+        opts.params[what] = data;
+        return opts;
+    };
+}
+
+var userPermsProto = {};
+
+userPermsProto.get = function (user) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+
+    return promises(true)
+        .then(function () {
+            var opts = {
+                method: "GET",
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + "/user" + (user ? "/" + user : "")
+            };
+            return requestEngine.promiseRequest(decorate(opts));
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+};
+
+UserPerms.prototype = userPermsProto;
+
+module.exports = UserPerms;
+},{"14":14,"27":27,"29":29,"32":32}],25:[function(require,module,exports){
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2178,11 +2229,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"29":29,"31":31,"32":32}],25:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
-var dom = require(29);
-var messages = require(32);
+},{"30":30,"32":32,"33":33}],26:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 
 
 
@@ -2312,7 +2363,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"28":28,"29":29,"31":31,"32":32}],26:[function(require,module,exports){
+},{"29":29,"30":30,"32":32,"33":33}],27:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2325,13 +2376,13 @@ module.exports={
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],27:[function(require,module,exports){
-var promises = require(28);
-var helpers = require(31);
-var dom = require(29);
-var messages = require(32);
+},{}],28:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 var decorators = require(14);
-var ENDPOINTS = require(26);
+var ENDPOINTS = require(27);
 
 var plugins = {};
 module.exports = {
@@ -2358,10 +2409,10 @@ module.exports = {
         });
     }
 };
-},{"14":14,"26":26,"28":28,"29":29,"31":31,"32":32}],28:[function(require,module,exports){
+},{"14":14,"27":27,"29":29,"30":30,"32":32,"33":33}],29:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(31);
+var helpers = require(32);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2444,7 +2495,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":1,"31":31}],29:[function(require,module,exports){
+},{"1":1,"32":32}],30:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2513,8 +2564,8 @@ module.exports = {
     }
 
 }
-},{"2":2}],30:[function(require,module,exports){
-var promises = require(28);
+},{"2":2}],31:[function(require,module,exports){
+var promises = require(29);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -2553,7 +2604,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"28":28}],31:[function(require,module,exports){
+},{"29":29}],32:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2628,8 +2679,8 @@ module.exports = {
         return (name);
     }
 };
-},{}],32:[function(require,module,exports){
-var helpers = require(31);
+},{}],33:[function(require,module,exports){
+var helpers = require(32);
 
 
 //returns postMessage specific handler
@@ -2679,9 +2730,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"31":31}],33:[function(require,module,exports){
-var helpers = require(31);
-var plugins = require(27);
+},{"32":32}],34:[function(require,module,exports){
+var helpers = require(32);
+var plugins = require(28);
 var defaults = require(10);
 
 module.exports = {
@@ -2704,5 +2755,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{"10":10,"11":11,"27":27,"31":31}]},{},[33])(33)
+},{"10":10,"11":11,"28":28,"32":32}]},{},[34])(34)
 });

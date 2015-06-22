@@ -241,24 +241,24 @@ All API helpers return promises.
 
 Method | Arguments | Description | Restrictions
 --- | --- | --- | ---
-API.storage.<identification>.exists |`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.<identification>.get | | Resolves to file or folder definition object.|
-API.storage.<identification>.download |`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
-API.storage.<identification>.getFileStream |`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
-API.storage.<identification>.createFolder | | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
-API.storage.<identification>.storeFile | `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
-API.storage.<identification>.streamToChunks | `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
-API.storage.<identification>.move |  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
-API.storage.<identification>.copy |  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
-API.storage.<identification>.rename |  `new path` | alias for move|
-API.storage.<identification>.remove |`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
-API.storage.<identification>.removeFileVersion | `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
-API.storage.<identification>.addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
-API.storage.<identification>.lock | `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
-API.storage.<identification>.unlock |`token` | Unlocks a file if the token is the one with which the lock was claimed |
-API.storage.<identification>.getNote | `node_id` | Resolves to a note object. identification is ignired|
-API.storage.<identification>.removeNote | `node_id` | Removes the note. identification is ignored|
-API.storage.<identification>.listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+API.storage.*identify(...)*.exists |`entryID(optional)` | Resolves to true if file exists and false if it doesn't, rethrows errors if different than 404. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.*identify(...)*.get | | Resolves to file or folder definition object.|
+API.storage.*identify(...)*.download |`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
+API.storage.*identify(...)*.getFileStream |`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
+API.storage.*identify(...)*.createFolder | | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
+API.storage.*identify(...)*.storeFile | `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
+API.storage.*identify(...)*.streamToChunks | `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
+API.storage.*identify(...)*.move |  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.*identify(...)*.copy |  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
+API.storage.*identify(...)*.rename |  `new path` | alias for move|
+API.storage.*identify(...)*.remove |`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
+API.storage.*identify(...)*.removeFileVersion | `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
+API.storage.*identify(...)*.addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.storage.*identify(...)*.lock | `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
+API.storage.*identify(...)*.unlock |`token` | Unlocks a file if the token is the one with which the lock was claimed |
+API.storage.*identify(...)*.getNote | `node_id` | Resolves to a note object. identification is ignired|
+API.storage.*identify(...)*.removeNote | `node_id` | Removes the note. identification is ignored|
+API.storage.*identify(...)*.listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
 
 ### Identification
 
@@ -438,20 +438,19 @@ Method | Arguments | Description
 --- | --- | ---
 API.perms.users| `users[]` | Returns `API.perms` instance scoped to a certain set of users.
 API.perms.groups| `groups[]` | Returns `API.perms` instance scoped to a certain set of groups.
-API.perms.<identification>.allow | `accessLevel` | Sets certain permissions on the given folder for the users/groups it's scoped to. Second argument is one of "None", "Viewer", "Editor", "Full", "Owner"
-API.perms.<identification>.disallow|  | Sets permissions on the given folder to "None"  for the users/groups it's scoped to.
-API.perms.<identification>.allowView|  | Sets permissions on the given folder to "Viewer" for the users/groups it's scoped to.
-API.perms.<identification>.allowEdit|  | Sets permissions on the given folder to "Editor" for the users/groups it's scoped to.
-API.perms.<identification>.allowFullAccess|  | Sets permissions on the given folder to "Full" for the users/groups it's scoped to.
-API.perms.<identification>.allowOwnership|  | Sets permissions on the given folder to "Owner" for the users/groups it's scoped to.
-API.perms.<identification>.getPerms|  | Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.
+API.perms.*identify(...)*.allow | `accessLevel` | Sets certain permissions on the given folder for the users/groups it's scoped to. Second argument is one of "None", "Viewer", "Editor", "Full", "Owner"
+API.perms.*identify(...)*.disallow|  | Sets permissions on the given folder to "None"  for the users/groups it's scoped to.
+API.perms.*identify(...)*.allowView|  | Sets permissions on the given folder to "Viewer" for the users/groups it's scoped to.
+API.perms.*identify(...)*.allowEdit|  | Sets permissions on the given folder to "Editor" for the users/groups it's scoped to.
+API.perms.*identify(...)*.allowFullAccess|  | Sets permissions on the given folder to "Full" for the users/groups it's scoped to.
+API.perms.*identify(...)*.allowOwnership|  | Sets permissions on the given folder to "Owner" for the users/groups it's scoped to.
+API.perms.*identify(...)*.getPerms|  | Resolves to a permissions object of the folder. If scoped to users/groups, only permissions relevant to them will be returned.
 
 ### Identification
 
 Method | Argument 
 --- | --- | ---
 API.*.path | full path to file, starting with / 
-API.*.fileId | group_id of the file
 API.*.folderId | folder_id of the folder
 
 ### Setting permissions for users and groups
@@ -517,6 +516,38 @@ Returns
 }
 
 ```
+
+## User Permissions
+
+All API helpers return promises.
+
+Method | Arguments | Description
+--- | --- | ---
+API.userPerms.*identify(...)*.get | `username` | Resolves to effective permissions for given user. `username` defaults to the user making the request.
+
+
+### Identification
+
+Method | Argument 
+--- | --- | ---
+API.*.path | full path to folder, starting with / 
+API.*.folderId | folder_id of the folder
+
+### Getting effective user permissions
+
+ 
+```javascript
+egnyte.API.userPerms.path("/Shared/Documents").get()
+       
+```
+Returns
+```
+{
+  "permission": "Full"
+}
+
+```
+
 
 ## Events
 
