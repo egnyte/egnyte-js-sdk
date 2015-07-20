@@ -1,6 +1,7 @@
 var RequestEngine = require("./api_elements/reqengine");
 var AuthEngine = require("./api_elements/auth");
 var StorageFacade = require("./api_elements/storage");
+var Notes = require("./api_elements/notes");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
 var UserPerms = require("./api_elements/userperms");
@@ -11,14 +12,16 @@ module.exports = function (options) {
     var requestEngine = new RequestEngine(auth, options);
 
     var storage = new StorageFacade(requestEngine);
+    var notes = new Notes(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
     var events = new Events(requestEngine);
-    
+
     var api = {
         auth: auth,
         storage: storage,
+        notes: notes,
         link: link,
         events: events,
         perms: perms,

@@ -95,7 +95,7 @@ describe("Storage API facade integration", function () {
             });
 
         });
-   
+
         it("Can create a folder", function (done) {
             eg.API.storage.path(testpath).createFolder()
                 .then(function (e) {
@@ -324,69 +324,20 @@ describe("Storage API facade integration", function () {
             });
 
         });
-        describe("notes", function () {
-            it("Can add a note to a file", function (done) {
-                var words = "Tradition enforces enforcing tradition";
-                eg.API.storage.path(testpath).addNote("1 " + words)
-                    .then(function (result) {
-                        recentNoteId = result.id;
-                        expect(result.id).toBeTruthy();
-                        return eg.API.storage.path(testpath).addNote("2 " + words); //adding another one for funzies
-                    })
-                    .then(function () {
-                        return eg.API.storage.path(recentNoteId).getNote();
-                    })
-                    .then(function (noteObj) {
-                        expect(noteObj.message).toBe("1 " + words);
-                        done();
-                    }).fail(function (e) {
-                        expect(this).toAutoFail(e);
-                        done();
-                    });
 
-            });
+        it("Can remove a stored file", function (done) {
+            eg.API.storage.path(testpath).remove()
+                .then(function () {
+                    return eg.API.storage.path(testpath).exists();
+                })
+                .then(function (e) {
+                    expect(e).toBe(false);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
 
-            it("Can list notes", function (done) {
-                eg.API.storage.path(testpath).listNotes({
-                        count: 1,
-                        offset: 1
-                    })
-                    .then(function (result) {
-                        expect(result.notes.length).toBe(1);
-                        done();
-                    }).fail(function (e) {
-                        expect(this).toAutoFail(e);
-                        done();
-                    });
-
-            });
-
-            it("Can delete the note", function (done) {
-                eg.API.storage.path(recentNoteId).removeNote()
-                    .then(function (result) {
-                        expect(result.response.statusCode).toEqual(200);
-                        done();
-                    }).fail(function (e) {
-                        expect(this).toAutoFail(e);
-                        done();
-                    });
-
-            });
-
-            it("Can remove a stored file", function (done) {
-                eg.API.storage.path(testpath).remove()
-                    .then(function () {
-                        return eg.API.storage.path(testpath).exists();
-                    })
-                    .then(function (e) {
-                        expect(e).toBe(false);
-                        done();
-                    }).fail(function (e) {
-                        expect(this).toAutoFail(e);
-                        done();
-                    });
-
-            });
         });
 
     });

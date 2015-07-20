@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Egnyte=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Egnyte = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -586,6 +586,7 @@ module.exports = {
 var RequestEngine = require(21);
 var AuthEngine = require(12);
 var StorageFacade = require(23);
+var Notes = require(19);
 var LinkFacade = require(17);
 var PermFacade = require(20);
 var UserPerms = require(24);
@@ -596,14 +597,16 @@ module.exports = function (options) {
     var requestEngine = new RequestEngine(auth, options);
 
     var storage = new StorageFacade(requestEngine);
+    var notes = new Notes(requestEngine);
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
     var events = new Events(requestEngine);
-    
+
     var api = {
         auth: auth,
         storage: storage,
+        notes: notes,
         link: link,
         events: events,
         perms: perms,
@@ -629,7 +632,7 @@ module.exports = function (options) {
 
     return api;
 };
-},{"12":12,"16":16,"17":17,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26}],12:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
@@ -1086,7 +1089,7 @@ module.exports = function (result) {
         code = ~~ (result.response.statusCode);
         error = result.error;
         error.statusCode = code;
-        error.message = psychicMessageParser(result.body||result.error.message, code);
+        error.message = ""+psychicMessageParser(result.body||result.error.message, code);
         error.response = result.response;
         error.body = result.body;
     } else {
@@ -1382,53 +1385,68 @@ exports.unlock = function (pathFromRoot, lockToken) {
 },{"27":27,"29":29,"32":32}],19:[function(require,module,exports){
 var promises = require(29);
 var helpers = require(32);
+var decorators = require(14);
 
 var ENDPOINTS_notes = require(27).notes;
 
-exports.addNote = function (pathFromRoot, body) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes,
-            json: {
-                "path": pathFromRoot,
-                "body": body,
-            }
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function (result) { //result.response result.body
-        return {
-            id: result.body.id
-        };
-    });
 
-}
-exports.listNotes = function (pathFromRoot, params) {
-    var requestEngine = this.requestEngine;
-    var decorate = this.getDecorator();
-    return promises(true).then(function () {
-        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes
-        };
-
-        //xhr and request differ here
-        opts.params = helpers.extend({
-            "file": encodeURI(pathFromRoot)
-        }, params);
-
-        return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
-            return result.body;
-        });
-    });
-
+function Notes(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
 }
 
-exports.getNote = function (path, id) {
+
+var notesProto = {};
+notesProto.path = function (pathFromRoot) {
+    pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+    var self = this;
+    return {
+        addNote: function (body) {
+            var requestEngine = self.requestEngine;
+            var decorate = self.getDecorator();
+            return promises(true).then(function () {
+
+                var opts = {
+                    method: "POST",
+                    url: requestEngine.getEndpoint() + ENDPOINTS_notes,
+                    json: {
+                        "path": pathFromRoot,
+                        "body": body,
+                    }
+                };
+                return requestEngine.promiseRequest(decorate(opts));
+            }).then(function (result) { //result.response result.body
+                return {
+                    id: result.body.id
+                };
+            });
+
+        },
+        listNotes: function (params) {
+            var requestEngine = self.requestEngine;
+            var decorate = self.getDecorator();
+            return promises(true).then(function () {
+                pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+                var opts = {
+                    method: "GET",
+                    url: requestEngine.getEndpoint() + ENDPOINTS_notes
+                };
+
+                //xhr and request differ here
+                opts.params = helpers.extend({
+                    "file": encodeURI(pathFromRoot)
+                }, params);
+
+                return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
+                    return result.body;
+                });
+            });
+
+        }
+    };
+};
+
+notesProto.getNote = function (id) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1441,8 +1459,8 @@ exports.getNote = function (path, id) {
         });
     });
 
-}
-exports.removeNote = function (path, id) {
+};
+notesProto.removeNote = function (id) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1453,8 +1471,13 @@ exports.removeNote = function (path, id) {
         return requestEngine.promiseRequest(decorate(opts));
     });
 
-}
-},{"27":27,"29":29,"32":32}],20:[function(require,module,exports){
+};
+
+
+Notes.prototype = notesProto;
+
+module.exports = Notes;
+},{"14":14,"27":27,"29":29,"32":32}],20:[function(require,module,exports){
 var promises = require(29);
 var helpers = require(32);
 var decorators = require(14);
@@ -2115,7 +2138,6 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
     return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
-storageProto = helpers.extend(storageProto, notes);
 storageProto = helpers.extend(storageProto, lock);
 storageProto = helpers.extend(storageProto, chunkedUpload);
 
@@ -2134,7 +2156,7 @@ function UserPerms(requestEngine) {
     decorators.install(this);
 
     this.addDecorator("path", pointFolder("folder"));
-    this.addDecorator("folderId", pointFolder("folderId"));
+    this.addDecorator("folderId", pointFolder("folder_id"));
 
 }
 

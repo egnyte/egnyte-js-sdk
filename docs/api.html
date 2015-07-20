@@ -455,12 +455,6 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <td></td>
 </tr>
 <tr>
-<td>API.storage.<em>identify(...)</em>.addNote</td>
-<td><code>note_text</code></td>
-<td>Adds a note on file, resolves to <code>{id:&quot;note-id&quot;}</code></td>
-<td></td>
-</tr>
-<tr>
 <td>API.storage.<em>identify(...)</em>.lock</td>
 <td><code>previous token</code>, <code>timeout</code></td>
 <td>Locks a file, resolves to <code>{path: &quot;...&quot;, timeout:seconds,lock_token:&quot;...&quot;}</code>, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden</td>
@@ -470,24 +464,6 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <td>API.storage.<em>identify(...)</em>.unlock</td>
 <td><code>token</code></td>
 <td>Unlocks a file if the token is the one with which the lock was claimed</td>
-<td></td>
-</tr>
-<tr>
-<td>API.storage.<em>identify(...)</em>.getNote</td>
-<td><code>node_id</code></td>
-<td>Resolves to a note object. identification is ignired</td>
-<td></td>
-</tr>
-<tr>
-<td>API.storage.<em>identify(...)</em>.removeNote</td>
-<td><code>node_id</code></td>
-<td>Removes the note. identification is ignored</td>
-<td></td>
-</tr>
-<tr>
-<td>API.storage.<em>identify(...)</em>.listNotes</td>
-<td><code>query_params</code></td>
-<td>Resolves to an object with pagination options and <code>notes</code> field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)</td>
 <td></td>
 </tr>
 </tbody>
@@ -546,6 +522,45 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
     });</code></pre>
+<h2 id="file-notes-api-helpers">File notes API helpers</h2>
+<p>All API helpers return promises.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+<th>Restrictions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.storage.path(<code>path to file</code>).addNote</td>
+<td><code>note_text</code></td>
+<td>Adds a note on file, resolves to <code>{id:&quot;note-id&quot;}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>API.storage.path(<code>path to file</code>).listNotes</td>
+<td><code>query_params</code></td>
+<td>Resolves to an object with pagination options and <code>notes</code> field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)</td>
+<td></td>
+</tr>
+<tr>
+<td>API.storage.getNote</td>
+<td><code>note_id</code></td>
+<td>Resolves to a note object.</td>
+<td></td>
+</tr>
+<tr>
+<td>API.storage.removeNote</td>
+<td><code>note_id</code></td>
+<td>Removes the note.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>In current Egnyte Public API version notes can be added only to files identified by path. </p>
 <h2 id="link-api-helpers">Link API helpers</h2>
 <p>All API helpers return promises.</p>
 <table>

@@ -112,14 +112,14 @@ if (ImInBrowser) {
                 t1 = +new Date();
                 eg.API.storage.path("/jiberish").exists().then(function (e) {
                     t2 = +new Date();
-                    //assuming response comes in less than 800ms
-                    expect(t2 - t1).toBeLessThan(800);
+                    //assuming response comes in less than 1000ms
+                    expect(t2 - t1).toBeLessThan(1000);
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);
                     done();
                 });
 
-            }, 1001);
+            }, 1003);
 
             setTimeout(function () {
                 var t1 = 0,
@@ -128,8 +128,8 @@ if (ImInBrowser) {
                 t1 = +new Date();
                 eg.API.storage.path("/jiberish").exists().then(function (e) {
                     t2 = +new Date();
-                    //assuming response comes in less than 800ms
-                    expect(t2 - t1).toBeGreaterThan(800);
+                    //assuming response comes in less than 91000ms
+                    expect(t2 - t1).toBeGreaterThan(1000);
                     setTimeout(done, 1000); //wait for quota reset
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);

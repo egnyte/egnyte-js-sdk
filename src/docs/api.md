@@ -253,12 +253,9 @@ API.storage.*identify(...)*.copy |  `new path` | Copies a file or folder to new 
 API.storage.*identify(...)*.rename |  `new path` | alias for move|
 API.storage.*identify(...)*.remove |`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
 API.storage.*identify(...)*.removeFileVersion | `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
-API.storage.*identify(...)*.addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
 API.storage.*identify(...)*.lock | `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
 API.storage.*identify(...)*.unlock |`token` | Unlocks a file if the token is the one with which the lock was claimed |
-API.storage.*identify(...)*.getNote | `node_id` | Resolves to a note object. identification is ignired|
-API.storage.*identify(...)*.removeNote | `node_id` | Removes the note. identification is ignored|
-API.storage.*identify(...)*.listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+
 
 ### Identification
 
@@ -323,6 +320,20 @@ egnyte.API.storage.path(pathFromRoot).getFileStream()
 
 ```
 
+
+
+## File notes API helpers
+
+All API helpers return promises.
+
+Method | Arguments | Description | Restrictions
+--- | --- | --- | ---
+API.storage.path(`path to file`).addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.storage.path(`path to file`).listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+API.storage.getNote | `note_id` | Resolves to a note object. |
+API.storage.removeNote | `note_id` | Removes the note. |
+
+In current Egnyte Public API version notes can be added only to files identified by path. 
 
 ## Link API helpers
 

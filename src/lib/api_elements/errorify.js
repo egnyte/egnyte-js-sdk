@@ -50,7 +50,7 @@ module.exports = function (result) {
         code = ~~ (result.response.statusCode);
         error = result.error;
         error.statusCode = code;
-        error.message = psychicMessageParser(result.body||result.error.message, code);
+        error.message = ""+psychicMessageParser(result.body||result.error.message, code);
         error.response = result.response;
         error.body = result.body;
     } else {

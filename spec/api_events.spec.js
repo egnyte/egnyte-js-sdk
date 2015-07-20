@@ -250,7 +250,7 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.path(filePath).addNote("oh, that one is sour")
+                return eg.API.notes.path(filePath).addNote("oh, that one is sour")
                     .then(function (e) {
                         noteId = e.id;
                         //give it time to get the events

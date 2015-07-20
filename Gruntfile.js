@@ -8,7 +8,9 @@ module.exports = function (grunt) {
             dist: {
                 files: {
                     "dist/egnyte.js": ["src/egnyte.js"],
-                    "dist/slim.js": ["src/slim.js"]
+                    "dist/slim.js": ["src/slim.js"],
+                    "dist/egnyte-uintegrate.js": ["src/plugins/UIntegrate/uintegrateAppPlugin.js"],
+                    "dist/uintegrate.js": ["src/plugins/UIntegrate/uintegrateStandalone.js"],
                 },
                 options: {
                     transform: ['node-lessify'],

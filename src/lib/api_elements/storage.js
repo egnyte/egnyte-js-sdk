@@ -236,7 +236,6 @@ storageProto.remove = function (pathFromRoot, versionEntryId) {
     return remove(this.requestEngine, decorate, pathFromRoot, versionEntryId);
 }
 
-storageProto = helpers.extend(storageProto, notes);
 storageProto = helpers.extend(storageProto, lock);
 storageProto = helpers.extend(storageProto, chunkedUpload);
 
