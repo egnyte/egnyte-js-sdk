@@ -37,7 +37,8 @@ module.exports = function (promises, dom, messages, callback) {
     channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, actionsHandler);
     channel._evListener = dom.addListener(window, "message", channel.handler);
 
-    //install
+    //init
+    messages.sendMessage(sendTarget, channel, "load", null, remoteDomain);
 
     init.promise.then(function (input) {
         remoteDomain = input.origin;

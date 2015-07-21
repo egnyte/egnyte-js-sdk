@@ -7,3 +7,4 @@ var messages = require("../../lib/reusables/messages");
 window.Egnyte.appInit = function appInit(callback) {
     return core(promises, dom, messages, callback);
 }
+module.exports = window.Egnyte;
