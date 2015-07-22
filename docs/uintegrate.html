@@ -63,6 +63,11 @@
 <li><code>dist/egnyte-uintegrate*</code> - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser</li>
 <li><code>dist/uintegrate*</code> - Just the UIntegrate interaction functionality (documented below)</li>
 </ul>
+<p>When using CommonJS dependency management, you can require the plugin:</p>
+<ul>
+<li><code>require(&quot;egnyte-js-sdk/plugins/UIntegrate&quot;)</code> - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser</li>
+<li><code>require(&quot;egnyte-js-sdk/plugins/UIntegrate/standalone&quot;)</code> - Just the UIntegrate interaction functionality (documented below)</li>
+</ul>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-javascript">Egnyte.appInit(function(uint){
     //use the uint object to interact with Egnyte UI and/or APIs

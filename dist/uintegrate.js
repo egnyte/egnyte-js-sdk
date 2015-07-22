@@ -592,15 +592,18 @@ module.exports = function (promises, dom, messages, callback) {
 
 }
 },{}],8:[function(require,module,exports){
-window.Egnyte || (window.Egnyte = {})
+var mainEgnyte = {};
+if (typeof Egnyte !== "undefined") {
+    mainEgnyte = Egnyte;
+}
 var core = require(7);
 var promises = require(3);
 var dom = require(4);
 var messages = require(6);
 
-window.Egnyte.appInit = function appInit(callback) {
+mainEgnyte.appInit = function appInit(callback) {
     return core(promises, dom, messages, callback);
 }
-module.exports = window.Egnyte;
+module.exports = mainEgnyte;
 },{"3":3,"4":4,"6":6,"7":7}]},{},[8])(8)
 });

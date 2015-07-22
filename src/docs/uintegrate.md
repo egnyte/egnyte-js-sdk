@@ -7,6 +7,11 @@ Go to `dist/` and pick one of the versions:
 - `dist/egnyte-uintegrate*` - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser
 - `dist/uintegrate*` - Just the UIntegrate interaction functionality (documented below)
 
+When using CommonJS dependency management, you can require the plugin:
+
+- `require("egnyte-js-sdk/plugins/UIntegrate")` - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser
+- `require("egnyte-js-sdk/plugins/UIntegrate/standalone")` - Just the UIntegrate interaction functionality (documented below)
+
 ## Usage
 
 ```javascript
