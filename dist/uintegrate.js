@@ -521,7 +521,10 @@ function sendMessage(targetWindow, channel, action, data, originOverride) {
         targetOrigin = originOverride;
     } else {
         try {
-            targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
+            //the if is needed as some browsers will return undefined when accessing location is forbidden
+            if (targetWindow.location.origin || targetWindow.location.protocol) {
+                targetOrigin = targetWindow.location.origin || targetWindow.location.protocol + "//" + targetWindow.location.hostname + (targetWindow.location.port ? ":" + targetWindow.location.port : "");
+            }
         } catch (E) {}
     }
     pkg = JSON.stringify({
