@@ -575,9 +575,16 @@ module.exports = function (promises, dom, messages, callback) {
     function error(body) {
         sendIdentified("error", body);
     }
+    
+    function close() {
+        sendIdentified("close");
+    }
 
     channel.handler = messages.createMessageHandler(channel.sourceOrigin, channel.marker, actionsHandler);
     channel._evListener = dom.addListener(window, "message", channel.handler);
+
+    dom.addListener(window, "unload", close);
+    dom.addListener(window, "pagehide", reload);
 
     //init
     messages.sendMessage(sendTarget, channel, "load", null, remoteDomain);
