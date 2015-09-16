@@ -26,7 +26,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._buildTokenQuery = function(redirect) {
-    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + encodeURIComponent(redirect);
     if (this.options.scope) {
         url += "&scope=" + this.options.scope;
     }

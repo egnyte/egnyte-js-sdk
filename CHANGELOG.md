@@ -3,6 +3,9 @@
 - Separated notes API
 - UIntegrate plugin for Egnyte UI Integration Framework
 
+### 1.4.2 - 1.4.4
+- bugfixes
+
 ### 1.4.1
 - optional token scoping
 
