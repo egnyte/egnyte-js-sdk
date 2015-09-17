@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Egnyte = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Egnyte=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -676,7 +676,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._buildTokenQuery = function(redirect) {
-    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + encodeURIComponent(redirect);
     if (this.options.scope) {
         url += "&scope=" + this.options.scope;
     }
@@ -1613,9 +1613,6 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 },{"16":16,"24":24,"29":29,"36":36,"40":40}],23:[function(require,module,exports){
-var quotaRegex = /^<h1>Developer Over Qps/i;
-
-
 var promises = require(36);
 var helpers = require(40);
 var dom = require(38);
@@ -1680,7 +1677,7 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
    
     
@@ -2086,24 +2083,33 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
+
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
+        var opts;
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-            body: file,
+        if (!window.FormData) {
+            var opts = {
+                method: "POST",
+                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+                body: file,
+            }
+            opts.headers = {};
+            if (mimeType) {
+                opts.headers["Content-Type"] = mimeType;
+            }
+        } else {
+            var formData = new window.FormData();
+            formData.append('file', file);
+            var opts = {
+                method: "POST",
+                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+                body: formData,
+            };
         }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return ({
@@ -2114,30 +2120,6 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
-//currently not supported by back - end
-//
-//function storeFileMultipart(pathFromRoot, fileOrBlob) {
-//    return promises(true).then(function () {
-//        if (!window.FormData) {
-//            throw new Error("Unsupported browser");
-//        }
-//        var file = fileOrBlob;
-//        var formData = new window.FormData();
-//        formData.append('file', file);
-//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-//        var opts = {
-//            method: "POST",
-//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
-//            body: formData,
-//        };
-//        return api.promiseRequest(decorate(opts));
-//    }).then(function (result) { //result.response result.body
-//        return ({
-//            id: result.response.getResponseHeader("etag"),
-//            path: pathFromRoot
-//        });
-//    });
-//}
 
 
 //private

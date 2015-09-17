@@ -57,7 +57,7 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
     });
 ```
 
-Defaults are added to the set of options passed to `xhr`(in browser) or `request`(in node) module. 
+Defaults are added to the set of options passed to `xhr`(in browser) or `request`(in node) module.
 
 ### User Quota (queries per second) handling
 
@@ -77,7 +77,7 @@ var egnyte = Egnyte.init("https://mydomain.egnyte.com", {
     });
 ```
 
-To entirely disable the quota handling set `handleQuota` option to `false` 
+To entirely disable the quota handling set `handleQuota` option to `false`
 
 
 ## Authorization methods
@@ -194,7 +194,7 @@ _Examples_
 ```javascript
 egnyte.API.manual.sendRequest({
         url:"https://..." //full URL address
-        params:{ //query params to be added after the ? at the end of url 
+        params:{ //query params to be added after the ? at the end of url
             "queryparam":"param-value"
         },
         headers:{}, //any headers to add to the query, Authorization header is added to this set by default
@@ -218,7 +218,7 @@ egnyte.API.manual.promiseRequest({
         //response is the XHR object
         //body contains response JSON converted to object
     }).fail(function(error, response, body){
-        //handle the error 
+        //handle the error
     });
 ```
 
@@ -229,7 +229,7 @@ egnyte.API.manual.promiseRequest({
         //response is the XHR object
         //body contains response JSON converted to object
     },function(error, response, body){
-        //handle the error 
+        //handle the error
     });
 ```
 
@@ -246,7 +246,7 @@ API.storage.*identify(...)*.get | | Resolves to file or folder definition object
 API.storage.*identify(...)*.download |`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
 API.storage.*identify(...)*.getFileStream |`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
 API.storage.*identify(...)*.createFolder | | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
-API.storage.*identify(...)*.storeFile | `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
+API.storage.*identify(...)*.storeFile | `Blob or Stream`, `mimeType (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `mimeType` will only be used in browsers that don't support `formData` factory in JS
 API.storage.*identify(...)*.streamToChunks | `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
 API.storage.*identify(...)*.move |  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
 API.storage.*identify(...)*.copy |  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
@@ -259,9 +259,9 @@ API.storage.*identify(...)*.unlock |`token` | Unlocks a file if the token is the
 
 ### Identification
 
-Method | Argument 
+Method | Argument
 --- | --- | ---
-API.*.path | full path to file, starting with / 
+API.*.path | full path to file, starting with /
 API.*.fileId | group_id of the file
 API.*.folderId | folder_id of the folder
 
@@ -270,14 +270,12 @@ API.*.folderId | folder_id of the folder
 
 ```javascript
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, "text/plain", 1105)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     .then(function(filemeta){
         //
     })
 
 ```
-
-If the API responds with an error that you cannot store an empty file, it means you have to provide the `size` argument.
 
 ### Storing a file - in the browser
 
@@ -296,14 +294,14 @@ $(".myForm").on("submit",function(){
        .then(function (response, body) {
             //upload successful
         },function(error, response, body){
-            //handle the error 
+            //handle the error
         });
     return false;
 });
 
 ```
 
-The `storeFile` method uses `FormData` constructor; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
+The `storeFile` method uses `FormData` constructor if available; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
 ### Downloading a file
 
@@ -333,7 +331,7 @@ API.storage.path(`path to file`).listNotes | `query_params` | Resolves to an obj
 API.storage.getNote | `note_id` | Resolves to a note object. |
 API.storage.removeNote | `note_id` | Removes the note. |
 
-In current Egnyte Public API version notes can be added only to files identified by path. 
+In current Egnyte Public API version notes can be added only to files identified by path.
 
 ## Link API helpers
 
@@ -341,15 +339,15 @@ All API helpers return promises.
 
 Method | Arguments | Description
 --- | --- | ---
-API.link.createLink | `link_setup` | Creates a link, resolves to the new link description object 
+API.link.createLink | `link_setup` | Creates a link, resolves to the new link description object
 API.link.removeLink | `link_ID` | Destroys the link of given id
 API.link.listLink | `link_ID` | Resolves to link description object
 API.link.listLinks | `filters` | Resolves to a list of links, narrows the list down by filters given
-API.link.findOne | `filters` | Resolves to a link description object of a link that matches the filters. (the result of `listLink` called on first of the ids returned by `listLinks`) 
+API.link.findOne | `filters` | Resolves to a link description object of a link that matches the filters. (the result of `listLink` called on first of the ids returned by `listLinks`)
 
 ### Creating a link
 
-To create a link with `API.link.createLink` method, a setup object is required. 
+To create a link with `API.link.createLink` method, a setup object is required.
 
 
 Name | | Description
@@ -357,15 +355,15 @@ Name | | Description
 path | required | full absolute path to the target file or folder. If target is a file then include the filename.
 type | required | "file" or "folder"
 accessibility | required |"anyone", "password", "domain", "recipients"
-recipients | optional  | list of recipients of the link (email addresses). Only required if the link will be sent via email by Egnyte. 
-send_email | optional  | if True, send the link out via email. In this case, the recipients parameter must be specified. Defaults to false. 
-message | optional  | personal message to be sent in link email. 
-copy_me | optional  | if True, send a copy of the link message to the link creator. Only applies if send_email is True. Defaults to false. 
-notify | optional  | if True send notification emails to link creator when link is accessed. Defaults to false. 
-link_to_current | optional  | if True, link to the current version of the file. Otherwise link to latest version of file. Only applies to file links, not folder links. Defaults to false. 
-expiry_date | optional  | the expiry date for the link. Date must be in the future. If expiry_date is specified then expiry_clicks cannot be set. 
-expiry_clicks | optional  | the number of clicks the link is valid for. Value must be between 1 and 10, inclusive. If expiry_clicks is specified then expiry_date cannot be set. 
-add_filename | optional  | if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false. 
+recipients | optional  | list of recipients of the link (email addresses). Only required if the link will be sent via email by Egnyte.
+send_email | optional  | if True, send the link out via email. In this case, the recipients parameter must be specified. Defaults to false.
+message | optional  | personal message to be sent in link email.
+copy_me | optional  | if True, send a copy of the link message to the link creator. Only applies if send_email is True. Defaults to false.
+notify | optional  | if True send notification emails to link creator when link is accessed. Defaults to false.
+link_to_current | optional  | if True, link to the current version of the file. Otherwise link to latest version of file. Only applies to file links, not folder links. Defaults to false.
+expiry_date | optional  | the expiry date for the link. Date must be in the future. If expiry_date is specified then expiry_clicks cannot be set.
+expiry_clicks | optional  | the number of clicks the link is valid for. Value must be between 1 and 10, inclusive. If expiry_clicks is specified then expiry_date cannot be set.
+add_filename | optional  | if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false.
 
 
 accessibility options:
@@ -373,9 +371,9 @@ accessibility options:
  - "password" – accessible by anyone with link who knows password (password is generated and returned from the call)
  - "domain" – accessible by any domain user (login required)
  - "recipients" – accessible by link recipients, who must be domain users (login required)
- 
+
 _Example_
- 
+
 ```javascript
 egnyte.API.link.createLink({
         path: "<file path>",
@@ -459,34 +457,34 @@ API.perms.*identify(...)*.getPerms|  | Resolves to a permissions object of the f
 
 ### Identification
 
-Method | Argument 
+Method | Argument
 --- | --- | ---
-API.*.path | full path to file, starting with / 
+API.*.path | full path to file, starting with /
 API.*.folderId | folder_id of the folder
 
 ### Setting permissions for users and groups
- 
-Scoping to users and groups can be merged 
- 
+
+Scoping to users and groups can be merged
+
 ```javascript
 egnyte.API.perms.users(["tommy","margaret"]).groups(["All Power Users"]).path("/Shared/marketing/events").allowEdit()
-       
+
 ```
 
 Scoping again will override the previous setting, so the example below will only set permissions for "andy".
 
 ```javascript
 egnyte.API.perms.users(["tommy","margaret"]).users(["andy"]).path("/Shared/marketing/events").allowEdit()
-       
+
 ```
 
 ### Getting permissions for users and groups
 
 All permissions for folder:
- 
+
 ```javascript
 egnyte.API.perms.path("/Shared/marketing/events").getPerms()
-       
+
 ```
 Returns
 ```
@@ -514,7 +512,7 @@ Filtered permissions information:
 
 ```javascript
 egnyte.API.perms.users(["tommy"]).path("/Shared/marketing/events").getPerms()
-       
+
 ```
 Returns
 ```
@@ -539,17 +537,17 @@ API.userPerms.*identify(...)*.get | `username` | Resolves to effective permissio
 
 ### Identification
 
-Method | Argument 
+Method | Argument
 --- | --- | ---
-API.*.path | full path to folder, starting with / 
+API.*.path | full path to folder, starting with /
 API.*.folderId | folder_id of the folder
 
 ### Getting effective user permissions
 
- 
+
 ```javascript
 egnyte.API.userPerms.path("/Shared/Documents").get()
-       
+
 ```
 Returns
 ```
@@ -568,7 +566,7 @@ Method | Arguments | Description
 --- | --- | ---
 API.events.listen| `listenerConfiguration` | Polls the Events API for new events and emits them according to configuration. Resolves to an object with a single `stop` method that stops getting more events.
 API.events.getCursor| | Resolves to the latest event id
-API.events.getUpdate| `updateOptions` | Makes a single request for a list of events and resolves to the response. `getUpdate` is used internally by `listen`. 
+API.events.getUpdate| `updateOptions` | Makes a single request for a list of events and resolves to the response. `getUpdate` is used internally by `listen`.
 
 listenerConfiguration:
 
@@ -585,7 +583,7 @@ updateOptions:
 
 Name | | Description
 --- | --- | ---
-start | required | event id - get events that happened after that id. Fails if event is too old (promise gets rejected). 
+start | required | event id - get events that happened after that id. Fails if event is too old (promise gets rejected).
 emit |  | a function to call for every event in the batch. the function accepts one argument - event data object. Optional, you can decide to use the raw output
 count |  | number of events to fetch. Maximum value is 100
 
@@ -600,7 +598,7 @@ filterDefinition:
 
 ```javascript
 {
-    folder: "/folder/path", 
+    folder: "/folder/path",
     type: "file_system" or "note"
 }
 ```
@@ -621,7 +619,7 @@ egnyte.API.events.notMy().filter({
 }).then(function(polling){
     //call polling.stop() to turn the listener off
 })
-       
+
 ```
 
 ## Error handling
@@ -639,7 +637,7 @@ The "Developer over QPS" error is not returned at all, instead a call is repeate
 
 ## Impersonation
 
-Egnyte Public API accepts a `X-Egnyte-Act-As` header that can be set to perform an action on behalf of another user (if you are an admin). 
+Egnyte Public API accepts a `X-Egnyte-Act-As` header that can be set to perform an action on behalf of another user (if you are an admin).
 Every method call to `egnyte.API.*` can be preceded by impersonation like so:
 
 ```javascript
