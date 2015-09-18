@@ -32,7 +32,7 @@ function beradcrumbView(parent) {
 
 
 }
-beradcrumbView.prototype.getTopbar = function() {
+beradcrumbView.prototype.getTree = function() {
     var myElements = this.els;
     var topbar = ["div.eg-bar.eg-top"];
     if (this.model.isMultiselectable) {
@@ -48,9 +48,9 @@ beradcrumbView.prototype.getTopbar = function() {
 }
 
 
-beradcrumbView.prototype.render = function(path) {
+beradcrumbView.prototype.render = function() {
     var currentPath = "/";
-    path = this.model.path || currentPath; //in case path was not provided, go for root
+    var path = this.model.path || currentPath; //in case path was not provided, go for root
 
     var list = path.split("/");
     var crumbItems = [];

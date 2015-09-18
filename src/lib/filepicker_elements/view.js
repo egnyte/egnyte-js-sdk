@@ -6,6 +6,7 @@ var helpers = require("../reusables/helpers");
 var texts = require("../reusables/texts");
 var jungle = require("../../vendor/zenjungle");
 var SubvBread = require("./subvBread");
+var SubvSearch = require("./subvSearch");
 
 require("../styles/main.less");
 
@@ -116,7 +117,8 @@ function View(opts, txtOverride) {
 
     //initialize subviews
     self.subviews = {
-        breadcrumb: new SubvBread(this)
+        breadcrumb: new SubvBread(this),
+        search: new SubvSearch(this)
     }
 }
 
@@ -178,14 +180,16 @@ viewPrototypeMethods.render = function() {
 
     myElements.list = document.createElement("ul");
 
-    var topbar = self.subviews.breadcrumb.getTopbar();
+    var topbar = self.subviews.breadcrumb.getTree();
+    var search = self.subviews.search.getTree();
 
     var layoutFragm = jungle([
-        ["div.eg-theme.eg-picker.eg-widget", ["a.eg-brand", {
-                title: "egnyte.com"
-            }],
+        ["div.eg-theme.eg-picker.eg-widget",search,
             topbar,
             myElements.list, ["div.eg-bar" + this.bottomBarClass,
+            ["a.eg-brand", {
+                    title: "egnyte.com"
+                }],
                 myElements.ok,
                 myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
                     myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
