@@ -2610,12 +2610,50 @@ module.exports = function (opts, model) {
 var helpers = require(46);
 
 module.exports = function (opts, model) {
-    var page = 1;
-    var totalPages = 1;
-    var rawItems;
-    var currentPath;
+    var currentQuery;
+    var currentResult;
+    var page;
+
+    opts.API.search.itemsPerPage(opts.pageSize)
 
 
+    function searchImplementation(query) {
+        currentQuery = query;
+        return opts.API.search.getResults(query).then(function (response) {
+            currentResult = response;
+            page = 0;
+            return buildDataObj(response.sample);
+        });
+    }
+
+    function canJump(offset) {
+        var newPage = page + offset;
+        return (newPage <= currentResult.totalPages && newPage > 0)
+    }
+
+    function switchPage(offset) {
+        if (canJump(offset)) {
+            page += offset;
+        }
+        return currentResult.page(page).then(buildDataObj);
+    }
+
+    function buildDataObj(items) {
+        if (opts.fileFilter) {
+            helpers.each(items, function (item) {
+                if (!opts.fileFilter(item)) {
+                    item.disabled = true;
+                }
+            });
+        }
+        return {
+            canJump: canJump,
+            switchPage: switchPage,
+            page: page + 1,
+            totalPages: currentResult.totalPages,
+            items: items
+        };
+    }
 
     model.search = function (query) {
         var self = this;
@@ -2905,7 +2943,7 @@ function Item(data, parent) {
         this.ext = "";
         this.mime = "unknown";
     }
-    this.isSelectable = ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
+    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
     this.parent = parent;
     this.isCurrent = false;
 }
@@ -3032,7 +3070,7 @@ function beradcrumbView(parent) {
         ["div.eg-search-ico"]
     ]).childNodes[0];
     myElements.field = jungle([
-        ["span.eg-search-inpt"]
+        ["span.eg-search-inpt","docx"]
     ]).childNodes[0];
 
     parent.handleClick(myElements.close, function(){
@@ -3041,6 +3079,9 @@ function beradcrumbView(parent) {
     parent.handleClick(myElements.ico, function(){
         self.el.style.width="100%";
     });
+    parent.handleClick(myElements.field, function(){
+        self.model.search("docx")
+    });
 
 }
 beradcrumbView.prototype.getTree = function() {
@@ -3048,6 +3089,7 @@ beradcrumbView.prototype.getTree = function() {
     var el = ["div.eg-search"];
     el.push(myElements.ico);
     el.push(myElements.close);
+    el.push(myElements.field);
 
     el = jungle([el]).childNodes[0];
     this.el = el;
@@ -3109,7 +3151,7 @@ function View(opts, txtOverride) {
 
     //bind to model events
     this.model.onloading = helpers.bindThis(self, self.renderLoading);
-    this.model.onupdate = function() {
+    this.model.onupdate = function () {
         self.handlers.events("beforeRender", self.model);
         self.render();
         self.handlers.events("render", self.model);
@@ -3121,7 +3163,7 @@ function View(opts, txtOverride) {
     }
     this.model.onerror = helpers.bindThis(this, this.errorHandler);
 
-    this.model.onchange = function() {
+    this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
             self.els.ok.removeAttribute("disabled");
         } else {
@@ -3147,14 +3189,14 @@ function View(opts, txtOverride) {
     //bind events and store references to unbind later
     this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
 
-    this.handleClick(myElements.close, function() {
+    this.handleClick(myElements.close, function () {
         self.handlers.close();
     });
     this.handleClick(myElements.ok, self.confirmSelection);
-    this.handleClick(myElements.pgup, function(e) {
+    this.handleClick(myElements.pgup, function (e) {
         self.model.switchPage(1);
     });
-    this.handleClick(myElements.pgdown, function(e) {
+    this.handleClick(myElements.pgdown, function (e) {
         self.model.switchPage(-1);
     });
 
@@ -3190,8 +3232,8 @@ function View(opts, txtOverride) {
 
 var viewPrototypeMethods = {};
 
-viewPrototypeMethods.destroy = function() {
-    helpers.each(this.evs, function(ev) {
+viewPrototypeMethods.destroy = function () {
+    helpers.each(this.evs, function (ev) {
         ev.destroy();
     });
     this.evs = null;
@@ -3202,11 +3244,11 @@ viewPrototypeMethods.destroy = function() {
     this.handlers = null;
 }
 
-viewPrototypeMethods.handleClick = function(el, method) {
+viewPrototypeMethods.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
-viewPrototypeMethods.errorHandler = function(e) {
+viewPrototypeMethods.errorHandler = function (e) {
     if (this.handlers.error) {
         var message = this.handlers.error(e);
         if (typeof message === "string") {
@@ -3240,7 +3282,7 @@ function renderFont() {
     }
 }
 
-viewPrototypeMethods.render = function() {
+viewPrototypeMethods.render = function () {
     var self = this;
     var myElements = this.els;
 
@@ -3250,10 +3292,9 @@ viewPrototypeMethods.render = function() {
     var search = self.subviews.search.getTree();
 
     var layoutFragm = jungle([
-        ["div.eg-theme.eg-picker.eg-widget",search,
+        ["div.eg-theme.eg-picker.eg-widget", search,
             topbar,
-            myElements.list, ["div.eg-bar" + this.bottomBarClass,
-            ["a.eg-brand", {
+            myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
                     title: "egnyte.com"
                 }],
                 myElements.ok,
@@ -3275,7 +3316,7 @@ viewPrototypeMethods.render = function() {
     if (this.model.isEmpty) {
         this.renderEmpty();
     } else {
-        helpers.each(this.model.items, function(item) {
+        helpers.each(this.model.items, function (item) {
             self.renderItem(item);
         });
     }
@@ -3284,7 +3325,7 @@ viewPrototypeMethods.render = function() {
 }
 
 
-viewPrototypeMethods.renderItem = function(itemModel) {
+viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([
@@ -3299,8 +3340,15 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         ]
     ]).childNodes[0];
 
+    var checkboxSetup = "input[type=checkbox]";
+    if (!itemModel.isSelectable) {
+        checkboxSetup += (itemModel.data.is_folder ? ".eg-not" : "[disabled=disabled][title=" +
+            this.txt("This file cannot be selected") +
+            "]");
+    }
+
     var itemCheckbox = jungle([
-        ["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]
+        [checkboxSetup]
     ]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -3313,7 +3361,7 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         ]
     ]).childNodes[0];
 
-    dom.addListener(itemName, "click", function(e) {
+    dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
             e.stopPropagation();
         }
@@ -3321,18 +3369,18 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         return false;
     });
 
-    dom.addListener(itemNode, "click", function(e) {
+    dom.addListener(itemNode, "click", function () {
         itemModel.toggleSelect();
     });
 
-    itemModel.onchange = function() {
+    itemModel.onchange = function () {
         self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
             try { //IE8 dies on this randomly :/
                 self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
-            } catch (e) {};
+            } catch (e) {}
             //itemNode.scrollIntoView(false);
         }
     };
@@ -3343,7 +3391,7 @@ viewPrototypeMethods.renderItem = function(itemModel) {
 
 
 
-viewPrototypeMethods.renderLoading = function() {
+viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([
@@ -3355,7 +3403,7 @@ viewPrototypeMethods.renderLoading = function() {
 
 var msgs = require(33);
 
-viewPrototypeMethods.renderProblem = function(code, message) {
+viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
     if (this.els.list) {
         this.els.list.innerHTML = "";
@@ -3368,7 +3416,7 @@ viewPrototypeMethods.renderProblem = function(code, message) {
         });
     }
 }
-viewPrototypeMethods.renderEmpty = function() {
+viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([
@@ -3381,41 +3429,41 @@ viewPrototypeMethods.renderEmpty = function() {
 // focus
 //=================================================================
 
-viewPrototypeMethods.hasFocus = function() {
+viewPrototypeMethods.hasFocus = function () {
     return currentGlobalKeyboadrFocus === this.uid;
 }
-viewPrototypeMethods.focused = function() {
+viewPrototypeMethods.focused = function () {
         currentGlobalKeyboadrFocus = this.uid;
     }
     //=================================================================
     // navigation
     //=================================================================
 
-viewPrototypeMethods.goUp = function() {
+viewPrototypeMethods.goUp = function () {
     this.model.goUp();
 }
-viewPrototypeMethods.confirmSelection = function() {
+viewPrototypeMethods.confirmSelection = function () {
     var selected = this.model.getSelected();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
     }
 }
 
-viewPrototypeMethods.kbNav_up = function() {
+viewPrototypeMethods.kbNav_up = function () {
     this.model.mvCurrent(-1);
 }
 
-viewPrototypeMethods.kbNav_down = function() {
+viewPrototypeMethods.kbNav_down = function () {
     this.model.mvCurrent(1);
 }
-viewPrototypeMethods.kbNav_select = function() {
+viewPrototypeMethods.kbNav_select = function () {
     this.model.getCurrent().toggleSelect();
 }
-viewPrototypeMethods.kbNav_confirm = function() {
+viewPrototypeMethods.kbNav_confirm = function () {
     this.model.getCurrent().toggleSelect();
 }
 
-viewPrototypeMethods.kbNav_explore = function() {
+viewPrototypeMethods.kbNav_explore = function () {
     var item = this.model.getCurrent();
     if (item.data.is_folder) {
         item.defaultAction();
@@ -3855,7 +3903,7 @@ module.exports = function (overrides) {
 };
 
 },{}],49:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-search-ico{color:#777;width:8px;height:8px;border:3.2px solid #c55500;background:0 0;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:10.4px;left:11.2px;border-left:3.2px solid red;height:6.4px;margin-top:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-widget .eg-search{background:#fff;width:50px;height:49px;position:absolute;top:0;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease;-o-transition:width 1s ease}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-search-ico{color:#777;width:8px;height:8px;border:3.2px solid #c55500;background:0 0;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:10.4px;left:11.2px;border-left:3.2px solid red;height:6.4px;margin-top:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-widget .eg-search{background:#fff;width:50px;height:49px;position:absolute;top:0;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease;-o-transition:width 1s ease}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],50:[function(require,module,exports){
 var helpers = require(46);
 var plugins = require(41);

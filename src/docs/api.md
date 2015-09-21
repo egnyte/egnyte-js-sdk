@@ -568,8 +568,8 @@ Returns
 Method | Arguments | Description
 --- | --- | ---
 API.search.getResults| `query text` | Resolves to a helper object for fetching search results
-API.events.query| `query text`, `page number` | Low level search query function, resolves to a single body of the search response. Is used internally in getResults
-API.events.itemsPerPage| `number` | Updates the number of items per page for search. default: 10
+API.search.query| `query text`, `page number` | Low level search query function, resolves to a single body of the search response. Is used internally in getResults
+API.search.itemsPerPage| `number` | Updates the number of items per page for search. default: 10
 
 Results object:
 

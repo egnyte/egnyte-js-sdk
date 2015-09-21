@@ -13,7 +13,7 @@ function beradcrumbView(parent) {
         ["div.eg-search-ico"]
     ]).childNodes[0];
     myElements.field = jungle([
-        ["span.eg-search-inpt"]
+        ["span.eg-search-inpt","docx"]
     ]).childNodes[0];
 
     parent.handleClick(myElements.close, function(){
@@ -22,6 +22,9 @@ function beradcrumbView(parent) {
     parent.handleClick(myElements.ico, function(){
         self.el.style.width="100%";
     });
+    parent.handleClick(myElements.field, function(){
+        self.model.search("docx")
+    });
 
 }
 beradcrumbView.prototype.getTree = function() {
@@ -29,6 +32,7 @@ beradcrumbView.prototype.getTree = function() {
     var el = ["div.eg-search"];
     el.push(myElements.ico);
     el.push(myElements.close);
+    el.push(myElements.field);
 
     el = jungle([el]).childNodes[0];
     this.el = el;

@@ -43,7 +43,7 @@ function View(opts, txtOverride) {
 
     //bind to model events
     this.model.onloading = helpers.bindThis(self, self.renderLoading);
-    this.model.onupdate = function() {
+    this.model.onupdate = function () {
         self.handlers.events("beforeRender", self.model);
         self.render();
         self.handlers.events("render", self.model);
@@ -55,7 +55,7 @@ function View(opts, txtOverride) {
     }
     this.model.onerror = helpers.bindThis(this, this.errorHandler);
 
-    this.model.onchange = function() {
+    this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
             self.els.ok.removeAttribute("disabled");
         } else {
@@ -81,14 +81,14 @@ function View(opts, txtOverride) {
     //bind events and store references to unbind later
     this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
 
-    this.handleClick(myElements.close, function() {
+    this.handleClick(myElements.close, function () {
         self.handlers.close();
     });
     this.handleClick(myElements.ok, self.confirmSelection);
-    this.handleClick(myElements.pgup, function(e) {
+    this.handleClick(myElements.pgup, function (e) {
         self.model.switchPage(1);
     });
-    this.handleClick(myElements.pgdown, function(e) {
+    this.handleClick(myElements.pgdown, function (e) {
         self.model.switchPage(-1);
     });
 
@@ -124,8 +124,8 @@ function View(opts, txtOverride) {
 
 var viewPrototypeMethods = {};
 
-viewPrototypeMethods.destroy = function() {
-    helpers.each(this.evs, function(ev) {
+viewPrototypeMethods.destroy = function () {
+    helpers.each(this.evs, function (ev) {
         ev.destroy();
     });
     this.evs = null;
@@ -136,11 +136,11 @@ viewPrototypeMethods.destroy = function() {
     this.handlers = null;
 }
 
-viewPrototypeMethods.handleClick = function(el, method) {
+viewPrototypeMethods.handleClick = function (el, method) {
     this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
 }
 
-viewPrototypeMethods.errorHandler = function(e) {
+viewPrototypeMethods.errorHandler = function (e) {
     if (this.handlers.error) {
         var message = this.handlers.error(e);
         if (typeof message === "string") {
@@ -174,7 +174,7 @@ function renderFont() {
     }
 }
 
-viewPrototypeMethods.render = function() {
+viewPrototypeMethods.render = function () {
     var self = this;
     var myElements = this.els;
 
@@ -184,10 +184,9 @@ viewPrototypeMethods.render = function() {
     var search = self.subviews.search.getTree();
 
     var layoutFragm = jungle([
-        ["div.eg-theme.eg-picker.eg-widget",search,
+        ["div.eg-theme.eg-picker.eg-widget", search,
             topbar,
-            myElements.list, ["div.eg-bar" + this.bottomBarClass,
-            ["a.eg-brand", {
+            myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
                     title: "egnyte.com"
                 }],
                 myElements.ok,
@@ -209,7 +208,7 @@ viewPrototypeMethods.render = function() {
     if (this.model.isEmpty) {
         this.renderEmpty();
     } else {
-        helpers.each(this.model.items, function(item) {
+        helpers.each(this.model.items, function (item) {
             self.renderItem(item);
         });
     }
@@ -218,7 +217,7 @@ viewPrototypeMethods.render = function() {
 }
 
 
-viewPrototypeMethods.renderItem = function(itemModel) {
+viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
     var itemName = jungle([
@@ -233,8 +232,15 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         ]
     ]).childNodes[0];
 
+    var checkboxSetup = "input[type=checkbox]";
+    if (!itemModel.isSelectable) {
+        checkboxSetup += (itemModel.data.is_folder ? ".eg-not" : "[disabled=disabled][title=" +
+            this.txt("This file cannot be selected") +
+            "]");
+    }
+
     var itemCheckbox = jungle([
-        ["input[type=checkbox]" + (itemModel.isSelectable ? "" : ".eg-not")]
+        [checkboxSetup]
     ]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
 
@@ -247,7 +253,7 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         ]
     ]).childNodes[0];
 
-    dom.addListener(itemName, "click", function(e) {
+    dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
             e.stopPropagation();
         }
@@ -255,18 +261,18 @@ viewPrototypeMethods.renderItem = function(itemModel) {
         return false;
     });
 
-    dom.addListener(itemNode, "click", function(e) {
+    dom.addListener(itemNode, "click", function () {
         itemModel.toggleSelect();
     });
 
-    itemModel.onchange = function() {
+    itemModel.onchange = function () {
         self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
             try { //IE8 dies on this randomly :/
                 self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
-            } catch (e) {};
+            } catch (e) {}
             //itemNode.scrollIntoView(false);
         }
     };
@@ -277,7 +283,7 @@ viewPrototypeMethods.renderItem = function(itemModel) {
 
 
 
-viewPrototypeMethods.renderLoading = function() {
+viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([
@@ -289,7 +295,7 @@ viewPrototypeMethods.renderLoading = function() {
 
 var msgs = require("./errormsg.js");
 
-viewPrototypeMethods.renderProblem = function(code, message) {
+viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
     if (this.els.list) {
         this.els.list.innerHTML = "";
@@ -302,7 +308,7 @@ viewPrototypeMethods.renderProblem = function(code, message) {
         });
     }
 }
-viewPrototypeMethods.renderEmpty = function() {
+viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         this.els.list.appendChild(jungle([
@@ -315,41 +321,41 @@ viewPrototypeMethods.renderEmpty = function() {
 // focus
 //=================================================================
 
-viewPrototypeMethods.hasFocus = function() {
+viewPrototypeMethods.hasFocus = function () {
     return currentGlobalKeyboadrFocus === this.uid;
 }
-viewPrototypeMethods.focused = function() {
+viewPrototypeMethods.focused = function () {
         currentGlobalKeyboadrFocus = this.uid;
     }
     //=================================================================
     // navigation
     //=================================================================
 
-viewPrototypeMethods.goUp = function() {
+viewPrototypeMethods.goUp = function () {
     this.model.goUp();
 }
-viewPrototypeMethods.confirmSelection = function() {
+viewPrototypeMethods.confirmSelection = function () {
     var selected = this.model.getSelected();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
     }
 }
 
-viewPrototypeMethods.kbNav_up = function() {
+viewPrototypeMethods.kbNav_up = function () {
     this.model.mvCurrent(-1);
 }
 
-viewPrototypeMethods.kbNav_down = function() {
+viewPrototypeMethods.kbNav_down = function () {
     this.model.mvCurrent(1);
 }
-viewPrototypeMethods.kbNav_select = function() {
+viewPrototypeMethods.kbNav_select = function () {
     this.model.getCurrent().toggleSelect();
 }
-viewPrototypeMethods.kbNav_confirm = function() {
+viewPrototypeMethods.kbNav_confirm = function () {
     this.model.getCurrent().toggleSelect();
 }
 
-viewPrototypeMethods.kbNav_explore = function() {
+viewPrototypeMethods.kbNav_explore = function () {
     var item = this.model.getCurrent();
     if (item.data.is_folder) {
         item.defaultAction();

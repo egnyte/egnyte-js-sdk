@@ -1,12 +1,50 @@
 var helpers = require("../reusables/helpers");
 
 module.exports = function (opts, model) {
-    var page = 1;
-    var totalPages = 1;
-    var rawItems;
-    var currentPath;
+    var currentQuery;
+    var currentResult;
+    var page;
+
+    opts.API.search.itemsPerPage(opts.pageSize)
 
 
+    function searchImplementation(query) {
+        currentQuery = query;
+        return opts.API.search.getResults(query).then(function (response) {
+            currentResult = response;
+            page = 0;
+            return buildDataObj(response.sample);
+        });
+    }
+
+    function canJump(offset) {
+        var newPage = page + offset;
+        return (newPage <= currentResult.totalPages && newPage > 0)
+    }
+
+    function switchPage(offset) {
+        if (canJump(offset)) {
+            page += offset;
+        }
+        return currentResult.page(page).then(buildDataObj);
+    }
+
+    function buildDataObj(items) {
+        if (opts.fileFilter) {
+            helpers.each(items, function (item) {
+                if (!opts.fileFilter(item)) {
+                    item.disabled = true;
+                }
+            });
+        }
+        return {
+            canJump: canJump,
+            switchPage: switchPage,
+            page: page + 1,
+            totalPages: currentResult.totalPages,
+            items: items
+        };
+    }
 
     model.search = function (query) {
         var self = this;
