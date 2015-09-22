@@ -50,6 +50,7 @@ module.exports = function (opts, model) {
         var self = this;
         if (!self.processing) {
             self.processing = true;
+            this.viewState.searchOn=true;
             self.onloading();
             searchImplementation(query).then(function (data) {
                 self._itemsUpdated(data)

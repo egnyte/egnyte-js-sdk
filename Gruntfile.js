@@ -131,7 +131,7 @@ module.exports = function (grunt) {
                     protocol: "https",
                     keepalive: true,
                     middleware: function (connect, options, middlewares) {
-                        // inject a custom middleware 
+                        // inject a custom middleware
                         middlewares.unshift(function (req, res, next) {
                             if (req.url.match(/mock/)) {
                                 setTimeout(next, 1000);
@@ -183,7 +183,7 @@ module.exports = function (grunt) {
 
         watch: {
             files: ["src/**/*"],
-            tasks: ["dist", "markdown:docs"]
+            tasks: ["browserify"]
         },
 
         markdown: {

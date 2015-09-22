@@ -128,6 +128,8 @@ viewPrototypeMethods.destroy = function () {
     helpers.each(this.evs, function (ev) {
         ev.destroy();
     });
+    this.subviews.breadcrumb.destroy();
+    this.subviews.search.destroy();
     this.evs = null;
     this.el.innerHTML = "";
     this.el = null;

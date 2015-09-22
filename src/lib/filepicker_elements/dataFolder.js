@@ -73,6 +73,7 @@ module.exports = function (opts, model) {
             if (path) {
                 self.path = path;
             }
+            this.viewState.searchOn=false;
             self.onloading();
             fetchImplementation(self.path).then(function (data) {
                 self._itemsUpdated(data)

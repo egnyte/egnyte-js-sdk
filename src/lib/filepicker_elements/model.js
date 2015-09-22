@@ -9,6 +9,7 @@ function Model(API, opts) {
     this.opts = opts;
     this.page = 1;
     this.isMultiselectable = (this.opts.select.multiple);
+    this.viewState={}
 
     var dataProviderSettings = {
         API: API,
