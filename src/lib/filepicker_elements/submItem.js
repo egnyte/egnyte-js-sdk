@@ -8,7 +8,7 @@ function Item(data, parent) {
         this.mime = exts.getMime(data.name);
     } else {
         this.ext = "";
-        this.mime = "unknown";
+        this.mime = "folder";
     }
     this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
     this.parent = parent;

@@ -68,7 +68,7 @@ function View(opts, txtOverride) {
         ["a.eg-picker-close.eg-btn", this.txt("Cancel")]
     ]).childNodes[0];
     myElements.ok = jungle([
-        ["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("Ok")]
+        ["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("OK")]
     ]).childNodes[0];
     myElements.pgup = jungle([
         ["span.eg-picker-pgup.eg-btn", ">"]
@@ -128,8 +128,6 @@ viewPrototypeMethods.destroy = function () {
     helpers.each(this.evs, function (ev) {
         ev.destroy();
     });
-    this.subviews.breadcrumb.destroy();
-    this.subviews.search.destroy();
     this.evs = null;
     this.el.innerHTML = "";
     this.el = null;
@@ -313,9 +311,16 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
+        if(this.model.viewState.searchOn){
+            this.els.list.appendChild(jungle([
+                ["div.eg-search-no", ["p",this.txt("No search results found")]]
+            ]));
+        }else{
+
         this.els.list.appendChild(jungle([
             ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
         ]));
+        }
     }
 }
 

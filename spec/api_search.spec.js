@@ -41,37 +41,16 @@ describe("Search API facade", function() {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
-    var testpath = "/Shared/SDKTests/haystack" + ~~(Math.random() * 99999);
-    var needlename = "needle" + Math.random().toFixed(15);
 
-    describe("Searching for a file", function() {
+    describe("Searching for a folder we know exists", function() {
 
-        var fileId;
-
-        it("Needs items to look for", function(done) {
-            eg.API.storage.path(testpath).exists().then(function(exists) {
-                if (exists) {
-                    return eg.API.storage.path(testpath).remove()
-                }
-            }).then(function() {
-                return eg.API.storage.path(testpath).createFolder()
-                    .then(function(e) {
-                        return eg.API.storage.path(testpath + "/" + needlename).storeFile(getFileContent("needle in a haystack!"))
-                    }).then(function(result) {
-                        fileId = result.id;
-                        done();
-                    });
-            }).fail(function(e) {
-                console.error(e.stack);
-            });
-        });
 
 
         it("Should get results", function(done) {
-            var filePath = testpath + "/candy.txt";
-            var events = 0;
 
-            eg.API.search.query(needlename).then(function(body) {
+            eg.API.search.query("png").then(function(body) {
+                console.log(JSON.stringify(body.results,null,2))
+
                 expect(body.results[0].entry_id).toBe(fileId);
                 done();
             }).fail(function(e) {
@@ -79,20 +58,6 @@ describe("Search API facade", function() {
                 done();
             });
         });
-
-        it("Needs to clean up after itself", function(done) {
-            eg.API.storage.path(testpath).exists().then(function(exists) {
-                if (exists) {
-                    return eg.API.storage.path(testpath).remove()
-                }
-            }).then(function() {
-                done();
-            }).fail(function(e) {
-                console.error(e.stack);
-                done()
-            });
-        })
-
 
 
     });

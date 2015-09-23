@@ -4,7 +4,8 @@
 @fontcl: #5e5f60;
 @fontclA: #fff;
 @fontclB: #777;
-@arrowHover: #4e4e4f;
+@iconHover: #4e4e4f;
+@searchIcoMain: #b3b4b6;
 @framecl: #dbdbdb;
 @frameclA: #f2f3f3;
 @bodycl: #fff;
@@ -16,7 +17,7 @@
 @itemhover: #EEF5FD; // #f1f5f8;
 @spacing: 10px;
 @smallspacing: 4px;
-@searchsize: @size/5;
+@searchsize: @size*0.18;
 @import "./shapes.less";
 .gradientByShadow(@v;@blur;@spread) {
     -webkit-box-shadow: inset 0 @v @blur @spread #000;
@@ -30,7 +31,7 @@
     height: @size/2;
     text-align: center;
     cursor: pointer;
-    margin: 0 2*@smallspacing 0 0;
+    margin: 0 2*@smallspacing;
 }
 
 
@@ -240,21 +241,27 @@ a.eg-btn {
     }
 }
 .eg-search-inpt {
-    width: ~"calc(100% - 63px)";
+    width: ~"calc(100% - 50px)";
+    margin: 1px 3px;
     & input {
         width: 100%;
         padding: 5px;
         border-radius:5px;
         border: 1px solid @btframeclA;
+        outline:none;
     }
 }
-.eg-search-ico {
+.eg-btn.eg-search-ico {
     visibility:visible;
-    color: @fontclB;
+    color: @searchIcoMain;
     position: absolute;
     //top: @size/2px - @searchsize/2;
-    right: @size/2px;
+    right: @spacing;
+    margin-top: 2px;
     &:hover {
-        color: @fontcl;
+        color: @iconHover;
     }
+}
+.eg-search-no {
+    padding: @spacing*2;
 }

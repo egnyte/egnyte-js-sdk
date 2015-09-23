@@ -11,27 +11,34 @@ function beradcrumbView(parent) {
     self.model = parent.model;
 
     myElements.close = jungle([
-        ["a.eg-search-x.eg-btn","+"]
+        ["a.eg-search-x.eg-btn", "+"]
     ]).childNodes[0];
     myElements.ico = jungle([
         ["a.eg-btn.eg-search-ico"]
     ]).childNodes[0];
+    myElements.input = jungle([
+        ["input[placeholder=" + parent.txt("Search") + "]"]
+    ]).childNodes[0];
     myElements.field = jungle([
-        ["span.eg-search-inpt", ["input[placeholder="+parent.txt("Search")+"]"]]
+        ["span.eg-search-inpt", myElements.input]
     ]).childNodes[0];
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
+        //hide search results by reloading current folder
+        self.model.fetch();
         self.el.setAttribute(airaExpanded, false);
     });
     parent.handleClick(myElements.ico, function () {
-        self.model.viewState.searchOn = true;
-        self.el.setAttribute(airaExpanded, true);
+        if (self.model.viewState.searchOn) {
+            self.action();
+        } else {
+            self.model.viewState.searchOn = true;
+            self.el.setAttribute(airaExpanded, true);
+        }
     });
-    self.evs.push(dom.onKeys(myElements.field, {
-            "<enter>": function () {
-                self.model.search("docx")
-            }
+    parent.evs.push(dom.onKeys(myElements.input, {
+            "<enter>": helpers.bindThis(self,self.action)
         },
         function () {
             return 1;
@@ -57,14 +64,12 @@ beradcrumbView.prototype.getTree = function () {
 }
 
 
-beradcrumbView.prototype.render = function () {
-
-
+beradcrumbView.prototype.action = function () {
+    var myElements = this.els;
+    if (myElements.input.value && myElements.input.value.length > 2) {
+        this.model.search(myElements.input.value)
+    }
 }
 
-beradcrumbView.prototype.destroy = function () {
-
-
-}
 
 module.exports = beradcrumbView;

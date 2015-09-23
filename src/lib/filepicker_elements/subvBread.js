@@ -48,9 +48,6 @@ beradcrumbView.prototype.getTree = function() {
 }
 
 
-beradcrumbView.prototype.destroy = function() {
-}
-
 beradcrumbView.prototype.render = function() {
     var currentPath = "/";
     var path = this.model.path || currentPath; //in case path was not provided, go for root

@@ -3,7 +3,7 @@
     position: relative;
     color: @fontclB;
     &:hover {
-        color: @arrowHover;
+        color: @iconHover;
     }
     &:before {
         content: "";
@@ -22,9 +22,10 @@
         bottom: @spacing;
     }
 }
-.eg-search-x {
-    margin:0;
-text-decoration:none !important;
+.eg-btn.eg-search-x {
+    margin: 0;
+    text-decoration: none !important;
+
     //padding: @smallspacing @size/4;
     position: relative;
     color: @fontclB;
@@ -35,17 +36,16 @@ text-decoration:none !important;
     -webkit-transform: rotate(45deg);
     border-style: solid;
     &:hover {
-        color: @arrowHover;
+        color: @iconHover;
     }
 }
 .eg-search-ico {
-    cursor: pointer;
     &:before {
         display: block;
         content: "";
         width: @searchsize;
         height: @searchsize;
-        border-width: @searchsize*0.4;
+        border-width: 3px;
         border-style: solid;
         background: transparent;
         -webkit-border-radius: 50%;
@@ -55,12 +55,12 @@ text-decoration:none !important;
     &:after {
         content: "";
         position: absolute;
-        top: @searchsize*1.9;
-        left: @searchsize*1.9;
-        border-left-width: @searchsize*0.4;
+        top: @searchsize*2;
+        left: @searchsize*2;
+        border-left-width: 3px;
         border-left-style: solid;
         height: @searchsize*0.8;
-        margin-top: 0;
+        margin: 0;
         -webkit-transform: rotate(-45deg);
         -moz-transform: rotate(-45deg);
         -ms-transform: rotate(-45deg);
@@ -68,12 +68,14 @@ text-decoration:none !important;
         transform: rotate(-45deg);
     }
 }
-@-webkit-keyframes egspin {to {
+@-webkit-keyframes egspin {
+    to {
         -webkit-transform: rotate(360deg);
         transform: rotate(360deg);
     }
 }
-@keyframes egspin {to {
+@keyframes egspin {
+    to {
         transform: rotate(360deg);
     }
 }
@@ -165,7 +167,7 @@ text-decoration:none !important;
 }
 .eg-folder .eg-ico {
     background: #fee999; //#F1DC8E
-    border-top: @size*0.1 #f1dc8e solid;
+    border-top: @size*0.12 #f1dc8e solid;
     margin-top: @size*0.22;
     height: @size*0.64 - 1;
     overflow: visible;
