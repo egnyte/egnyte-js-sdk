@@ -262,10 +262,18 @@ var once = require(5)
 var parseHeaders = require(9)
 
 
-var XHR = window.XMLHttpRequest || noop
-var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 
 module.exports = createXHR
+createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
+createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
+
+
+function isEmpty(obj){
+    for(var i in obj){
+        if(obj.hasOwnProperty(i)) return false
+    }
+    return true
+}
 
 function createXHR(options, callback) {
     function readystatechange() {
@@ -292,7 +300,7 @@ function createXHR(options, callback) {
 
         return body
     }
-    
+
     var failureResponse = {
                 body: undefined,
                 headers: {},
@@ -301,11 +309,11 @@ function createXHR(options, callback) {
                 url: uri,
                 rawRequest: xhr
             }
-    
+
     function errorFunc(evt) {
         clearTimeout(timeoutTimer)
         if(!(evt instanceof Error)){
-            evt = new Error("" + (evt || "unknown") )
+            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
         }
         evt.statusCode = 0
         callback(evt, failureResponse)
@@ -313,12 +321,18 @@ function createXHR(options, callback) {
 
     // will load the data & process the response in a special response object
     function loadFunc() {
+        if (aborted) return
+        var status
         clearTimeout(timeoutTimer)
-        
-        var status = (xhr.status === 1223 ? 204 : xhr.status)
+        if(options.useXDR && xhr.status===undefined) {
+            //IE8 CORS GET successful response doesn't have a status field, but body is fine
+            status = 200
+        } else {
+            status = (xhr.status === 1223 ? 204 : xhr.status)
+        }
         var response = failureResponse
         var err = null
-        
+
         if (status !== 0){
             response = {
                 body: getBody(),
@@ -335,9 +349,9 @@ function createXHR(options, callback) {
             err = new Error("Internal XMLHttpRequest Error")
         }
         callback(err, response, response.body)
-        
+
     }
-    
+
     if (typeof options === "string") {
         options = { uri: options }
     }
@@ -352,13 +366,14 @@ function createXHR(options, callback) {
 
     if (!xhr) {
         if (options.cors || options.useXDR) {
-            xhr = new XDR()
+            xhr = new createXHR.XDomainRequest()
         }else{
-            xhr = new XHR()
+            xhr = new createXHR.XMLHttpRequest()
         }
     }
 
     var key
+    var aborted
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
@@ -369,9 +384,9 @@ function createXHR(options, callback) {
 
     if ("json" in options) {
         isJson = true
-        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
-            headers["Content-Type"] = "application/json"
+            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
             body = JSON.stringify(options.json)
         }
     }
@@ -384,17 +399,22 @@ function createXHR(options, callback) {
         // IE must die
     }
     xhr.ontimeout = errorFunc
-    xhr.open(method, uri, !sync)
+    xhr.open(method, uri, !sync, options.username, options.password)
     //has to be after open
-    xhr.withCredentials = !!options.withCredentials
-    
+    if(!sync) {
+        xhr.withCredentials = !!options.withCredentials
+    }
     // Cannot set timeout with sync request
     // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
     // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
     if (!sync && options.timeout > 0 ) {
         timeoutTimer = setTimeout(function(){
-            xhr.abort("timeout");
-        }, options.timeout+2 );
+            aborted=true//IE9 may still call readystatechange
+            xhr.abort("timeout")
+            var e = new Error("XMLHttpRequest timeout")
+            e.code = "ETIMEDOUT"
+            errorFunc(e)
+        }, options.timeout )
     }
 
     if (xhr.setRequestHeader) {
@@ -403,15 +423,15 @@ function createXHR(options, callback) {
                 xhr.setRequestHeader(key, headers[key])
             }
         }
-    } else if (options.headers) {
+    } else if (options.headers && !isEmpty(options.headers)) {
         throw new Error("Headers cannot be set on an XDomainRequest object")
     }
 
     if ("responseType" in options) {
         xhr.responseType = options.responseType
     }
-    
-    if ("beforeSend" in options && 
+
+    if ("beforeSend" in options &&
         typeof options.beforeSend === "function"
     ) {
         options.beforeSend(xhr)
@@ -423,7 +443,6 @@ function createXHR(options, callback) {
 
 
 }
-
 
 function noop() {}
 
@@ -3578,7 +3597,7 @@ module.exports = function (overrides) {
 };
 
 },{}],43:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266C8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,.15);color:#fff}.eg-folder .eg-ico{border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:0;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-bar,.eg-box,.eg-widget{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:\'Open Sans\',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC) no-repeat center;width:50px;height:50px;position:absolute;top:0;right:0;z-index:3}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc(100% - 110px);line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=true]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-btn.eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-btn.eg-picker-back:hover{color:#4e4e4f}.eg-btn.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px auto}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#e1e1ba;border:1px #d4d8bd solid;border-top:4px #dfe4b9 solid;margin-top:8.8px;height:24.6px;background:#f3f7d3;overflow:visible;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-8px;left:-1px;border:#d1dabc 1px solid;border-bottom:none;border-radius:2px;background:#dfe4b9;content:\" \";width:60%;height:4.4px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;margin:0 8px;cursor:pointer}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:50px;position:absolute;top:0;right:0;z-index:3}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60;font-size:16px}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#f1f5f8;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#dde9f3}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],44:[function(require,module,exports){
 module.exports = function (promises, dom, messages, callback) {
     var init = promises.defer();

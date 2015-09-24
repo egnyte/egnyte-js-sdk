@@ -262,10 +262,18 @@ var once = require(5)
 var parseHeaders = require(9)
 
 
-var XHR = window.XMLHttpRequest || noop
-var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 
 module.exports = createXHR
+createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
+createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
+
+
+function isEmpty(obj){
+    for(var i in obj){
+        if(obj.hasOwnProperty(i)) return false
+    }
+    return true
+}
 
 function createXHR(options, callback) {
     function readystatechange() {
@@ -292,7 +300,7 @@ function createXHR(options, callback) {
 
         return body
     }
-    
+
     var failureResponse = {
                 body: undefined,
                 headers: {},
@@ -301,11 +309,11 @@ function createXHR(options, callback) {
                 url: uri,
                 rawRequest: xhr
             }
-    
+
     function errorFunc(evt) {
         clearTimeout(timeoutTimer)
         if(!(evt instanceof Error)){
-            evt = new Error("" + (evt || "unknown") )
+            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
         }
         evt.statusCode = 0
         callback(evt, failureResponse)
@@ -313,12 +321,18 @@ function createXHR(options, callback) {
 
     // will load the data & process the response in a special response object
     function loadFunc() {
+        if (aborted) return
+        var status
         clearTimeout(timeoutTimer)
-        
-        var status = (xhr.status === 1223 ? 204 : xhr.status)
+        if(options.useXDR && xhr.status===undefined) {
+            //IE8 CORS GET successful response doesn't have a status field, but body is fine
+            status = 200
+        } else {
+            status = (xhr.status === 1223 ? 204 : xhr.status)
+        }
         var response = failureResponse
         var err = null
-        
+
         if (status !== 0){
             response = {
                 body: getBody(),
@@ -335,9 +349,9 @@ function createXHR(options, callback) {
             err = new Error("Internal XMLHttpRequest Error")
         }
         callback(err, response, response.body)
-        
+
     }
-    
+
     if (typeof options === "string") {
         options = { uri: options }
     }
@@ -352,13 +366,14 @@ function createXHR(options, callback) {
 
     if (!xhr) {
         if (options.cors || options.useXDR) {
-            xhr = new XDR()
+            xhr = new createXHR.XDomainRequest()
         }else{
-            xhr = new XHR()
+            xhr = new createXHR.XMLHttpRequest()
         }
     }
 
     var key
+    var aborted
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
@@ -369,9 +384,9 @@ function createXHR(options, callback) {
 
     if ("json" in options) {
         isJson = true
-        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
-            headers["Content-Type"] = "application/json"
+            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
             body = JSON.stringify(options.json)
         }
     }
@@ -384,17 +399,22 @@ function createXHR(options, callback) {
         // IE must die
     }
     xhr.ontimeout = errorFunc
-    xhr.open(method, uri, !sync)
+    xhr.open(method, uri, !sync, options.username, options.password)
     //has to be after open
-    xhr.withCredentials = !!options.withCredentials
-    
+    if(!sync) {
+        xhr.withCredentials = !!options.withCredentials
+    }
     // Cannot set timeout with sync request
     // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
     // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
     if (!sync && options.timeout > 0 ) {
         timeoutTimer = setTimeout(function(){
-            xhr.abort("timeout");
-        }, options.timeout+2 );
+            aborted=true//IE9 may still call readystatechange
+            xhr.abort("timeout")
+            var e = new Error("XMLHttpRequest timeout")
+            e.code = "ETIMEDOUT"
+            errorFunc(e)
+        }, options.timeout )
     }
 
     if (xhr.setRequestHeader) {
@@ -403,15 +423,15 @@ function createXHR(options, callback) {
                 xhr.setRequestHeader(key, headers[key])
             }
         }
-    } else if (options.headers) {
+    } else if (options.headers && !isEmpty(options.headers)) {
         throw new Error("Headers cannot be set on an XDomainRequest object")
     }
 
     if ("responseType" in options) {
         xhr.responseType = options.responseType
     }
-    
-    if ("beforeSend" in options && 
+
+    if ("beforeSend" in options &&
         typeof options.beforeSend === "function"
     ) {
         options.beforeSend(xhr)
@@ -423,7 +443,6 @@ function createXHR(options, callback) {
 
 
 }
-
 
 function noop() {}
 

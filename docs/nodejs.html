@@ -56,9 +56,9 @@
 <body>
     <div class="doc">
 
-        <p>#Usage notes for node.js
-A must read if you already used the SDK in the browser and want to switch now.</p>
-<p>The authorization flow has to be done in the browser, so you&#39;ll need to get the access token from there and initialize Egnyte with the token. 
+        <h1 id="usage-notes-for-node-js">Usage notes for node.js</h1>
+<p>A must read if you already used the SDK in the browser and want to switch now.</p>
+<p>The authorization flow has to be done in the browser, so you&#39;ll need to get the access token from there and initialize Egnyte with the token.
 The only auth method that can be successfully used server-side is the password grant, <code>API.auth.requestTokenByPassword</code> which is available for &quot;internal applications&quot;. (You need to become Egnyte partner to get a key for such an app)</p>
 <p>All API methods work as described in main docs, below are descriptions of node-specific methods:</p>
 <p><code>API.storage.storeFile</code> accepts a data stream instead of a blob. It also takes two optional arguments which are MIME type and size (in bytes) of stream.</p>
@@ -68,7 +68,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
         //
     })
 </code></pre>
-<p><code>API.storage.streamToChunks</code> splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big. 
+<p><code>API.storage.streamToChunks</code> splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big.
 Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload.</p>
 <pre><code>var fileStream = fs.createReadStream(&#39;sample.txt&#39;)
 egnyte.API.storage.path(pathFromRoot).streamToChunks(fileStream, &quot;text/plain&quot; )
