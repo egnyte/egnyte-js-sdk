@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "1.4.4",
+  "version": "2.0.0",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
@@ -48,7 +48,7 @@
     "grunt-contrib-uglify": "^0.4.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-dependo": "^0.1.2",
-    "grunt-jasmine-nodejs": "^1.0.2",
+    "grunt-jasmine-nodejs": "^1.4.0",
     "grunt-markdown": "^0.6.1",
     "node-lessify": "^0.0.5",
     "readable-stream": "~1.1.8",

@@ -71,7 +71,7 @@ describe("API auth", function () {
                 eg2.API.auth.requestTokenByPassword(APIUsername, APIPassword).then(function () {
                     console.log("token:", eg2.API.auth.getToken());
                     expect(eg2.API.auth.isAuthorized()).toBe(true);
-                    return eg2.API.storage.exists('/Shared');
+                    return eg2.API.storage.path('/Shared').exists();
                 }).then(function () {
                     done();
                 }).fail(function (e) {

@@ -69,12 +69,12 @@ describe("Permissions API facade integration", function () {
     describe("Permissions methods", function () {
 
         it("Needs a folder to set permissions to", function (done) {
-            eg.API.storage.get("/Shared")
+            eg.API.storage.path("/Shared").get()
                 .then(function (e) {
                     expect(e["folders"]).toBeDefined();
                     //this test suite has unicorns and bacon, it can't get any better/
                     testpath = e.folders[0].path + "/bacon" + ~~(10000 * Math.random());
-                    return eg.API.storage.createFolder(testpath)
+                    return eg.API.storage.path(testpath).createFolder()
                 })
                 .then(function (e) {
                     done();
@@ -87,10 +87,10 @@ describe("Permissions API facade integration", function () {
 
         it("Can set basic permissions", function (done) {
             //would be nice to create the user first...
-            eg.API.perms.users(["test", "banana"]).allowEdit(testpath)
+            eg.API.perms.users(["test", "banana"]).path(testpath).allowEdit()
                 .then(function (e) {
                     expect(e.statusCode).toEqual(200); //actually checking if it exists
-                    return eg.API.perms.users(["test"]).getPerms(testpath);
+                    return eg.API.perms.users(["test"]).path(testpath).getPerms();
                 }).then(function (e) {
                     expect(e.users.length).toBeGreaterThan(0);
                     expect(e.users[0].subject).toBe("test");
@@ -103,10 +103,10 @@ describe("Permissions API facade integration", function () {
         });
 
         it("Can filter permissions", function (done) {
-            eg.API.perms.users(["JohnnyIHardlyKnewYa"]).getPerms(testpath)
+            eg.API.perms.users(["JohnnyIHardlyKnewYa"]).path(testpath).getPerms()
                 .then(function (e) {
                     expect(e.users.length).toEqual(0);
-                    return eg.API.perms.getPerms(testpath);
+                    return eg.API.perms.path(testpath).getPerms();
                 }).then(function (e) {
                     expect(e.users.length).toBeGreaterThan(0);
                     done();
@@ -123,7 +123,7 @@ describe("Permissions API facade integration", function () {
             it("Needs a file to lock", function (done) {
                 var blob = getTestBlob("hey!");
 
-                eg.API.storage.storeFile(testpath + "/aaa", blob)
+                eg.API.storage.path(testpath + "/aaa").storeFile(blob)
                     .then(function (e) {
                         done();
                     }).fail(function (e) {
@@ -136,7 +136,7 @@ describe("Permissions API facade integration", function () {
             it("Can lock a file as other user", function (done) {
                 eg.API.storage.impersonate({
                         username: "test"
-                    }).lock(testpath + "/aaa", null, 1800)
+                    }).path(testpath + "/aaa").lock(null, 1800)
                     .then(function (result) {
                         token = result.lock_token;
                         expect(result.lock_token).toBeTruthy();
@@ -152,7 +152,7 @@ describe("Permissions API facade integration", function () {
             it("Can unlock a file as other user", function (done) {
                 eg.API.storage.impersonate({
                         username: "test"
-                    }).unlock(testpath + "/aaa", token)
+                    }).path(testpath + "/aaa").unlock(token)
                     .then(function (result) {
                         //just getting here is ok.
                         expect(result).toBeDefined();
@@ -167,7 +167,7 @@ describe("Permissions API facade integration", function () {
         });
 
         it("Needs to clean up the folder", function (done) {
-            eg.API.storage.remove(testpath)
+            eg.API.storage.path(testpath).remove()
                 .then(function (e) {
                     expect(true).toBeTruthy();
                     done();

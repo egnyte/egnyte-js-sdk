@@ -1,6 +1,7 @@
 var promises = require("q");
 var helpers = require('../reusables/helpers');
 var decorators = require("./decorators");
+var resourceIdentifier = require("./resourceIdentifier");
 
 var ENDPOINTS_perms = require("../enum/endpoints").perms;
 
@@ -16,13 +17,13 @@ function Perms(requestEngine) {
 function enlist(what) {
     return function (opts, data) {
         switch (opts.method) {
-        case 'GET':
-            opts.params || (opts.params = {});
-            opts.params[what] = data.join("|");
-            break;
-        case 'POST':
-            opts.json[what] = data;
-            break;
+            case 'GET':
+                opts.params || (opts.params = {});
+                opts.params[what] = data.join("|");
+                break;
+            case 'POST':
+                opts.json[what] = data;
+                break;
         }
         return opts;
     }
@@ -32,19 +33,19 @@ function enlist(what) {
 var permsProto = {};
 
 permsProto.disallow = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "None");
+    return permsProto.allow.call(this, pathFromRoot, "None");
 }
 permsProto.allowView = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Viewer");
+    return permsProto.allow.call(this, pathFromRoot, "Viewer");
 }
 permsProto.allowEdit = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Editor");
+    return permsProto.allow.call(this, pathFromRoot, "Editor");
 }
 permsProto.allowFullAccess = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Full");
+    return permsProto.allow.call(this, pathFromRoot, "Full");
 }
 permsProto.allowOwnership = function (pathFromRoot) {
-    return this.allow(pathFromRoot, "Owner");
+    return permsProto.allow.call(this, pathFromRoot, "Owner");
 }
 
 permsProto.allow = function (pathFromRoot, permission) {
@@ -84,7 +85,11 @@ permsProto.getPerms = function (pathFromRoot) {
         });
 };
 
+Perms.prototype = resourceIdentifier(permsProto, {
+    pathPrefix: "/folder"
+});
 
-Perms.prototype = permsProto;
+//to prevent confusion in users
+delete Perms.prototype.fileId;
 
 module.exports = Perms;

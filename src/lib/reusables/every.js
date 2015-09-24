@@ -17,7 +17,7 @@ module.exports = function (interval, func, errorHandler) {
                     console && console.error("Error in scheduled function", e);
                 }
             }).then(function () {
-                                //pointer changes only if repeat was called and there's no need to schedule next run this time
+                //pointer changes only if repeat was called and there's no need to schedule next run this time
                 if (!stopped && currentPointer === pointer) {
                     pointer = setTimeout(runner, interval);
                 }

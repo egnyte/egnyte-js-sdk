@@ -1,3 +1,8 @@
+### 2.0.0
+- Change in resource identification for files and folders
+- Separated notes API
+- UIntegrate plugin for Egnyte UI Integration Framework
+
 ### 1.4.2 - 1.4.4
 - bugfixes
 

@@ -17,7 +17,7 @@ if (ImInBrowser) {
         });
 
         it('should use the browser version of api', function () {
-            expect(eg.API.storage.constructor.name).not.toBe("StreamsExtendedStorage");
+            expect(eg.API.storage.getFileStream).not.toBeDefined();
         });
 
 

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<!-----------------------------------------------------------------
+
+   THIS FILE WAS GENERATED FROM SRC/DOCS
+   TO CHANGE DOCUMENTATION EDIT .md FILES
+
+------------------------------------------------------------------->
+<head>
+    <meta charset="UTF-8">
+    <title>Egnyte SDK docs</title>
+
+    <style>
+        body>.doc {
+            font-family: sans-serif;
+            padding: 10px 10%;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 400;
+            border-bottom: 1px dashed #eee;
+            border-left: .5em solid #eee;
+            padding-left: 10px;
+            margin-left: -.5em;
+            margin-top: 2em;
+        }
+        code {
+            margin: 0px;
+            padding: 0 2px;
+            border: 1px solid #DDD;
+            background-color: #F8F8F8;
+            border-radius: 3px;
+        }
+        pre code {
+            display: block;
+            padding: 0.8em;
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0px;
+        }
+        th,
+        td {
+            border: 1px solid #DDD;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="doc">
+
+        <h1 id="uintegrate-plugin-for-simple-ui-integration-framework-interaction">UIntegrate plugin for simple UI Integration Framework interaction</h1>
+<h2 id="installation">Installation</h2>
+<p>Go to <code>dist/</code> and pick one of the versions:</p>
+<ul>
+<li><code>dist/egnyte-uintegrate*</code> - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser</li>
+<li><code>dist/uintegrate*</code> - Just the UIntegrate interaction functionality (documented below)</li>
+</ul>
+<p>When using CommonJS dependency management, you can require the plugin:</p>
+<ul>
+<li><code>require(&quot;egnyte-js-sdk/plugins/UIntegrate&quot;)</code> - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser</li>
+<li><code>require(&quot;egnyte-js-sdk/plugins/UIntegrate/standalone&quot;)</code> - Just the UIntegrate interaction functionality (documented below)</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<pre><code class="lang-javascript">Egnyte.appInit(function(uint){
+    //use the uint object to interact with Egnyte UI and/or APIs
+})</code></pre>
+<p><code>uint</code> object:</p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>data</td>
+<td>object</td>
+<td>data provided by the invocation, must contain at least the <code>domain</code> field - egnyte domain you can pass to <code>Egnyte.init(uint.data.domain, options)</code></td>
+</tr>
+<tr>
+<td>reload</td>
+<td>function()</td>
+<td>call this function to make Egnyte UI reload the current folder (after you make file operations etc.)</td>
+</tr>
+<tr>
+<td>error</td>
+<td>function(message)</td>
+<td>inform Egnyte UI that your app had an error. The app is closed and a notification containing the <code>message</code> shows.</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>function(message)</td>
+<td>inform Egnyte UI that your app finished what it was doing and it can be closed. <code>message</code> will be shown to the user as a notification. Ending the app by just calling <code>window.close()</code> is not recommended and will not close the app if it works in an iframe.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="technical-details">Technical details</h2>
+<p>UI Integration Framework uses <code>postmessage</code> for communication.
+To make sure other messages will not get mixed with others, it uses a specific format for them. If your app is using <code>postmessage</code> to receive JSON data, make sure you ignore non-JSON messages like this:</p>
+<pre><code class="lang-javascript">try {
+    JSON.parse(message);
+}catch(e){
+    //it failed to parse, please ignore
+}</code></pre>
+
+
+    </div>
+</body>
+
+</html>

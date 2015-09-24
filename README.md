@@ -41,7 +41,8 @@ See `docs/` locally or explore documentation in markdown format:
 
 * [Methods on top of Egnyte Public API](./src/docs/api.md)  
 * [API usage notes for node.js](./src/docs/nodejs.md)
-* [File picker widget](./src/docs/filepicker.md)  
+* [File picker widget](./src/docs/widgets.md)  
+* [UIntegrate plugin](./src/docs/uintegrate.md)  
 * [Installation and tests](./src/docs/installation.md)  
 
 
