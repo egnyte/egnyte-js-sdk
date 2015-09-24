@@ -10,7 +10,7 @@ if (!ImInBrowser) {
     process.setMaxListeners(0);
 }
 
-describe("Search API facade", function() {
+describe("Search API facade", function () {
 
     //our main testsubject
     var eg = Egnyte.init(egnyteDomain, {
@@ -36,28 +36,29 @@ describe("Search API facade", function() {
     }
 
 
-    beforeEach(function() {
+    beforeEach(function () {
         jasmine.getEnv().defaultTimeoutInterval = 20000; //QA API can be laggy
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
     });
 
 
-    describe("Searching for a folder we know exists", function() {
+    describe("Searching for a folder we know exists", function () {
 
+        if (typeof existingFile !== "undefined") {
 
-
-        it("Should get results", function(done) {
-
-            eg.API.search.query("png").then(function(body) {
-                console.log(JSON.stringify(body.results,null,2))
-
-                expect(body.results[0].entry_id).toBe(fileId);
-                done();
-            }).fail(function(e) {
-                expect(this).toAutoFail(e);
-                done();
+            it("Should get results", function (done) {
+                var query = existingFile.match(/[^/]*$/)[0];
+                console.log(query)
+                eg.API.search.query(query).then(function (body) {
+console.log(JSON.stringify(body.results,null,2))
+                    expect(body.results[0].path).toBe(existingFile);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
             });
-        });
+        }
 
 
     });
