@@ -436,7 +436,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+#\\]/;
+var disallowedChars = /[":<>|?*\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -483,6 +483,9 @@ module.exports = {
         name = name.replace(/^\/\//, "/");
 
         return (name);
+    },
+    encodeURIPath: function (text){
+        return encodeURI(text).replace(/#/g,"%23");
     }
 };
 

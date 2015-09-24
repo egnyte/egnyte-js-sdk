@@ -15,7 +15,7 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot)
+            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot)
         }
 
         opts.headers = {};
@@ -116,7 +116,7 @@ function getFileStream(pathFromRoot, versionEntryId) {
 
     var opts = {
         method: "GET",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
     }
     if (versionEntryId) {
         opts.params = opts.qs = { //xhr and request differ here
