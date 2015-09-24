@@ -1,3 +1,8 @@
+### 2.1.0
+- Updated all dependencies to newer versions, compatible with node.js v4+
+- Ampersand (&) character is now allowed in paths
+- disabled chunkned upload test; chunk minimum size of 100MB was introduced in API
+
 ### 2.0.0
 - Change in resource identification for files and folders
 - Separated notes API
@@ -11,7 +16,7 @@
 
 ### 1.4.0
 - Events API
-- Locks in storage 
+- Locks in storage
 - request defaults
 
 ### 1.3.0

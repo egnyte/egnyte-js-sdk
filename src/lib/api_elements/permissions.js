@@ -57,7 +57,7 @@ permsProto.allow = function (pathFromRoot, permission) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + encodeURI(pathFromRoot),
                 json: {
                     "permission": permission
                 }
@@ -77,7 +77,7 @@ permsProto.getPerms = function (pathFromRoot) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + encodeURI(pathFromRoot)
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body

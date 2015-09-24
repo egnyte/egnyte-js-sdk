@@ -65,24 +65,26 @@
 </ul>
 <p>both of them available in minified versions (recommended)</p>
 <p>To use the SDK, just add the script to your app&#39;s HTML document.</p>
-<pre><code class="lang-html">&lt;script src=&quot;egnyte.min.js&quot;&gt;&lt;/script&gt;</code></pre>
+<pre><code class="lang-html">&lt;script src=&quot;egnyte.min.js&quot;&gt;&lt;/script&gt;
+</code></pre>
 <p>After that, all SDK functionalities are available via global <code>Egnyte</code> constructor.</p>
 <p>To show Google Drive icons in the filepicker for files coming from Google Drive include the <code>googicons.css</code> from <code>dist/resources/</code></p>
 <h2 id="node-js">Node.js</h2>
-<pre><code>npm install --save egnyte-js-sdk</code></pre>
-<p>use:</p>
-<pre><code class="lang-javascript">var Egnyte = require(&#39;egnyte-js-sdk&#39;);</code></pre>
+<pre><code>npm install --save egnyte-js-sdk
+</code></pre><p>use:</p>
+<pre><code class="lang-javascript">var Egnyte = require(&#39;egnyte-js-sdk&#39;);
+</code></pre>
 <h1 id="building-and-dependencies">Building and dependencies</h1>
 <p>To build the project and run tests <code>node.js</code> is required in your system.</p>
 <p>Install grunt comandline tools:</p>
-<pre><code>npm install -g grunt-cli</code></pre>
-<p>Install all dependencies:</p>
-<pre><code>npm install .</code></pre>
-<p>Run build and tests (for integration tests setup see below)</p>
-<pre><code>grunt</code></pre>
-<p>Run localhost server at <a href="https://127.0.0.1:9999/">https://127.0.0.1:9999/</a></p>
-<pre><code>grunt serve</code></pre>
-<h2 id="tests-setup">Tests setup</h2>
+<pre><code>npm install -g grunt-cli
+</code></pre><p>Install all dependencies:</p>
+<pre><code>npm install .
+</code></pre><p>Run build and tests (for integration tests setup see below)</p>
+<pre><code>grunt
+</code></pre><p>Run localhost server at <a href="https://127.0.0.1:9999/">https://127.0.0.1:9999/</a></p>
+<pre><code>grunt serve
+</code></pre><h2 id="tests-setup">Tests setup</h2>
 <p>To run tests for the API you need to have access to the Public API first.
 Create a file <code>spec/conf/apiaccess.js</code> based on the <code>spec/conf/apiaccess_template.js</code> file.</p>
 <pre><code class="lang-javascript">egnyteDomain = &quot;https://YOURDOMAIN.egnyte.com&quot;;
@@ -92,7 +94,8 @@ APIToken = &quot;YOURACCESSTOKEN&quot;;
 APIKey = &quot;12345&quot; //API key for password grant
 APIUsername = &quot;user&quot;;
 APIPassword = &quot;foo&quot;;
-APIKeyImplicit = &quot;9876543&quot; //API key for implicit grant</code></pre>
+APIKeyImplicit = &quot;9876543&quot; //API key for implicit grant
+</code></pre>
 <p><code>YOURACCESSTOKEN</code> is not the API key. </p>
 <p>You need to obtain the access token using your key and <code>requestToken</code> method or as described in authentication section of <a href="http://developers.egnyte.com/docs">Egnyte Public API docs</a>. </p>
 <p>But the easiest way at first is to run <code>grunt serve</code> and open <a href="https://127.0.0.1:9999/examples/request_token.html">https://127.0.0.1:9999/examples/request_token.html</a> and go through the flow in the example to get a token.</p>

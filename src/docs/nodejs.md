@@ -1,7 +1,7 @@
-#Usage notes for node.js
+# Usage notes for node.js
 A must read if you already used the SDK in the browser and want to switch now.
 
-The authorization flow has to be done in the browser, so you'll need to get the access token from there and initialize Egnyte with the token. 
+The authorization flow has to be done in the browser, so you'll need to get the access token from there and initialize Egnyte with the token.
 The only auth method that can be successfully used server-side is the password grant, `API.auth.requestTokenByPassword` which is available for "internal applications". (You need to become Egnyte partner to get a key for such an app)
 
 All API methods work as described in main docs, below are descriptions of node-specific methods:
@@ -17,7 +17,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, "text/plain", 1105)
 
 ```
 
-`API.storage.streamToChunks` splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. 
+`API.storage.streamToChunks` splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big.
 Resolves to the same signature as `storeFile` and fails if any chunk failed to upload.
 
 ```
