@@ -262,18 +262,10 @@ var once = require(5)
 var parseHeaders = require(9)
 
 
+var XHR = window.XMLHttpRequest || noop
+var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 
 module.exports = createXHR
-createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
-createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
-
-
-function isEmpty(obj){
-    for(var i in obj){
-        if(obj.hasOwnProperty(i)) return false
-    }
-    return true
-}
 
 function createXHR(options, callback) {
     function readystatechange() {
@@ -300,7 +292,7 @@ function createXHR(options, callback) {
 
         return body
     }
-
+    
     var failureResponse = {
                 body: undefined,
                 headers: {},
@@ -309,11 +301,11 @@ function createXHR(options, callback) {
                 url: uri,
                 rawRequest: xhr
             }
-
+    
     function errorFunc(evt) {
         clearTimeout(timeoutTimer)
         if(!(evt instanceof Error)){
-            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
+            evt = new Error("" + (evt || "unknown") )
         }
         evt.statusCode = 0
         callback(evt, failureResponse)
@@ -321,18 +313,12 @@ function createXHR(options, callback) {
 
     // will load the data & process the response in a special response object
     function loadFunc() {
-        if (aborted) return
-        var status
         clearTimeout(timeoutTimer)
-        if(options.useXDR && xhr.status===undefined) {
-            //IE8 CORS GET successful response doesn't have a status field, but body is fine
-            status = 200
-        } else {
-            status = (xhr.status === 1223 ? 204 : xhr.status)
-        }
+        
+        var status = (xhr.status === 1223 ? 204 : xhr.status)
         var response = failureResponse
         var err = null
-
+        
         if (status !== 0){
             response = {
                 body: getBody(),
@@ -349,9 +335,9 @@ function createXHR(options, callback) {
             err = new Error("Internal XMLHttpRequest Error")
         }
         callback(err, response, response.body)
-
+        
     }
-
+    
     if (typeof options === "string") {
         options = { uri: options }
     }
@@ -366,14 +352,13 @@ function createXHR(options, callback) {
 
     if (!xhr) {
         if (options.cors || options.useXDR) {
-            xhr = new createXHR.XDomainRequest()
+            xhr = new XDR()
         }else{
-            xhr = new createXHR.XMLHttpRequest()
+            xhr = new XHR()
         }
     }
 
     var key
-    var aborted
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
@@ -384,9 +369,9 @@ function createXHR(options, callback) {
 
     if ("json" in options) {
         isJson = true
-        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
-            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
+            headers["Content-Type"] = "application/json"
             body = JSON.stringify(options.json)
         }
     }
@@ -399,22 +384,17 @@ function createXHR(options, callback) {
         // IE must die
     }
     xhr.ontimeout = errorFunc
-    xhr.open(method, uri, !sync, options.username, options.password)
+    xhr.open(method, uri, !sync)
     //has to be after open
-    if(!sync) {
-        xhr.withCredentials = !!options.withCredentials
-    }
+    xhr.withCredentials = !!options.withCredentials
+    
     // Cannot set timeout with sync request
     // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
     // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
     if (!sync && options.timeout > 0 ) {
         timeoutTimer = setTimeout(function(){
-            aborted=true//IE9 may still call readystatechange
-            xhr.abort("timeout")
-            var e = new Error("XMLHttpRequest timeout")
-            e.code = "ETIMEDOUT"
-            errorFunc(e)
-        }, options.timeout )
+            xhr.abort("timeout");
+        }, options.timeout+2 );
     }
 
     if (xhr.setRequestHeader) {
@@ -423,15 +403,15 @@ function createXHR(options, callback) {
                 xhr.setRequestHeader(key, headers[key])
             }
         }
-    } else if (options.headers && !isEmpty(options.headers)) {
+    } else if (options.headers) {
         throw new Error("Headers cannot be set on an XDomainRequest object")
     }
 
     if ("responseType" in options) {
         xhr.responseType = options.responseType
     }
-
-    if ("beforeSend" in options &&
+    
+    if ("beforeSend" in options && 
         typeof options.beforeSend === "function"
     ) {
         options.beforeSend(xhr)
@@ -443,6 +423,7 @@ function createXHR(options, callback) {
 
 
 }
+
 
 function noop() {}
 
@@ -680,7 +661,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._buildTokenQuery = function(redirect) {
-    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + encodeURIComponent(redirect);
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
     if (this.options.scope) {
         url += "&scope=" + this.options.scope;
     }
@@ -1593,6 +1574,9 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 },{"14":14,"22":22,"27":27,"29":29,"32":32}],21:[function(require,module,exports){
+var quotaRegex = /^<h1>Developer Over Qps/i;
+
+
 var promises = require(29);
 var helpers = require(32);
 var dom = require(30);
@@ -1657,7 +1641,7 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
    
     
@@ -2668,7 +2652,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+#\\]/;
+var disallowedChars = /[":<>|?*+&#\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -2717,7 +2701,6 @@ module.exports = {
         return (name);
     }
 };
-
 },{}],33:[function(require,module,exports){
 var helpers = require(32);
 
