@@ -1574,9 +1574,6 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 },{"14":14,"22":22,"27":27,"29":29,"32":32}],21:[function(require,module,exports){
-var quotaRegex = /^<h1>Developer Over Qps/i;
-
-
 var promises = require(29);
 var helpers = require(32);
 var dom = require(30);
@@ -1641,7 +1638,7 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
    
     

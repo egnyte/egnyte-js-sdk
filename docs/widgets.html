@@ -76,13 +76,15 @@
 <h3 id="initialize-egnyte-sdk-to-use-api">Initialize Egnyte SDK to use API</h3>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;http://mydomain.egnyte.com&quot;, {
         ...
-    });</code></pre>
+    });
+</code></pre>
 <p>(See API docs)</p>
 <h3 id="open-file-picker-">Open file picker:</h3>
 <pre><code class="lang-javascript">    //find a DOM node to put the picker in:
     var containerNode = document.getElementById(&quot;myPickerContainer&quot;);
     //open file picker
-    var picker = egnyte.filePicker(containerNode,options);</code></pre>
+    var picker = egnyte.filePicker(containerNode,options);
+</code></pre>
 <p>None of the options are required. (although without the selection callback it doesn&#39;t make much sense to use the picker)</p>
 <p>The options are:</p>
 <ul>
@@ -96,7 +98,8 @@ folder: true, //should folders be selectable
 file: true,   //should files be selectable (files are hidden when not selectable)
 multiple: true,   //should allow multiselection
 forbidden: []  //array of folder paths that selection is forbidden in
-}</code></pre>
+}
+</code></pre>
 </li>
 <li><p><code>texts</code> <em>Map</em> of labels in the filepicker to replace with given replacements, optional</p>
 <pre><code class="lang-javascript">texts: {
@@ -104,7 +107,8 @@ forbidden: []  //array of folder paths that selection is forbidden in
 &quot;Cancel&quot;: &quot;...&quot;,
 &quot;Loading&quot;: &quot;...&quot;,
 &quot;This folder is empty&quot;: &quot;...&quot;
-}</code></pre>
+}
+</code></pre>
 </li>
 <li><p><code>keys</code> <em>Map</em> to override default keybinding, set to false to disable all keyboard handling</p>
 <pre><code class="lang-javascript">keys: {
@@ -115,13 +119,15 @@ forbidden: []  //array of folder paths that selection is forbidden in
  &quot;back&quot;: &quot;&lt;left&gt;&quot;,
  &quot;confirm&quot;: &quot;none&quot;,
  &quot;close&quot;: &quot;&lt;escape&gt;&quot;
-}</code></pre>
+}
+</code></pre>
 <p>All keys handled by <a href="https://github.com/chrisdickinson/vkey">https://github.com/chrisdickinson/vkey</a> are available.</p>
 </li>
 <li><p><code>filterExtensions</code> <em>Function</em> - a filter function that decides if file should be visible to the user. Google drive files are filtered out by default. Pass <code>false</code> explicitly to disable filtering.  First argument to the function is 3 first characters of file extension, second is the internal mime group name (used for icon colors too).</p>
 <pre><code class="lang-javascript">filterExtensions: function(ext3chars, mime){
  return ext3chars===&quot;htm&quot;; //show only htm* files
-}</code></pre>
+}
+</code></pre>
 <p>Possible values of mime: <code>&quot;audio&quot;, &quot;video&quot;, &quot;pdf&quot;, &quot;word_processing&quot;, &quot;spreadsheet&quot;, &quot;presentation&quot;, &quot;cad&quot;, &quot;text&quot;, &quot;image&quot;, &quot;archive&quot;, &quot;goog&quot;</code></p>
 </li>
 <li><p><code>noFont</code> <em>Boolean</em> - set to true to opt-out from linking Open Sans from google fonts. The font will be linked to only once if at least one filepicker instance doesn&#39;t have <code>noFont:true</code> in options.</p>
@@ -145,7 +151,8 @@ forbidden: []  //array of folder paths that selection is forbidden in
         &quot;Ok&quot;: &quot;Continue&quot;,
         &quot;This folder is empty&quot;: &quot;Nothing here, sorry&quot;
         }
-    });</code></pre>
+    });
+</code></pre>
 <p>Added a detailed error handler for </p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
     selection: function(list){
@@ -159,7 +166,8 @@ forbidden: []  //array of folder paths that selection is forbidden in
             return &quot;Server is tired of all this querying&quot;
             }
         }
-    });</code></pre>
+    });
+</code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
 <p>The <code>list</code> returned to the selection callback is an array of objects matching the followng signatures:</p>
 <p><em>File</em></p>
@@ -172,17 +180,20 @@ forbidden: []  //array of folder paths that selection is forbidden in
     path: &quot;/Private/jsmith/foo.png&quot;,
     size: 1818,
     uploaded_by: &quot;jsmith&quot;
-}</code></pre>
+}
+</code></pre>
 <p><em>Folder</em></p>
 <pre><code class="lang-javascript">{
     folder_id: &quot;e76e6737-99cd-4ba9-bece-25e4d366241b&quot;,
     is_folder: true,
     name: &quot;foo&quot;,
     path: &quot;/Private/jsmith/foo&quot;
-}</code></pre>
+}
+</code></pre>
 <h3 id="close-file-picker">Close file picker</h3>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
-<pre><code class="lang-javascript">    picker.close();</code></pre>
+<pre><code class="lang-javascript">    picker.close();
+</code></pre>
 <h3 id="change-the-style">Change the style</h3>
 <p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
 <p>You can also modify the defaults to keep everything in one package. Change the colors in variables of <code>src/lib/filepicker_elements.view.less</code> and rebuild the package <code>grunt dist</code> (requires grunt and other dependencies installed via <code>npm</code>)</p>
@@ -198,7 +209,8 @@ forbidden: []  //array of folder paths that selection is forbidden in
         result:function(name){
         //do stuff
         }
-    });</code></pre>
+    });
+</code></pre>
 <p>The options are:</p>
 <ul>
 <li><code>result</code> <em>Function</em> - a callback to run when the user clicks ok. First argument is the string from user input</li>
@@ -207,7 +219,8 @@ forbidden: []  //array of folder paths that selection is forbidden in
 </ul>
 <h3 id="close-the-prompt">Close the prompt</h3>
 <p>Prompt can be closed without the user clicking the button:</p>
-<pre><code class="lang-javascript">    promptObj.close();</code></pre>
+<pre><code class="lang-javascript">    promptObj.close();
+</code></pre>
 
 
     </div>

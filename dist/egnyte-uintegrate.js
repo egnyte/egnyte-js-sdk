@@ -676,7 +676,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._buildTokenQuery = function(redirect) {
-    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + encodeURIComponent(redirect);
     if (this.options.scope) {
         url += "&scope=" + this.options.scope;
     }
@@ -1613,9 +1613,6 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 },{"16":16,"24":24,"29":29,"36":36,"40":40}],23:[function(require,module,exports){
-var quotaRegex = /^<h1>Developer Over Qps/i;
-
-
 var promises = require(36);
 var helpers = require(40);
 var dom = require(38);
@@ -1680,7 +1677,7 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
+    opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
    
     
