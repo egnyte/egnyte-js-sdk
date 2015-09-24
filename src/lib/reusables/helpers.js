@@ -23,7 +23,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+&#\\]/;
+var disallowedChars = /[":<>|?*+#\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");

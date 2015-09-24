@@ -63,6 +63,7 @@ describe("Item names / ", function () {
 
     var goodTestNames = [
         "sdfghjwertasdfgwerftasfgasdfggsdfgh",
+        "&yet",
         "_foo",
         "zażółćGęśląJaźń",
         "Русские Буквы",
@@ -71,7 +72,7 @@ describe("Item names / ", function () {
         "brs{}",
         "fifty%",
         "z;z",
-        "allAtOnce-. _~!$'(),;=@^][`"
+        "allAtOnce-. _~!$&'(),;=@^][`"
     ];
 
     var badFolders = [

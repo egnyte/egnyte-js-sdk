@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
@@ -25,7 +25,7 @@
     "chunking-streams": "0.0.8",
     "pinkyswear": "2.2.2",
     "q": "^1.4.1",
-    "request": "2.51.0",
+    "request": "2.63.0",
     "vkey": "1.0.0",
     "xhr": "2.1.0"
   },

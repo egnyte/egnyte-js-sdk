@@ -2668,7 +2668,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+&#\\]/;
+var disallowedChars = /[":<>|?*+#\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -2717,6 +2717,7 @@ module.exports = {
         return (name);
     }
 };
+
 },{}],33:[function(require,module,exports){
 var helpers = require(32);
 

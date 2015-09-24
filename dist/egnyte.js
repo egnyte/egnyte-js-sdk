@@ -1386,6 +1386,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
+
 },{"16":16,"29":29,"36":36,"40":40}],20:[function(require,module,exports){
 var promises = require(36);
 var helpers = require(40);
@@ -1595,7 +1596,7 @@ permsProto.allow = function (pathFromRoot, permission) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + encodeURI(pathFromRoot),
                 json: {
                     "permission": permission
                 }
@@ -1615,7 +1616,7 @@ permsProto.getPerms = function (pathFromRoot) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + encodeURI(pathFromRoot)
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body
@@ -1631,6 +1632,7 @@ Perms.prototype = resourceIdentifier(permsProto, {
 delete Perms.prototype.fileId;
 
 module.exports = Perms;
+
 },{"16":16,"24":24,"29":29,"36":36,"40":40}],23:[function(require,module,exports){
 var promises = require(36);
 var helpers = require(40);
@@ -3479,7 +3481,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+&#\\]/;
+var disallowedChars = /[":<>|?*+#\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -3528,6 +3530,7 @@ module.exports = {
         return (name);
     }
 };
+
 },{}],41:[function(require,module,exports){
 var helpers = require(40);
 
