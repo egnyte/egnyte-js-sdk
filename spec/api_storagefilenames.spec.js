@@ -72,16 +72,16 @@ describe("Item names / ", function () {
         "brs{}",
         "fifty%",
         "z;z",
-        "allAtOnce-. _~!$&'(),;=@^][`"
+        "#bang#bang",
+        "allAtOnce-. _~!$&'(),;=@^][`+#"
     ];
 
     var badFolders = [
         "wind\\s",
         " space ",
-        "notAllowed:|*?+",
+        "notAllowed:|*?",
         "fish><>",
-        "quote\"quote",
-        "hash#char"
+        "quote\"quote"
     ];
 
     var badFiles = [

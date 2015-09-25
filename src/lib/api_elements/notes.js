@@ -49,7 +49,7 @@ notesProto.path = function (pathFromRoot) {
 
                 //xhr and request differ here
                 opts.params = helpers.extend({
-                    "file": encodeURI(pathFromRoot)
+                    "file": helpers.encodeURIPath(pathFromRoot)
                 }, params);
 
                 return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
@@ -67,7 +67,7 @@ notesProto.getNote = function (id) {
     return promises(true).then(function () {
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + helpers.encodeURIPath(id)
         };
         return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
             return result.body;
@@ -81,7 +81,7 @@ notesProto.removeNote = function (id) {
     return promises(true).then(function () {
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + helpers.encodeURIPath(id)
         };
         return requestEngine.promiseRequest(decorate(opts));
     });
