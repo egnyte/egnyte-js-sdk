@@ -1,3 +1,6 @@
+### 2.1.1
+- Removed two more restrictions on characters in paths + and #
+
 ### 2.1.0
 - Updated all dependencies to newer versions, compatible with node.js v4+
 - Ampersand (&) character is now allowed in paths
