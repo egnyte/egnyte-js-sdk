@@ -2631,6 +2631,7 @@ var helpers = require(46);
 
 module.exports = function (opts, model) {
     var currentQuery;
+    var previousQuery;
     var currentResult;
     var page;
 
@@ -2640,9 +2641,12 @@ module.exports = function (opts, model) {
     function searchImplementation(query) {
         currentQuery = query;
         return opts.API.search.getResults(query).then(function (response) {
-            currentResult = response;
-            page = 0;
-            return buildDataObj(response.sample);
+            //if no query was started in the meantime
+            if (currentQuery === query) {
+                currentResult = response;
+                page = 0;
+                return buildDataObj(response.sample);
+            }
         });
     }
 
@@ -2677,12 +2681,16 @@ module.exports = function (opts, model) {
 
     model.search = function (query) {
         var self = this;
-        if (!self.processing) {
+        console.log("q",query)
+        if (previousQuery !== query) {
             self.processing = true;
-            this.viewState.searchOn=true;
+            this.viewState.searchOn = true;
             self.onloading();
+            previousQuery = query;
             searchImplementation(query).then(function (data) {
-                self._itemsUpdated(data)
+                if (data) {
+                    self._itemsUpdated(data)
+                }
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);
@@ -3083,20 +3091,22 @@ var jungle = require(53);
 
 var airaExpanded = "aria-expanded";
 
-function beradcrumbView(parent) {
+function searchView(parent) {
     var self = this;
     var myElements = this.els = {};
     self.evs = [];
     self.model = parent.model;
 
+    self.action = helpers.bindThis(self, actionImplementation);
+
     myElements.close = jungle([
         ["a.eg-search-x.eg-btn", "+"]
     ]).childNodes[0];
     myElements.ico = jungle([
-        ["a.eg-btn.eg-search-ico"]
+        ["a.eg-btn.eg-search-ico[tabindex=2]"]
     ]).childNodes[0];
     myElements.input = jungle([
-        ["input[placeholder=" + parent.txt("Search") + "]"]
+        ["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]
     ]).childNodes[0];
     myElements.field = jungle([
         ["span.eg-search-inpt", myElements.input]
@@ -3108,23 +3118,28 @@ function beradcrumbView(parent) {
         self.model.fetch();
         self.el.setAttribute(airaExpanded, false);
     });
-    parent.handleClick(myElements.ico, function () {
+
+    function invoke() {
         if (self.model.viewState.searchOn) {
             self.action();
         } else {
             self.model.viewState.searchOn = true;
             self.el.setAttribute(airaExpanded, true);
+            myElements.input.focus();
         }
-    });
+    }
+
+    parent.handleClick(myElements.ico, invoke);
+    parent.evs.push(dom.onKeys(myElements.ico, {
+        "<space>": invoke
+    }, true));
     parent.evs.push(dom.onKeys(myElements.input, {
-            "<enter>": helpers.bindThis(self,self.action)
-        },
-        function () {
-            return 1;
-        }));
+        "<enter>": self.action,
+        "other": helpers.debounce(self.action, 800)
+    }, true));
 
 }
-beradcrumbView.prototype.getTree = function () {
+searchView.prototype.getTree = function () {
     var myElements = this.els;
     var searchBarDefinition = "div.eg-search.eg-bar"
     if (this.model.viewState.searchOn) {
@@ -3141,9 +3156,13 @@ beradcrumbView.prototype.getTree = function () {
 
     return el;
 }
+searchView.prototype.render = function () {
+    if (this.model.viewState.searchOn) {
+        this.els.input.focus();
+    }
+}
 
-
-beradcrumbView.prototype.action = function () {
+function actionImplementation() {
     var myElements = this.els;
     if (myElements.input.value && myElements.input.value.length > 2) {
         this.model.search(myElements.input.value)
@@ -3151,7 +3170,7 @@ beradcrumbView.prototype.action = function () {
 }
 
 
-module.exports = beradcrumbView;
+module.exports = searchView;
 
 },{"44":44,"46":46,"53":53}],40:[function(require,module,exports){
 "use strict";
@@ -3210,6 +3229,13 @@ function View(opts, txtOverride) {
         }
     }
     this.model.onerror = helpers.bindThis(this, this.errorHandler);
+    self.kbNav_up = helpers.bindThis(self, self.kbNav_up);
+    self.kbNav_down = helpers.bindThis(self, self.kbNav_down);
+    self.kbNav_select = helpers.bindThis(self, self.kbNav_select);
+    self.kbNav_explore = helpers.bindThis(self, self.kbNav_explore);
+    self.model.goUp = helpers.bindThis(self.model, self.model.goUp);
+    self.confirmSelection = helpers.bindThis(self, self.confirmSelection);
+    self.handlers.close = helpers.bindThis(self, self.handlers.close);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -3224,7 +3250,7 @@ function View(opts, txtOverride) {
         ["a.eg-picker-close.eg-btn", this.txt("Cancel")]
     ]).childNodes[0];
     myElements.ok = jungle([
-        ["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("OK")]
+        ["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]
     ]).childNodes[0];
     myElements.pgup = jungle([
         ["span.eg-picker-pgup.eg-btn", ">"]
@@ -3241,6 +3267,10 @@ function View(opts, txtOverride) {
         self.handlers.close();
     });
     this.handleClick(myElements.ok, self.confirmSelection);
+    this.evs.push(dom.onKeys(myElements.ok, {
+        "<space>": self.confirmSelection
+    }, true));
+
     this.handleClick(myElements.pgup, function (e) {
         self.model.switchPage(1);
     });
@@ -3259,13 +3289,13 @@ function View(opts, txtOverride) {
             "close": "<escape>"
         }, opts.keys);
         var keys = {};
-        keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
-        keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
-        keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
-        keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
-        keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
-        keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
-        keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
+        keys[keybinding["up"]] = self.kbNav_up;
+        keys[keybinding["down"]] = self.kbNav_down;
+        keys[keybinding["select"]] = self.kbNav_select;
+        keys[keybinding["explore"]] = self.kbNav_explore;
+        keys[keybinding["back"]] = self.model.goUp;
+        keys[keybinding["confirm"]] = self.confirmSelection;
+        keys[keybinding["close"]] = self.handlers.close;
 
         document.activeElement && document.activeElement.blur();
         this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
@@ -3360,6 +3390,7 @@ viewPrototypeMethods.render = function () {
     myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
 
     self.subviews.breadcrumb.render();
+    self.subviews.search.render();
 
     if (this.model.isEmpty) {
         this.renderEmpty();
@@ -3399,8 +3430,6 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         [checkboxSetup]
     ]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
-
-
 
     var itemNode = jungle([
         ["li.eg-picker-item",
@@ -3467,15 +3496,15 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        if(this.model.viewState.searchOn){
+        if (this.model.viewState.searchOn) {
             this.els.list.appendChild(jungle([
-                ["div.eg-search-no", ["p",this.txt("No search results found")]]
+                ["div.eg-search-no", ["p", this.txt("No search results found")]]
             ]));
-        }else{
+        } else {
 
-        this.els.list.appendChild(jungle([
-            ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
-        ]));
+            this.els.list.appendChild(jungle([
+                ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
+            ]));
         }
     }
 }
@@ -3488,11 +3517,12 @@ viewPrototypeMethods.hasFocus = function () {
     return currentGlobalKeyboadrFocus === this.uid;
 }
 viewPrototypeMethods.focused = function () {
-        currentGlobalKeyboadrFocus = this.uid;
-    }
-    //=================================================================
-    // navigation
-    //=================================================================
+    currentGlobalKeyboadrFocus = this.uid;
+}
+
+//=================================================================
+// navigation
+//=================================================================
 
 viewPrototypeMethods.goUp = function () {
     this.model.goUp();
@@ -3511,16 +3541,17 @@ viewPrototypeMethods.kbNav_up = function () {
 viewPrototypeMethods.kbNav_down = function () {
     this.model.mvCurrent(1);
 }
-viewPrototypeMethods.kbNav_select = function () {
-    this.model.getCurrent().toggleSelect();
+viewPrototypeMethods.kbNav_select = viewPrototypeMethods.kbNav_confirm = function () {
+    var item = this.model.getCurrent();
+    if (item) {
+        item.toggleSelect();
+    }
 }
-viewPrototypeMethods.kbNav_confirm = function () {
-    this.model.getCurrent().toggleSelect();
-}
+
 
 viewPrototypeMethods.kbNav_explore = function () {
     var item = this.model.getCurrent();
-    if (item.data.is_folder) {
+    if (item && item.data.is_folder) {
         item.defaultAction();
     }
 }
@@ -3751,17 +3782,24 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            ev.preventDefault && ev.preventDefault();
-            if (hasFocus() && actions[vkey[ev.keyCode]]) {
-                actions[vkey[ev.keyCode]]();
+            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
+                ev.preventDefault && ev.preventDefault();
+            }
+            ev.stopPropagation && ev.stopPropagation();
+            if (hasFocus===true || hasFocus()) {
+                if (actions[vkey[ev.keyCode]]) {
+                    actions[vkey[ev.keyCode]]();
+                } else {
+                    actions["other"] && actions["other"]();
+                }
             }
             return false;
         });
     },
 
-    createFrame: function (url,scrolling) {
+    createFrame: function (url, scrolling) {
         var iframe = document.createElement("iframe");
-        if(!scrolling){
+        if (!scrolling) {
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
@@ -3774,6 +3812,7 @@ module.exports = {
     }
 
 }
+
 },{"2":2}],45:[function(require,module,exports){
 var promises = require(42);
 module.exports = function (interval, func, errorHandler) {
@@ -3846,6 +3885,15 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
+function debounce(func, time) {
+    var timer;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(func, time);
+    }
+
+}
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -3870,6 +3918,7 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
+    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
@@ -3889,6 +3938,7 @@ module.exports = {
         return (name);
     }
 };
+
 },{}],47:[function(require,module,exports){
 var helpers = require(46);
 
@@ -3958,7 +4008,7 @@ module.exports = function (overrides) {
 };
 
 },{}],49:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:0;text-decoration:none !important;position:relative;color:#777;font-size:36px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease}.eg-search>*{visibility:hidden}.eg-search[aria-expanded=\"true\"]{width:100%}.eg-search[aria-expanded=\"true\"]>*{visibility:visible}.eg-search-inpt{width:calc(100% - 50px);margin:1px 3px}.eg-search-inpt input{width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px;margin-top:2px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:0;text-decoration:none !important;position:relative;color:#777;font-size:36px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease}.eg-search>*{visibility:hidden}.eg-search[aria-expanded=\"true\"]{width:100%}.eg-search[aria-expanded=\"true\"]>*{visibility:visible}.eg-search-inpt{width:calc(100% - 50px);margin:1px 3px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px;margin-top:2px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],50:[function(require,module,exports){
 module.exports = function (promises, dom, messages, callback) {
     var init = promises.defer();

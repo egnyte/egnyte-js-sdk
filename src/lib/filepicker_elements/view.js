@@ -54,6 +54,13 @@ function View(opts, txtOverride) {
         }
     }
     this.model.onerror = helpers.bindThis(this, this.errorHandler);
+    self.kbNav_up = helpers.bindThis(self, self.kbNav_up);
+    self.kbNav_down = helpers.bindThis(self, self.kbNav_down);
+    self.kbNav_select = helpers.bindThis(self, self.kbNav_select);
+    self.kbNav_explore = helpers.bindThis(self, self.kbNav_explore);
+    self.model.goUp = helpers.bindThis(self.model, self.model.goUp);
+    self.confirmSelection = helpers.bindThis(self, self.confirmSelection);
+    self.handlers.close = helpers.bindThis(self, self.handlers.close);
 
     this.model.onchange = function () {
         if (self.model.getSelected().length > 0) {
@@ -68,7 +75,7 @@ function View(opts, txtOverride) {
         ["a.eg-picker-close.eg-btn", this.txt("Cancel")]
     ]).childNodes[0];
     myElements.ok = jungle([
-        ["span.eg-picker-ok.eg-btn.eg-btn-prim", this.txt("OK")]
+        ["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]
     ]).childNodes[0];
     myElements.pgup = jungle([
         ["span.eg-picker-pgup.eg-btn", ">"]
@@ -85,6 +92,10 @@ function View(opts, txtOverride) {
         self.handlers.close();
     });
     this.handleClick(myElements.ok, self.confirmSelection);
+    this.evs.push(dom.onKeys(myElements.ok, {
+        "<space>": self.confirmSelection
+    }, true));
+
     this.handleClick(myElements.pgup, function (e) {
         self.model.switchPage(1);
     });
@@ -103,13 +114,13 @@ function View(opts, txtOverride) {
             "close": "<escape>"
         }, opts.keys);
         var keys = {};
-        keys[keybinding["up"]] = helpers.bindThis(self, self.kbNav_up);
-        keys[keybinding["down"]] = helpers.bindThis(self, self.kbNav_down);
-        keys[keybinding["select"]] = helpers.bindThis(self, self.kbNav_select);
-        keys[keybinding["explore"]] = helpers.bindThis(self, self.kbNav_explore);
-        keys[keybinding["back"]] = helpers.bindThis(self.model, self.model.goUp);
-        keys[keybinding["confirm"]] = helpers.bindThis(self, self.confirmSelection);
-        keys[keybinding["close"]] = helpers.bindThis(self, self.handlers.close);
+        keys[keybinding["up"]] = self.kbNav_up;
+        keys[keybinding["down"]] = self.kbNav_down;
+        keys[keybinding["select"]] = self.kbNav_select;
+        keys[keybinding["explore"]] = self.kbNav_explore;
+        keys[keybinding["back"]] = self.model.goUp;
+        keys[keybinding["confirm"]] = self.confirmSelection;
+        keys[keybinding["close"]] = self.handlers.close;
 
         document.activeElement && document.activeElement.blur();
         this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
@@ -204,6 +215,7 @@ viewPrototypeMethods.render = function () {
     myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
 
     self.subviews.breadcrumb.render();
+    self.subviews.search.render();
 
     if (this.model.isEmpty) {
         this.renderEmpty();
@@ -243,8 +255,6 @@ viewPrototypeMethods.renderItem = function (itemModel) {
         [checkboxSetup]
     ]).childNodes[0];
     itemCheckbox.checked = itemModel.selected;
-
-
 
     var itemNode = jungle([
         ["li.eg-picker-item",
@@ -311,15 +321,15 @@ viewPrototypeMethods.renderProblem = function (code, message) {
 viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        if(this.model.viewState.searchOn){
+        if (this.model.viewState.searchOn) {
             this.els.list.appendChild(jungle([
-                ["div.eg-search-no", ["p",this.txt("No search results found")]]
+                ["div.eg-search-no", ["p", this.txt("No search results found")]]
             ]));
-        }else{
+        } else {
 
-        this.els.list.appendChild(jungle([
-            ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
-        ]));
+            this.els.list.appendChild(jungle([
+                ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
+            ]));
         }
     }
 }
@@ -332,11 +342,12 @@ viewPrototypeMethods.hasFocus = function () {
     return currentGlobalKeyboadrFocus === this.uid;
 }
 viewPrototypeMethods.focused = function () {
-        currentGlobalKeyboadrFocus = this.uid;
-    }
-    //=================================================================
-    // navigation
-    //=================================================================
+    currentGlobalKeyboadrFocus = this.uid;
+}
+
+//=================================================================
+// navigation
+//=================================================================
 
 viewPrototypeMethods.goUp = function () {
     this.model.goUp();
@@ -355,16 +366,17 @@ viewPrototypeMethods.kbNav_up = function () {
 viewPrototypeMethods.kbNav_down = function () {
     this.model.mvCurrent(1);
 }
-viewPrototypeMethods.kbNav_select = function () {
-    this.model.getCurrent().toggleSelect();
+viewPrototypeMethods.kbNav_select = viewPrototypeMethods.kbNav_confirm = function () {
+    var item = this.model.getCurrent();
+    if (item) {
+        item.toggleSelect();
+    }
 }
-viewPrototypeMethods.kbNav_confirm = function () {
-    this.model.getCurrent().toggleSelect();
-}
+
 
 viewPrototypeMethods.kbNav_explore = function () {
     var item = this.model.getCurrent();
-    if (item.data.is_folder) {
+    if (item && item.data.is_folder) {
         item.defaultAction();
     }
 }

@@ -2,6 +2,7 @@ var helpers = require("../reusables/helpers");
 
 module.exports = function (opts, model) {
     var currentQuery;
+    var previousQuery;
     var currentResult;
     var page;
 
@@ -11,9 +12,12 @@ module.exports = function (opts, model) {
     function searchImplementation(query) {
         currentQuery = query;
         return opts.API.search.getResults(query).then(function (response) {
-            currentResult = response;
-            page = 0;
-            return buildDataObj(response.sample);
+            //if no query was started in the meantime
+            if (currentQuery === query) {
+                currentResult = response;
+                page = 0;
+                return buildDataObj(response.sample);
+            }
         });
     }
 
@@ -48,12 +52,16 @@ module.exports = function (opts, model) {
 
     model.search = function (query) {
         var self = this;
-        if (!self.processing) {
+        console.log("q",query)
+        if (previousQuery !== query) {
             self.processing = true;
-            this.viewState.searchOn=true;
+            this.viewState.searchOn = true;
             self.onloading();
+            previousQuery = query;
             searchImplementation(query).then(function (data) {
-                self._itemsUpdated(data)
+                if (data) {
+                    self._itemsUpdated(data)
+                }
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);

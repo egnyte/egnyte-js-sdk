@@ -388,17 +388,24 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            ev.preventDefault && ev.preventDefault();
-            if (hasFocus() && actions[vkey[ev.keyCode]]) {
-                actions[vkey[ev.keyCode]]();
+            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
+                ev.preventDefault && ev.preventDefault();
+            }
+            ev.stopPropagation && ev.stopPropagation();
+            if (hasFocus===true || hasFocus()) {
+                if (actions[vkey[ev.keyCode]]) {
+                    actions[vkey[ev.keyCode]]();
+                } else {
+                    actions["other"] && actions["other"]();
+                }
             }
             return false;
         });
     },
 
-    createFrame: function (url,scrolling) {
+    createFrame: function (url, scrolling) {
         var iframe = document.createElement("iframe");
-        if(!scrolling){
+        if (!scrolling) {
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
@@ -411,6 +418,7 @@ module.exports = {
     }
 
 }
+
 },{"2":2}],5:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
@@ -443,6 +451,15 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
+function debounce(func, time) {
+    var timer;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(func, time);
+    }
+
+}
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -467,6 +484,7 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
+    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
@@ -486,6 +504,7 @@ module.exports = {
         return (name);
     }
 };
+
 },{}],6:[function(require,module,exports){
 var helpers = require(5);
 

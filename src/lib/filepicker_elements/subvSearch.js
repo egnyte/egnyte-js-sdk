@@ -4,20 +4,22 @@ var jungle = require("../../vendor/zenjungle");
 
 var airaExpanded = "aria-expanded";
 
-function beradcrumbView(parent) {
+function searchView(parent) {
     var self = this;
     var myElements = this.els = {};
     self.evs = [];
     self.model = parent.model;
 
+    self.action = helpers.bindThis(self, actionImplementation);
+
     myElements.close = jungle([
         ["a.eg-search-x.eg-btn", "+"]
     ]).childNodes[0];
     myElements.ico = jungle([
-        ["a.eg-btn.eg-search-ico"]
+        ["a.eg-btn.eg-search-ico[tabindex=2]"]
     ]).childNodes[0];
     myElements.input = jungle([
-        ["input[placeholder=" + parent.txt("Search") + "]"]
+        ["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]
     ]).childNodes[0];
     myElements.field = jungle([
         ["span.eg-search-inpt", myElements.input]
@@ -29,23 +31,28 @@ function beradcrumbView(parent) {
         self.model.fetch();
         self.el.setAttribute(airaExpanded, false);
     });
-    parent.handleClick(myElements.ico, function () {
+
+    function invoke() {
         if (self.model.viewState.searchOn) {
             self.action();
         } else {
             self.model.viewState.searchOn = true;
             self.el.setAttribute(airaExpanded, true);
+            myElements.input.focus();
         }
-    });
+    }
+
+    parent.handleClick(myElements.ico, invoke);
+    parent.evs.push(dom.onKeys(myElements.ico, {
+        "<space>": invoke
+    }, true));
     parent.evs.push(dom.onKeys(myElements.input, {
-            "<enter>": helpers.bindThis(self,self.action)
-        },
-        function () {
-            return 1;
-        }));
+        "<enter>": self.action,
+        "other": helpers.debounce(self.action, 800)
+    }, true));
 
 }
-beradcrumbView.prototype.getTree = function () {
+searchView.prototype.getTree = function () {
     var myElements = this.els;
     var searchBarDefinition = "div.eg-search.eg-bar"
     if (this.model.viewState.searchOn) {
@@ -62,9 +69,13 @@ beradcrumbView.prototype.getTree = function () {
 
     return el;
 }
+searchView.prototype.render = function () {
+    if (this.model.viewState.searchOn) {
+        this.els.input.focus();
+    }
+}
 
-
-beradcrumbView.prototype.action = function () {
+function actionImplementation() {
     var myElements = this.els;
     if (myElements.input.value && myElements.input.value.length > 2) {
         this.model.search(myElements.input.value)
@@ -72,4 +83,4 @@ beradcrumbView.prototype.action = function () {
 }
 
 
-module.exports = beradcrumbView;
+module.exports = searchView;
