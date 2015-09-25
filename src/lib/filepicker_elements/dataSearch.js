@@ -52,6 +52,9 @@ module.exports = function (opts, model) {
 
     model.cancelSearch = function () {
         currentQuery=null;
+        this.processing = false;
+        //hide search results by reloading current folder
+        this.fetch();
     }
     model.search = function (query) {
         var self = this;
