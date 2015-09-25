@@ -27,6 +27,7 @@ function searchView(parent) {
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
+        self.model.cancelSearch();
         //hide search results by reloading current folder
         self.model.fetch();
         self.el.setAttribute(airaExpanded, false);

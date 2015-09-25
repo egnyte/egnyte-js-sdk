@@ -50,9 +50,11 @@ module.exports = function (opts, model) {
         };
     }
 
+    model.cancelSearch = function () {
+        currentQuery=null;
+    }
     model.search = function (query) {
         var self = this;
-        console.log("q",query)
         if (previousQuery !== query) {
             self.processing = true;
             this.viewState.searchOn = true;

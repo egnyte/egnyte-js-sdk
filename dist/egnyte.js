@@ -2679,9 +2679,11 @@ module.exports = function (opts, model) {
         };
     }
 
+    model.cancelSearch = function () {
+        currentQuery=null;
+    }
     model.search = function (query) {
         var self = this;
-        console.log("q",query)
         if (previousQuery !== query) {
             self.processing = true;
             this.viewState.searchOn = true;
@@ -3114,6 +3116,7 @@ function searchView(parent) {
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
+        self.model.cancelSearch();
         //hide search results by reloading current folder
         self.model.fetch();
         self.el.setAttribute(airaExpanded, false);
