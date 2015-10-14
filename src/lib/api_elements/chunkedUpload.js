@@ -9,7 +9,7 @@ function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
     var opts = {
         headers: headers,
         method: "POST",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + encodeURI(pathFromRoot),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + helpers.encodeURIPath(pathFromRoot),
         body: file,
     }
 

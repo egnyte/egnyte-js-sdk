@@ -87,13 +87,13 @@ describe("Permissions API facade integration", function () {
 
         it("Can set basic permissions", function (done) {
             //would be nice to create the user first...
-            eg.API.perms.users(["test", "banana"]).path(testpath).allowEdit()
+            eg.API.perms.users([OtherUsername, "banana"]).path(testpath).allowEdit()
                 .then(function (e) {
                     expect(e.statusCode).toEqual(200); //actually checking if it exists
-                    return eg.API.perms.users(["test"]).path(testpath).getPerms();
+                    return eg.API.perms.users([OtherUsername]).path(testpath).getPerms();
                 }).then(function (e) {
                     expect(e.users.length).toBeGreaterThan(0);
-                    expect(e.users[0].subject).toBe("test");
+                    expect(e.users[0].subject).toBe(OtherUsername);
                     done();
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);
@@ -135,7 +135,7 @@ describe("Permissions API facade integration", function () {
 
             it("Can lock a file as other user", function (done) {
                 eg.API.storage.impersonate({
-                        username: "test"
+                        username: OtherUsername
                     }).path(testpath + "/aaa").lock(null, 1800)
                     .then(function (result) {
                         token = result.lock_token;
@@ -151,7 +151,7 @@ describe("Permissions API facade integration", function () {
 
             it("Can unlock a file as other user", function (done) {
                 eg.API.storage.impersonate({
-                        username: "test"
+                        username: OtherUsername
                     }).path(testpath + "/aaa").unlock(token)
                     .then(function (result) {
                         //just getting here is ok.

@@ -932,7 +932,7 @@ function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
     var opts = {
         headers: headers,
         method: "POST",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + encodeURI(pathFromRoot),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fschunked + helpers.encodeURIPath(pathFromRoot),
         body: file,
     }
 
@@ -1391,6 +1391,7 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
+
 },{"16":16,"30":30,"42":42,"46":46}],20:[function(require,module,exports){
 var promises = require(42);
 var helpers = require(46);
@@ -1413,7 +1414,7 @@ exports.lock = function (pathFromRoot, lockToken, timeout) {
         }
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: body
         };
         return requestEngine.promiseRequest(decorate(opts));
@@ -1435,7 +1436,7 @@ exports.unlock = function (pathFromRoot, lockToken) {
         }
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: body
         };
         return requestEngine.promiseRequest(decorate(opts));
@@ -1497,7 +1498,7 @@ notesProto.path = function (pathFromRoot) {
 
                 //xhr and request differ here
                 opts.params = helpers.extend({
-                    "file": encodeURI(pathFromRoot)
+                    "file": helpers.encodeURIPath(pathFromRoot)
                 }, params);
 
                 return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
@@ -1515,7 +1516,7 @@ notesProto.getNote = function (id) {
     return promises(true).then(function () {
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + helpers.encodeURIPath(id)
         };
         return requestEngine.promiseRequest(decorate(opts)).then(function (result) {
             return result.body;
@@ -1529,7 +1530,7 @@ notesProto.removeNote = function (id) {
     return promises(true).then(function () {
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + encodeURI(id)
+            url: requestEngine.getEndpoint() + ENDPOINTS_notes + "/" + helpers.encodeURIPath(id)
         };
         return requestEngine.promiseRequest(decorate(opts));
     });
@@ -1600,7 +1601,7 @@ permsProto.allow = function (pathFromRoot, permission) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot,
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + helpers.encodeURIPath(pathFromRoot),
                 json: {
                     "permission": permission
                 }
@@ -1620,7 +1621,7 @@ permsProto.getPerms = function (pathFromRoot) {
             pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
             var opts = {
                 method: "GET",
-                url: requestEngine.getEndpoint() + ENDPOINTS_perms + pathFromRoot
+                url: requestEngine.getEndpoint() + ENDPOINTS_perms + helpers.encodeURIPath(pathFromRoot)
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body
@@ -1636,6 +1637,7 @@ Perms.prototype = resourceIdentifier(permsProto, {
 delete Perms.prototype.fileId;
 
 module.exports = Perms;
+
 },{"16":16,"24":24,"30":30,"42":42,"46":46}],23:[function(require,module,exports){
 var promises = require(42);
 var helpers = require(46);
@@ -2048,7 +2050,7 @@ storageProto.exists = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
 
         return requestEngine.promiseRequest(decorate(opts));
@@ -2074,7 +2076,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -2097,7 +2099,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = {
@@ -2122,7 +2124,7 @@ storageProto.createFolder = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -2154,7 +2156,7 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: {
                 "action": action,
                 "destination": newPath,
@@ -2180,7 +2182,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
             body: file,
         }
 
@@ -2212,7 +2214,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
 //        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
 //        var opts = {
 //            method: "POST",
-//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+//            url: api.getEndpoint() + fscontent + helpers.encodeURIPath(pathFromRoot),
 //            body: formData,
 //        };
 //        return api.promiseRequest(decorate(opts));
@@ -2231,7 +2233,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {
@@ -2268,6 +2270,7 @@ storageProto = helpers.extend(storageProto, chunkedUpload);
 Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
+
 },{"15":15,"16":16,"20":20,"21":21,"24":24,"30":30,"42":42,"46":46}],27:[function(require,module,exports){
 var promises = require(42);
 var helpers = require(46);
@@ -3876,7 +3879,7 @@ function contains(arr, val) {
     })
     return found;
 }
-var disallowedChars = /[":<>|?*+&#\\]/;
+var disallowedChars = /[":<>|?*\\]/;
 
 function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
@@ -3933,6 +3936,9 @@ module.exports = {
         name = name.replace(/^\/\//, "/");
 
         return (name);
+    },
+    encodeURIPath: function (text){
+        return encodeURI(text).replace(/#/g,"%23");
     }
 };
 
