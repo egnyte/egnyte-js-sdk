@@ -1,29 +1,25 @@
 var helpers = require("../reusables/helpers");
-var jungle = require("../../vendor/zenjungle");
+var jungle = require("../../vendor/jungleWrapper");
 
 function beradcrumbView(parent) {
     var self = this;
     var myElements = this.els = {};
     self.model = parent.model;
 
-    myElements.selectAll = jungle([
+    myElements.selectAll = jungle.node(
         ["input[type=checkbox]", {
             title: parent.txt("Select all")
         }]
-    ]).childNodes[0];
-    myElements.back = jungle([
-        ["a.eg-picker-back.eg-btn[title=back]"]
-    ]).childNodes[0];
-    myElements.crumb = jungle([
-        ["span.eg-picker-path"]
-    ]).childNodes[0];
+    );
+    myElements.back = jungle.node(["a.eg-picker-back.eg-btn[title=back]"]);
+    myElements.crumb = jungle.node(["span.eg-picker-path"]);
 
 
-    parent.handleClick(myElements.selectAll, function(e) {
+    parent.handleClick(myElements.selectAll, function (e) {
         parent.model.setAllSelection(!!e.target.checked);
     });
     parent.handleClick(myElements.back, parent.goUp);
-    parent.handleClick(myElements.crumb, function(e) {
+    parent.handleClick(myElements.crumb, function (e) {
         var path = e.target.getAttribute("data-path");
         if (path) {
             self.model.fetch(path);
@@ -32,7 +28,7 @@ function beradcrumbView(parent) {
 
 
 }
-beradcrumbView.prototype.getTree = function() {
+beradcrumbView.prototype.getTree = function () {
     var myElements = this.els;
     var topbar = ["div.eg-bar.eg-top"];
     if (this.model.isMultiselectable) {
@@ -42,20 +38,20 @@ beradcrumbView.prototype.getTree = function() {
     topbar.push(myElements.back);
     topbar.push(myElements.crumb);
 
-    topbar = jungle([topbar]).childNodes[0];
+    topbar = jungle.node(topbar);
 
     return topbar;
 }
 
 
-beradcrumbView.prototype.render = function() {
+beradcrumbView.prototype.render = function () {
     var currentPath = "/";
     var path = this.model.path || currentPath; //in case path was not provided, go for root
 
     var list = path.split("/");
     var crumbItems = [];
     var maxSpace = ~~(100 / list.length); //assigns maximum space for text
-    helpers.each(list, function(folder, num) {
+    helpers.each(list, function (folder, num) {
         if (folder) {
             currentPath += folder + "/";
             num > 1 && (crumbItems.push(["span", "/"]));
@@ -76,7 +72,7 @@ beradcrumbView.prototype.render = function() {
         }
     });
     this.els.crumb.innerHTML = "";
-    this.els.crumb.appendChild(jungle([crumbItems]));
+    this.els.crumb.appendChild(jungle.tree([crumbItems]));
 
 }
 

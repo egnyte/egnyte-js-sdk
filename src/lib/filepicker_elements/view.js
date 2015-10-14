@@ -4,7 +4,7 @@
 var dom = require("../reusables/dom");
 var helpers = require("../reusables/helpers");
 var texts = require("../reusables/texts");
-var jungle = require("../../vendor/zenjungle");
+var jungle = require("../../vendor/jungleWrapper");
 var SubvBread = require("./subvBread");
 var SubvSearch = require("./subvSearch");
 
@@ -71,18 +71,11 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    myElements.close = jungle([
-        ["a.eg-picker-close.eg-btn", this.txt("Cancel")]
-    ]).childNodes[0];
-    myElements.ok = jungle([
-        ["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]
-    ]).childNodes[0];
-    myElements.pgup = jungle([
-        ["span.eg-picker-pgup.eg-btn", ">"]
-    ]).childNodes[0];
-    myElements.pgdown = jungle([
-        ["span.eg-picker-pgup.eg-btn", "<"]
-    ]).childNodes[0];
+    myElements.container = jungle.node(["div.eg-in"]);
+    myElements.close = jungle.node(["a.eg-picker-close.eg-btn", this.txt("Cancel")]);
+    myElements.ok = jungle.node(["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]);
+    myElements.pgup = jungle.node(["span.eg-picker-pgup.eg-btn", ">"]);
+    myElements.pgdown = jungle.node(["span.eg-picker-pgup.eg-btn", "<"]);
 
 
     //bind events and store references to unbind later
@@ -131,6 +124,8 @@ function View(opts, txtOverride) {
         breadcrumb: new SubvBread(this),
         search: new SubvSearch(this)
     }
+
+    this.buildLayout();
 }
 
 var viewPrototypeMethods = {};
@@ -174,7 +169,7 @@ viewPrototypeMethods.errorHandler = function (e) {
 //all this mess is because IE8 dies on @include in css
 function renderFont() {
     if (!fontLoaded) {
-        (document.getElementsByTagName("head")[0]).appendChild(jungle([
+        (document.getElementsByTagName("head")[0]).appendChild(jungle.tree([
             ["link", {
                 href: "https://fonts.googleapis.com/css?family=Open+Sans:400,600",
                 type: "text/css",
@@ -185,6 +180,23 @@ function renderFont() {
     }
 }
 
+viewPrototypeMethods.buildLayout = function () {
+    var self = this;
+    var myElements = this.els;
+
+    var search = self.subviews.search.getTree();
+
+    var layoutFragm = jungle.tree([
+        ["div.eg-theme.eg-picker.eg-widget", search,
+            myElements.container
+        ]
+    ]);
+
+    this.el.innerHTML = "";
+    this.el.appendChild(layoutFragm);
+
+}
+
 viewPrototypeMethods.render = function () {
     var self = this;
     var myElements = this.els;
@@ -192,30 +204,28 @@ viewPrototypeMethods.render = function () {
     myElements.list = document.createElement("ul");
 
     var topbar = self.subviews.breadcrumb.getTree();
-    var search = self.subviews.search.getTree();
 
-    var layoutFragm = jungle([
-        ["div.eg-theme.eg-picker.eg-widget", search,
-            topbar,
-            myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
-                    title: "egnyte.com"
-                }],
-                myElements.ok,
-                myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
-                    myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
-                    myElements.pgup
-                ]
+    var layoutFragm = jungle.tree([
+
+        topbar,
+        myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
+                title: "egnyte.com"
+            }],
+            myElements.ok,
+            myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+                myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
+                myElements.pgup
             ]
         ]
+
     ]);
 
-    this.el.innerHTML = "";
-    this.el.appendChild(layoutFragm);
+    myElements.container.innerHTML = "";
+    myElements.container.appendChild(layoutFragm);
     //couldn't CSS it. blame old browsers
     myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
 
     self.subviews.breadcrumb.render();
-    self.subviews.search.render();
 
     if (this.model.isEmpty) {
         this.renderEmpty();
@@ -232,17 +242,15 @@ viewPrototypeMethods.render = function () {
 viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([
-        ["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"), {
-                "title": itemModel.data.name,
+    var itemName = jungle.node(["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"), {
+            "title": itemModel.data.name,
+        },
+        ["span.eg-ico.eg-mime-" + itemModel.mime, {
+                "data-ext": itemModel.ext
             },
-            ["span.eg-ico.eg-mime-" + itemModel.mime, {
-                    "data-ext": itemModel.ext
-                },
-                ["span", itemModel.ext]
-            ], itemModel.data.name
-        ]
-    ]).childNodes[0];
+            ["span", itemModel.ext]
+        ], itemModel.data.name
+    ]);
 
     var checkboxSetup = "input[type=checkbox]";
     if (!itemModel.isSelectable) {
@@ -251,17 +259,13 @@ viewPrototypeMethods.renderItem = function (itemModel) {
             "]");
     }
 
-    var itemCheckbox = jungle([
-        [checkboxSetup]
-    ]).childNodes[0];
+    var itemCheckbox = jungle.node([checkboxSetup]);
     itemCheckbox.checked = itemModel.selected;
 
-    var itemNode = jungle([
-        ["li.eg-picker-item",
-            itemCheckbox,
-            itemName
-        ]
-    ]).childNodes[0];
+    var itemNode = jungle.node(["li.eg-picker-item",
+        itemCheckbox,
+        itemName
+    ]);
 
     dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
@@ -296,7 +300,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([
+        this.els.list.appendChild(jungle.tree([
             ["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]
         ]));
     }
@@ -309,7 +313,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([
+        this.els.list.appendChild(jungle.tree([
             ["div.eg-placeholder", ["div.eg-picker-error"], message]
         ]));
     } else {
@@ -322,12 +326,12 @@ viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         if (this.model.viewState.searchOn) {
-            this.els.list.appendChild(jungle([
+            this.els.list.appendChild(jungle.tree([
                 ["div.eg-search-no", ["p", this.txt("No search results found")]]
             ]));
         } else {
 
-            this.els.list.appendChild(jungle([
+            this.els.list.appendChild(jungle.tree([
                 ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
             ]));
         }

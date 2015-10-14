@@ -73,6 +73,13 @@ a.eg-btn {
     position: relative;
     overflow: hidden;
 }
+.eg-in * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    vertical-align: middle;
+}
 .eg-widget {
     &:extend(.eg-box);
     background: @bodycl;
@@ -81,13 +88,6 @@ a.eg-btn {
     color: @fontcl;
     font-size: @fontsize;
     font-family: 'Open Sans', sans-serif;
-    & * {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        vertical-align: middle;
-    }
     & input {
         padding: 0;
     }
@@ -242,8 +242,9 @@ a.eg-btn {
 }
 .eg-search-inpt {
     width: ~"calc(100% - 50px)";
-    margin: 1px 3px;
+    margin: 2px 0 0 3px;
     & input {
+    zoom:1;
         font-family: 'Open Sans', sans-serif;
         width: 100%;
         padding: 5px;
@@ -257,7 +258,7 @@ a.eg-btn {
     position: absolute;
     //top: @size/2px - @searchsize/2;
     right: @spacing;
-    margin-top: 2px;
+    margin-top: 3px;
     &:hover {
         color: @iconHover;
     }

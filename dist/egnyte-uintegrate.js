@@ -3013,24 +3013,20 @@ function beradcrumbView(parent) {
     var myElements = this.els = {};
     self.model = parent.model;
 
-    myElements.selectAll = jungle([
+    myElements.selectAll = jungle.node(
         ["input[type=checkbox]", {
             title: parent.txt("Select all")
         }]
-    ]).childNodes[0];
-    myElements.back = jungle([
-        ["a.eg-picker-back.eg-btn[title=back]"]
-    ]).childNodes[0];
-    myElements.crumb = jungle([
-        ["span.eg-picker-path"]
-    ]).childNodes[0];
+    );
+    myElements.back = jungle.node(["a.eg-picker-back.eg-btn[title=back]"]);
+    myElements.crumb = jungle.node(["span.eg-picker-path"]);
 
 
-    parent.handleClick(myElements.selectAll, function(e) {
+    parent.handleClick(myElements.selectAll, function (e) {
         parent.model.setAllSelection(!!e.target.checked);
     });
     parent.handleClick(myElements.back, parent.goUp);
-    parent.handleClick(myElements.crumb, function(e) {
+    parent.handleClick(myElements.crumb, function (e) {
         var path = e.target.getAttribute("data-path");
         if (path) {
             self.model.fetch(path);
@@ -3039,7 +3035,7 @@ function beradcrumbView(parent) {
 
 
 }
-beradcrumbView.prototype.getTree = function() {
+beradcrumbView.prototype.getTree = function () {
     var myElements = this.els;
     var topbar = ["div.eg-bar.eg-top"];
     if (this.model.isMultiselectable) {
@@ -3049,20 +3045,20 @@ beradcrumbView.prototype.getTree = function() {
     topbar.push(myElements.back);
     topbar.push(myElements.crumb);
 
-    topbar = jungle([topbar]).childNodes[0];
+    topbar = jungle.node(topbar);
 
     return topbar;
 }
 
 
-beradcrumbView.prototype.render = function() {
+beradcrumbView.prototype.render = function () {
     var currentPath = "/";
     var path = this.model.path || currentPath; //in case path was not provided, go for root
 
     var list = path.split("/");
     var crumbItems = [];
     var maxSpace = ~~(100 / list.length); //assigns maximum space for text
-    helpers.each(list, function(folder, num) {
+    helpers.each(list, function (folder, num) {
         if (folder) {
             currentPath += folder + "/";
             num > 1 && (crumbItems.push(["span", "/"]));
@@ -3083,7 +3079,7 @@ beradcrumbView.prototype.render = function() {
         }
     });
     this.els.crumb.innerHTML = "";
-    this.els.crumb.appendChild(jungle([crumbItems]));
+    this.els.crumb.appendChild(jungle.tree([crumbItems]));
 
 }
 
@@ -3104,23 +3100,15 @@ function searchView(parent) {
 
     self.action = helpers.bindThis(self, actionImplementation);
 
-    myElements.close = jungle([
-        ["a.eg-search-x.eg-btn", "+"]
-    ]).childNodes[0];
-    myElements.ico = jungle([
-        ["a.eg-btn.eg-search-ico[tabindex=2]"]
-    ]).childNodes[0];
-    myElements.input = jungle([
-        ["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]
-    ]).childNodes[0];
-    myElements.field = jungle([
-        ["span.eg-search-inpt", myElements.input]
-    ]).childNodes[0];
+    myElements.close = jungle.node(["a.eg-search-x.eg-btn", "+"]);
+    myElements.ico = jungle.node(["a.eg-btn.eg-search-ico[tabindex=2]"]);
+    myElements.input = jungle.node(["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]);
+    myElements.field = jungle.node(["span.eg-search-inpt", myElements.input]);
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
         self.model.cancelSearch();
-        
+
         self.el.setAttribute(airaExpanded, false);
     });
 
@@ -3156,14 +3144,14 @@ searchView.prototype.getTree = function () {
     el.push(myElements.close);
     el.push(myElements.field);
 
-    el = jungle([el]).childNodes[0];
+    el = jungle.node(el);
     this.el = el;
 
     return el;
 }
 searchView.prototype.render = function () {
     if (this.model.viewState.searchOn) {
-        this.els.input.focus();
+        setTimeout(this.els.input.focus(), 0);
     }
 }
 
@@ -3251,18 +3239,11 @@ function View(opts, txtOverride) {
     }
 
     //create reusable view elements
-    myElements.close = jungle([
-        ["a.eg-picker-close.eg-btn", this.txt("Cancel")]
-    ]).childNodes[0];
-    myElements.ok = jungle([
-        ["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]
-    ]).childNodes[0];
-    myElements.pgup = jungle([
-        ["span.eg-picker-pgup.eg-btn", ">"]
-    ]).childNodes[0];
-    myElements.pgdown = jungle([
-        ["span.eg-picker-pgup.eg-btn", "<"]
-    ]).childNodes[0];
+    myElements.container = jungle.node(["div.eg-in"]);
+    myElements.close = jungle.node(["a.eg-picker-close.eg-btn", this.txt("Cancel")]);
+    myElements.ok = jungle.node(["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]);
+    myElements.pgup = jungle.node(["span.eg-picker-pgup.eg-btn", ">"]);
+    myElements.pgdown = jungle.node(["span.eg-picker-pgup.eg-btn", "<"]);
 
 
     //bind events and store references to unbind later
@@ -3311,6 +3292,8 @@ function View(opts, txtOverride) {
         breadcrumb: new SubvBread(this),
         search: new SubvSearch(this)
     }
+
+    this.buildLayout();
 }
 
 var viewPrototypeMethods = {};
@@ -3354,7 +3337,7 @@ viewPrototypeMethods.errorHandler = function (e) {
 //all this mess is because IE8 dies on @include in css
 function renderFont() {
     if (!fontLoaded) {
-        (document.getElementsByTagName("head")[0]).appendChild(jungle([
+        (document.getElementsByTagName("head")[0]).appendChild(jungle.tree([
             ["link", {
                 href: "https://fonts.googleapis.com/css?family=Open+Sans:400,600",
                 type: "text/css",
@@ -3365,6 +3348,23 @@ function renderFont() {
     }
 }
 
+viewPrototypeMethods.buildLayout = function () {
+    var self = this;
+    var myElements = this.els;
+
+    var search = self.subviews.search.getTree();
+
+    var layoutFragm = jungle.tree([
+        ["div.eg-theme.eg-picker.eg-widget", search,
+            myElements.container
+        ]
+    ]);
+
+    this.el.innerHTML = "";
+    this.el.appendChild(layoutFragm);
+
+}
+
 viewPrototypeMethods.render = function () {
     var self = this;
     var myElements = this.els;
@@ -3372,30 +3372,28 @@ viewPrototypeMethods.render = function () {
     myElements.list = document.createElement("ul");
 
     var topbar = self.subviews.breadcrumb.getTree();
-    var search = self.subviews.search.getTree();
 
-    var layoutFragm = jungle([
-        ["div.eg-theme.eg-picker.eg-widget", search,
-            topbar,
-            myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
-                    title: "egnyte.com"
-                }],
-                myElements.ok,
-                myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
-                    myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
-                    myElements.pgup
-                ]
+    var layoutFragm = jungle.tree([
+
+        topbar,
+        myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
+                title: "egnyte.com"
+            }],
+            myElements.ok,
+            myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
+                myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
+                myElements.pgup
             ]
         ]
+
     ]);
 
-    this.el.innerHTML = "";
-    this.el.appendChild(layoutFragm);
+    myElements.container.innerHTML = "";
+    myElements.container.appendChild(layoutFragm);
     //couldn't CSS it. blame old browsers
     myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
 
     self.subviews.breadcrumb.render();
-    self.subviews.search.render();
 
     if (this.model.isEmpty) {
         this.renderEmpty();
@@ -3412,17 +3410,15 @@ viewPrototypeMethods.render = function () {
 viewPrototypeMethods.renderItem = function (itemModel) {
     var self = this;
 
-    var itemName = jungle([
-        ["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"), {
-                "title": itemModel.data.name,
+    var itemName = jungle.node(["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"), {
+            "title": itemModel.data.name,
+        },
+        ["span.eg-ico.eg-mime-" + itemModel.mime, {
+                "data-ext": itemModel.ext
             },
-            ["span.eg-ico.eg-mime-" + itemModel.mime, {
-                    "data-ext": itemModel.ext
-                },
-                ["span", itemModel.ext]
-            ], itemModel.data.name
-        ]
-    ]).childNodes[0];
+            ["span", itemModel.ext]
+        ], itemModel.data.name
+    ]);
 
     var checkboxSetup = "input[type=checkbox]";
     if (!itemModel.isSelectable) {
@@ -3431,17 +3427,13 @@ viewPrototypeMethods.renderItem = function (itemModel) {
             "]");
     }
 
-    var itemCheckbox = jungle([
-        [checkboxSetup]
-    ]).childNodes[0];
+    var itemCheckbox = jungle.node([checkboxSetup]);
     itemCheckbox.checked = itemModel.selected;
 
-    var itemNode = jungle([
-        ["li.eg-picker-item",
-            itemCheckbox,
-            itemName
-        ]
-    ]).childNodes[0];
+    var itemNode = jungle.node(["li.eg-picker-item",
+        itemCheckbox,
+        itemName
+    ]);
 
     dom.addListener(itemName, "click", function (e) {
         if (e.stopPropagation) {
@@ -3476,7 +3468,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
 viewPrototypeMethods.renderLoading = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([
+        this.els.list.appendChild(jungle.tree([
             ["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]
         ]));
     }
@@ -3489,7 +3481,7 @@ viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
     if (this.els.list) {
         this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle([
+        this.els.list.appendChild(jungle.tree([
             ["div.eg-placeholder", ["div.eg-picker-error"], message]
         ]));
     } else {
@@ -3502,12 +3494,12 @@ viewPrototypeMethods.renderEmpty = function () {
     if (this.els.list) {
         this.els.list.innerHTML = "";
         if (this.model.viewState.searchOn) {
-            this.els.list.appendChild(jungle([
+            this.els.list.appendChild(jungle.tree([
                 ["div.eg-search-no", ["p", this.txt("No search results found")]]
             ]));
         } else {
 
-            this.els.list.appendChild(jungle([
+            this.els.list.appendChild(jungle.tree([
                 ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
             ]));
         }
@@ -3688,7 +3680,7 @@ module.exports = Promises;
 },{"1":1,"46":46}],43:[function(require,module,exports){
 var helpers = require(46);
 var dom = require(44);
-var jungle = require(53);
+var jungle = require(54);
 var texts = require(48);
 
 require(49);
@@ -3741,7 +3733,7 @@ function openPrompt(node, setup) {
 };
 
 module.exports = openPrompt;
-},{"44":44,"46":46,"48":48,"49":49,"53":53}],44:[function(require,module,exports){
+},{"44":44,"46":46,"48":48,"49":49,"54":54}],44:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -4013,7 +4005,7 @@ module.exports = function (overrides) {
 };
 
 },{}],49:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:0;text-decoration:none !important;position:relative;color:#777;font-size:36px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease}.eg-search>*{visibility:hidden}.eg-search[aria-expanded=\"true\"]{width:100%}.eg-search[aria-expanded=\"true\"]>*{visibility:visible}.eg-search-inpt{width:calc(100% - 50px);margin:1px 3px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px;margin-top:2px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:0;text-decoration:none !important;position:relative;color:#777;font-size:36px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-in *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width 1s ease;-webkit-transition:width 1s ease;-moz-transition:width 1s ease}.eg-search>*{visibility:hidden}.eg-search[aria-expanded=\"true\"]{width:100%}.eg-search[aria-expanded=\"true\"]>*{visibility:visible}.eg-search-inpt{width:calc(100% - 50px);margin:2px 0 0 3px}.eg-search-inpt input{zoom:1;font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px;margin-top:3px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],50:[function(require,module,exports){
 module.exports = function (promises, dom, messages, callback) {
     var init = promises.defer();
@@ -4128,6 +4120,15 @@ module.exports = {
 
 }
 },{"10":10,"12":12,"41":41,"46":46}],53:[function(require,module,exports){
+var jungle = require(54);
+module.exports = {
+    tree: jungle,
+    node: function (i) {
+        return jungle([i]).childNodes[0];
+    }
+}
+
+},{"54":54}],54:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *

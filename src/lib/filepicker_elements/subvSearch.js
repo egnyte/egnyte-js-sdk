@@ -1,6 +1,6 @@
 var helpers = require("../reusables/helpers");
 var dom = require("../reusables/dom");
-var jungle = require("../../vendor/zenjungle");
+var jungle = require("../../vendor/jungleWrapper");
 
 var airaExpanded = "aria-expanded";
 
@@ -12,23 +12,15 @@ function searchView(parent) {
 
     self.action = helpers.bindThis(self, actionImplementation);
 
-    myElements.close = jungle([
-        ["a.eg-search-x.eg-btn", "+"]
-    ]).childNodes[0];
-    myElements.ico = jungle([
-        ["a.eg-btn.eg-search-ico[tabindex=2]"]
-    ]).childNodes[0];
-    myElements.input = jungle([
-        ["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]
-    ]).childNodes[0];
-    myElements.field = jungle([
-        ["span.eg-search-inpt", myElements.input]
-    ]).childNodes[0];
+    myElements.close = jungle.node(["a.eg-search-x.eg-btn", "+"]);
+    myElements.ico = jungle.node(["a.eg-btn.eg-search-ico[tabindex=2]"]);
+    myElements.input = jungle.node(["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]);
+    myElements.field = jungle.node(["span.eg-search-inpt", myElements.input]);
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
         self.model.cancelSearch();
-        
+
         self.el.setAttribute(airaExpanded, false);
     });
 
@@ -64,14 +56,14 @@ searchView.prototype.getTree = function () {
     el.push(myElements.close);
     el.push(myElements.field);
 
-    el = jungle([el]).childNodes[0];
+    el = jungle.node(el);
     this.el = el;
 
     return el;
 }
 searchView.prototype.render = function () {
     if (this.model.viewState.searchOn) {
-        this.els.input.focus();
+        setTimeout(this.els.input.focus(), 0);
     }
 }
 
