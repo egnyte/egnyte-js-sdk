@@ -15,13 +15,13 @@ function searchView(parent) {
     myElements.close = jungle.node(["a.eg-search-x.eg-btn", "+"]);
     myElements.ico = jungle.node(["a.eg-btn.eg-search-ico[tabindex=2]"]);
     myElements.input = jungle.node(["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]);
-    myElements.field = jungle.node(["span.eg-search-inpt", myElements.input]);
+    myElements.field = jungle.node(["div.eg-search-inpt", myElements.input]);
 
     parent.handleClick(myElements.close, function () {
         self.model.viewState.searchOn = false;
         self.model.cancelSearch();
 
-        self.el.setAttribute(airaExpanded, false);
+        self.el.removeAttribute(airaExpanded);
     });
 
     function invoke() {
@@ -52,9 +52,9 @@ searchView.prototype.getTree = function () {
     }
     var el = [searchBarDefinition];
 
-    el.push(myElements.ico);
     el.push(myElements.close);
     el.push(myElements.field);
+    el.push(myElements.ico);
 
     el = jungle.node(el);
     this.el = el;
