@@ -2104,24 +2104,34 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
+
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
+        var opts;
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-
-        var opts = {
-            method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
-            body: file,
+        var url = requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot);
+        if (!window.FormData) {
+            var opts = {
+                method: "POST",
+                url: url,
+                body: file,
+            }
+            opts.headers = {};
+            if (mimeType) {
+                opts.headers["Content-Type"] = mimeType;
+            }
+        } else {
+            var formData = new window.FormData();
+            formData.append('file', file);
+            var opts = {
+                method: "POST",
+                url: url,
+                body: formData,
+            };
         }
-
-        opts.headers = {};
-        if (mimeType) {
-            opts.headers["Content-Type"] = mimeType;
-        }
-
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return ({
@@ -2132,30 +2142,6 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
-//currently not supported by back - end
-//
-//function storeFileMultipart(pathFromRoot, fileOrBlob) {
-//    return promises(true).then(function () {
-//        if (!window.FormData) {
-//            throw new Error("Unsupported browser");
-//        }
-//        var file = fileOrBlob;
-//        var formData = new window.FormData();
-//        formData.append('file', file);
-//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-//        var opts = {
-//            method: "POST",
-//            url: api.getEndpoint() + fscontent + helpers.encodeURIPath(pathFromRoot),
-//            body: formData,
-//        };
-//        return api.promiseRequest(decorate(opts));
-//    }).then(function (result) { //result.response result.body
-//        return ({
-//            id: result.response.getResponseHeader("etag"),
-//            path: pathFromRoot
-//        });
-//    });
-//}
 
 
 //private

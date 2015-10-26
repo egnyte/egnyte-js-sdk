@@ -425,9 +425,9 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </tr>
 <tr>
 <td>API.storage.<em>identify(...)</em>.storeFile</td>
-<td><code>Blob or Stream</code>, <code>mimeType (optional)</code>, <code>size (optional)</code></td>
+<td><code>Blob or Stream</code>, <code>mimeType (optional)</code></td>
 <td>Uploads a file and stores at the given path, resolves to <code>{path:&quot;...&quot;,id:&quot;&lt;version ID&gt;&quot;}</code> (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument.</td>
-<td><code>size</code> argument only works in node.js</td>
+<td><code>mimeType</code> will only be used in browsers that don&#39;t support <code>formData</code> factory in JS</td>
 </tr>
 <tr>
 <td>API.storage.<em>identify(...)</em>.streamToChunks</td>
@@ -504,12 +504,11 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 </table>
 <h3 id="storing-a-file-node-js">Storing a file - node.js</h3>
 <pre><code class="lang-javascript">var fileStream = fs.createReadStream(&#39;sample.txt&#39;)
-egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quot;, 1105)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     .then(function(filemeta){
         //
     })
 </code></pre>
-<p>If the API responds with an error that you cannot store an empty file, it means you have to provide the <code>size</code> argument.</p>
 <h3 id="storing-a-file-in-the-browser">Storing a file - in the browser</h3>
 <p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor or <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
 <p>To aid working with blobs cross-browser we recommend <a href="https://github.com/eligrey/Blob.js">https://github.com/eligrey/Blob.js</a> (a copy available in this repo in src/vendor/blob.js)</p>
@@ -526,7 +525,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
     return false;
 });
 </code></pre>
-<p>The <code>storeFile</code> method uses <code>FormData</code> constructor; documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
+<p>The <code>storeFile</code> method uses <code>FormData</code> constructor if available; documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
 <h3 id="downloading-a-file">Downloading a file</h3>
 <p>It is possible to download a file to memory in modern browsers. A proof of concept of that can be found in <code>examples/filepicker_usecase.html</code></p>
 <p>In node.js getFileStream resolves to a paused stream that has to be manually resumed when you&#39;re ready to accept its data.</p>
