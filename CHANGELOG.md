@@ -1,3 +1,6 @@
+### 2.2.0
+- Switched all uploads to multipart (browser: if supported)
+
 ### 2.1.1
 - Removed two more restrictions on characters in paths + and #
 
