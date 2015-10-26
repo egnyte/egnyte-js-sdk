@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Egnyte=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Egnyte = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -262,18 +262,10 @@ var once = require(5)
 var parseHeaders = require(9)
 
 
+var XHR = window.XMLHttpRequest || noop
+var XDR = "withCredentials" in (new XHR()) ? XHR : window.XDomainRequest
 
 module.exports = createXHR
-createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
-createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
-
-
-function isEmpty(obj){
-    for(var i in obj){
-        if(obj.hasOwnProperty(i)) return false
-    }
-    return true
-}
 
 function createXHR(options, callback) {
     function readystatechange() {
@@ -300,7 +292,7 @@ function createXHR(options, callback) {
 
         return body
     }
-
+    
     var failureResponse = {
                 body: undefined,
                 headers: {},
@@ -309,11 +301,11 @@ function createXHR(options, callback) {
                 url: uri,
                 rawRequest: xhr
             }
-
+    
     function errorFunc(evt) {
         clearTimeout(timeoutTimer)
         if(!(evt instanceof Error)){
-            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
+            evt = new Error("" + (evt || "unknown") )
         }
         evt.statusCode = 0
         callback(evt, failureResponse)
@@ -321,18 +313,12 @@ function createXHR(options, callback) {
 
     // will load the data & process the response in a special response object
     function loadFunc() {
-        if (aborted) return
-        var status
         clearTimeout(timeoutTimer)
-        if(options.useXDR && xhr.status===undefined) {
-            //IE8 CORS GET successful response doesn't have a status field, but body is fine
-            status = 200
-        } else {
-            status = (xhr.status === 1223 ? 204 : xhr.status)
-        }
+        
+        var status = (xhr.status === 1223 ? 204 : xhr.status)
         var response = failureResponse
         var err = null
-
+        
         if (status !== 0){
             response = {
                 body: getBody(),
@@ -349,9 +335,9 @@ function createXHR(options, callback) {
             err = new Error("Internal XMLHttpRequest Error")
         }
         callback(err, response, response.body)
-
+        
     }
-
+    
     if (typeof options === "string") {
         options = { uri: options }
     }
@@ -366,14 +352,13 @@ function createXHR(options, callback) {
 
     if (!xhr) {
         if (options.cors || options.useXDR) {
-            xhr = new createXHR.XDomainRequest()
+            xhr = new XDR()
         }else{
-            xhr = new createXHR.XMLHttpRequest()
+            xhr = new XHR()
         }
     }
 
     var key
-    var aborted
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
     var body = options.body || options.data
@@ -384,9 +369,9 @@ function createXHR(options, callback) {
 
     if ("json" in options) {
         isJson = true
-        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
-            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
+            headers["Content-Type"] = "application/json"
             body = JSON.stringify(options.json)
         }
     }
@@ -399,22 +384,17 @@ function createXHR(options, callback) {
         // IE must die
     }
     xhr.ontimeout = errorFunc
-    xhr.open(method, uri, !sync, options.username, options.password)
+    xhr.open(method, uri, !sync)
     //has to be after open
-    if(!sync) {
-        xhr.withCredentials = !!options.withCredentials
-    }
+    xhr.withCredentials = !!options.withCredentials
+    
     // Cannot set timeout with sync request
     // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
     // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
     if (!sync && options.timeout > 0 ) {
         timeoutTimer = setTimeout(function(){
-            aborted=true//IE9 may still call readystatechange
-            xhr.abort("timeout")
-            var e = new Error("XMLHttpRequest timeout")
-            e.code = "ETIMEDOUT"
-            errorFunc(e)
-        }, options.timeout )
+            xhr.abort("timeout");
+        }, options.timeout+2 );
     }
 
     if (xhr.setRequestHeader) {
@@ -423,15 +403,15 @@ function createXHR(options, callback) {
                 xhr.setRequestHeader(key, headers[key])
             }
         }
-    } else if (options.headers && !isEmpty(options.headers)) {
+    } else if (options.headers) {
         throw new Error("Headers cannot be set on an XDomainRequest object")
     }
 
     if ("responseType" in options) {
         xhr.responseType = options.responseType
     }
-
-    if ("beforeSend" in options &&
+    
+    if ("beforeSend" in options && 
         typeof options.beforeSend === "function"
     ) {
         options.beforeSend(xhr)
@@ -443,6 +423,7 @@ function createXHR(options, callback) {
 
 
 }
+
 
 function noop() {}
 
@@ -604,14 +585,12 @@ module.exports = {
 },{}],11:[function(require,module,exports){
 var RequestEngine = require(21);
 var AuthEngine = require(12);
-var StorageFacade = require(24);
+var StorageFacade = require(23);
 var Notes = require(19);
 var LinkFacade = require(17);
 var PermFacade = require(20);
-var UserPerms = require(25);
+var UserPerms = require(24);
 var Events = require(16);
-var Search = require(23);
-
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -622,7 +601,6 @@ module.exports = function (options) {
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
-    var search = new Search(requestEngine);
     var events = new Events(requestEngine);
 
     var api = {
@@ -631,7 +609,6 @@ module.exports = function (options) {
         notes: notes,
         link: link,
         events: events,
-        search: search,
         perms: perms,
         userPerms: userPerms
     };
@@ -640,12 +617,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(26);
+            var responder = require(25);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(27);
+                var forwarder = require(26);
                 forwarder(options, api);
             }
         }
@@ -655,19 +632,18 @@ module.exports = function (options) {
 
     return api;
 };
-
-},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26,"27":27}],12:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(30);
-var helpers = require(33);
-var dom = require(31);
-var messages = require(34);
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(28).userinfo;
-var ENDPOINTS_tokenauth = require(28).tokenauth;
+var ENDPOINTS_userinfo = require(27).userinfo;
+var ENDPOINTS_tokenauth = require(27).tokenauth;
 
 
 function Auth(options) {
@@ -685,7 +661,7 @@ function Auth(options) {
 var authPrototypeMethods = {};
 
 authPrototypeMethods._buildTokenQuery = function(redirect) {
-    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + encodeURIComponent(redirect);
+    var url = this.options.egnyteDomainURL + ENDPOINTS_tokenauth + "?client_id=" + this.options.key + "&mobile=" + ~~(this.options.mobile) + "&redirect_uri=" + redirect;
     if (this.options.scope) {
         url += "&scope=" + this.options.scope;
     }
@@ -881,10 +857,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"15":15,"28":28,"30":30,"31":31,"33":33,"34":34}],13:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var ENDPOINTS = require(28);
+},{"15":15,"27":27,"29":29,"30":30,"32":32,"33":33}],13:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var ENDPOINTS = require(27);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -993,8 +969,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"28":28,"30":30,"33":33}],14:[function(require,module,exports){
-var helpers = require(33);
+},{"27":27,"29":29,"32":32}],14:[function(require,module,exports){
+var helpers = require(32);
 
 var defaultDecorators = {
 
@@ -1060,7 +1036,7 @@ module.exports = {
 
     }
 }
-},{"33":33}],15:[function(require,module,exports){
+},{"32":32}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1123,13 +1099,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var every = require(32);
+var promises = require(29);
+var helpers = require(32);
+var every = require(31);
 var decorators = require(14);
 
-var ENDPOINTS_events = require(28).events;
-var ENDPOINTS_eventscursor = require(28).eventscursor;
+var ENDPOINTS_events = require(27).events;
+var ENDPOINTS_eventscursor = require(27).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1256,12 +1232,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"14":14,"28":28,"30":30,"32":32,"33":33}],17:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"14":14,"27":27,"29":29,"31":31,"32":32}],17:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 
-var ENDPOINTS_links = require(28).links;
+var ENDPOINTS_links = require(27).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1352,11 +1328,11 @@ linksProto.findOne = function (filters) {
 Links.prototype = linksProto;
 
 module.exports = Links;
-},{"14":14,"28":28,"30":30,"33":33}],18:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"14":14,"27":27,"29":29,"32":32}],18:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 
-var ENDPOINTS_fsmeta = require(28).fsmeta;
+var ENDPOINTS_fsmeta = require(27).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1406,12 +1382,12 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"28":28,"30":30,"33":33}],19:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"27":27,"29":29,"32":32}],19:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 
-var ENDPOINTS_notes = require(28).notes;
+var ENDPOINTS_notes = require(27).notes;
 
 
 function Notes(requestEngine) {
@@ -1501,13 +1477,13 @@ notesProto.removeNote = function (id) {
 Notes.prototype = notesProto;
 
 module.exports = Notes;
-},{"14":14,"28":28,"30":30,"33":33}],20:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"14":14,"27":27,"29":29,"32":32}],20:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS_perms = require(28).perms;
+var ENDPOINTS_perms = require(27).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1597,19 +1573,14 @@ Perms.prototype = resourceIdentifier(permsProto, {
 delete Perms.prototype.fileId;
 
 module.exports = Perms;
-<<<<<<< HEAD
-},{"14":14,"22":22,"28":28,"30":30,"33":33}],21:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var dom = require(31);
-var messages = require(34);
-=======
 },{"14":14,"22":22,"27":27,"29":29,"32":32}],21:[function(require,module,exports){
+var quotaRegex = /^<h1>Developer Over Qps/i;
+
+
 var promises = require(29);
 var helpers = require(32);
 var dom = require(30);
 var messages = require(33);
->>>>>>> development
 var errorify = require(15);
 var request = require(3);
 
@@ -1670,7 +1641,7 @@ enginePrototypeMethods.promise = function (value) {
 
 enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     var self = this;
-    opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
+    opts = helpers.extend(self.options.requestDefaults||{}, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
    
     
@@ -1882,8 +1853,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"15":15,"3":3,"30":30,"31":31,"33":33,"34":34}],22:[function(require,module,exports){
-var helpers = require(33);
+},{"15":15,"29":29,"3":3,"30":30,"32":32,"33":33}],22:[function(require,module,exports){
+var helpers = require(32);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1928,80 +1899,16 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"33":33}],23:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var decorators = require(14);
-
-var ENDPOINTS_search = require(28).search;
-
-
-function Search(requestEngine) {
-    this.requestEngine = requestEngine;
-    this.count = 10;
-    decorators.install(this);
-}
-
-
-var searchProto = {};
-searchProto.itemsPerPage = function(count) {
-    this.count = count || 10;
-}
-searchProto.query = function(query, page) {
-    var self = this;
-    var requestEngine = self.requestEngine;
-    var decorate = self.getDecorator();
-    return promises(true).then(function() {
-        var qs = [
-            "query=" + encodeURIComponent(query),
-            "offset=" + (~~(page) * self.count),
-            "count=" + self.count,
-        ];
-        var querystring = "?" + qs.join("&");
-        var opts = {
-            method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS_search + querystring
-        };
-        return requestEngine.promiseRequest(decorate(opts));
-    }).then(function(result) { //result.response result.body
-        return result.body;
-    });
-
-};
-
-searchProto.getResults = function(query) {
-    var self = this;
-    return self.query(query)
-        .then(function(body) {
-            return {
-                page: function(number) {
-                    return self.query(query, number)
-                        .then(function(body) {
-                            return body.results;
-                        });
-                },
-                totalPages: Math.round(body.total_count/self.count),
-                sample: body.results,
-                totalCount: body.total_count
-            }
-        });
-};
-
-
-Search.prototype = searchProto;
-
-module.exports = Search;
-
-},{"14":14,"28":28,"30":30,"33":33}],24:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"32":32}],23:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 var notes = require(19);
 var lock = require(18);
 var chunkedUpload = require(13);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS = require(28);
+var ENDPOINTS = require(27);
 
 
 function Storage(requestEngine) {
@@ -2140,33 +2047,24 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
     });
 }
 
-
 storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optional */ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
-        var opts;
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
-        if (!window.FormData) {
-            var opts = {
-                method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-                body: file,
-            }
-            opts.headers = {};
-            if (mimeType) {
-                opts.headers["Content-Type"] = mimeType;
-            }
-        } else {
-            var formData = new window.FormData();
-            formData.append('file', file);
-            var opts = {
-                method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
-                body: formData,
-            };
+
+        var opts = {
+            method: "POST",
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            body: file,
         }
+
+        opts.headers = {};
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
         return requestEngine.promiseRequest(decorate(opts));
     }).then(function (result) { //result.response result.body
         return ({
@@ -2177,6 +2075,30 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
     });
 }
 
+//currently not supported by back - end
+//
+//function storeFileMultipart(pathFromRoot, fileOrBlob) {
+//    return promises(true).then(function () {
+//        if (!window.FormData) {
+//            throw new Error("Unsupported browser");
+//        }
+//        var file = fileOrBlob;
+//        var formData = new window.FormData();
+//        formData.append('file', file);
+//        pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+//        var opts = {
+//            method: "POST",
+//            url: api.getEndpoint() + fscontent + encodeURI(pathFromRoot),
+//            body: formData,
+//        };
+//        return api.promiseRequest(decorate(opts));
+//    }).then(function (result) { //result.response result.body
+//        return ({
+//            id: result.response.getResponseHeader("etag"),
+//            path: pathFromRoot
+//        });
+//    });
+//}
 
 
 //private
@@ -2222,12 +2144,12 @@ storageProto = helpers.extend(storageProto, chunkedUpload);
 Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
-},{"13":13,"14":14,"18":18,"19":19,"22":22,"28":28,"30":30,"33":33}],25:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
+},{"13":13,"14":14,"18":18,"19":19,"22":22,"27":27,"29":29,"32":32}],24:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
 var decorators = require(14);
 
-var ENDPOINTS_perms = require(28).perms;
+var ENDPOINTS_perms = require(27).perms;
 
 function UserPerms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2267,10 +2189,10 @@ userPermsProto.get = function (user) {
 UserPerms.prototype = userPermsProto;
 
 module.exports = UserPerms;
-},{"14":14,"28":28,"30":30,"33":33}],26:[function(require,module,exports){
-var helpers = require(33);
-var dom = require(31);
-var messages = require(34);
+},{"14":14,"27":27,"29":29,"32":32}],25:[function(require,module,exports){
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2329,11 +2251,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"31":31,"33":33,"34":34}],27:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var dom = require(31);
-var messages = require(34);
+},{"30":30,"32":32,"33":33}],26:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 
 
 
@@ -2463,7 +2385,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"30":30,"31":31,"33":33,"34":34}],28:[function(require,module,exports){
+},{"29":29,"30":30,"32":32,"33":33}],27:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2473,18 +2395,16 @@ module.exports={
     "perms": "/v1/perms",
     "userinfo": "/v1/userinfo",
     "events": "/v1/events",
-    "search": "/v1/search",
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-
-},{}],29:[function(require,module,exports){
-var promises = require(30);
-var helpers = require(33);
-var dom = require(31);
-var messages = require(34);
+},{}],28:[function(require,module,exports){
+var promises = require(29);
+var helpers = require(32);
+var dom = require(30);
+var messages = require(33);
 var decorators = require(14);
-var ENDPOINTS = require(28);
+var ENDPOINTS = require(27);
 
 var plugins = {};
 module.exports = {
@@ -2511,10 +2431,10 @@ module.exports = {
         });
     }
 };
-},{"14":14,"28":28,"30":30,"31":31,"33":33,"34":34}],30:[function(require,module,exports){
+},{"14":14,"27":27,"29":29,"30":30,"32":32,"33":33}],29:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(33);
+var helpers = require(32);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2526,7 +2446,7 @@ var createErrorAlias = function (promObj) {
 
 var Promises = function (value) {
     var promise = pinkySwear(createErrorAlias);
-    promise(true,[value]);
+    promise(value);
     return promise;
 }
 
@@ -2597,8 +2517,7 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-
-},{"1":1,"33":33}],31:[function(require,module,exports){
+},{"1":1,"32":32}],30:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2644,24 +2563,17 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
-                ev.preventDefault && ev.preventDefault();
-            }
-            ev.stopPropagation && ev.stopPropagation();
-            if (hasFocus===true || hasFocus()) {
-                if (actions[vkey[ev.keyCode]]) {
-                    actions[vkey[ev.keyCode]]();
-                } else {
-                    actions["other"] && actions["other"]();
-                }
+            ev.preventDefault && ev.preventDefault();
+            if (hasFocus() && actions[vkey[ev.keyCode]]) {
+                actions[vkey[ev.keyCode]]();
             }
             return false;
         });
     },
 
-    createFrame: function (url, scrolling) {
+    createFrame: function (url,scrolling) {
         var iframe = document.createElement("iframe");
-        if (!scrolling) {
+        if(!scrolling){
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
@@ -2674,9 +2586,8 @@ module.exports = {
     }
 
 }
-
-},{"2":2}],32:[function(require,module,exports){
-var promises = require(30);
+},{"2":2}],31:[function(require,module,exports){
+var promises = require(29);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -2715,7 +2626,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"30":30}],33:[function(require,module,exports){
+},{"29":29}],32:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2747,15 +2658,6 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
-function debounce(func, time) {
-    var timer;
-    return function () {
-        clearTimeout(timer);
-        timer = setTimeout(func, time);
-    }
-
-}
-
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -2780,7 +2682,6 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
-    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
@@ -2800,9 +2701,8 @@ module.exports = {
         return (name);
     }
 };
-
-},{}],34:[function(require,module,exports){
-var helpers = require(33);
+},{}],33:[function(require,module,exports){
+var helpers = require(32);
 
 
 //returns postMessage specific handler
@@ -2855,9 +2755,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"33":33}],35:[function(require,module,exports){
-var helpers = require(33);
-var plugins = require(29);
+},{"32":32}],34:[function(require,module,exports){
+var helpers = require(32);
+var plugins = require(28);
 var defaults = require(10);
 
 module.exports = {
@@ -2880,5 +2780,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{"10":10,"11":11,"29":29,"33":33}]},{},[35])(35)
+},{"10":10,"11":11,"28":28,"32":32}]},{},[34])(34)
 });
