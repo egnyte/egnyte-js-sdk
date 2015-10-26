@@ -56,8 +56,8 @@ describe("Storage API facade integration", function () {
         });
 
 
-
-        it("Can store a file", function (done) {
+        //chonks below 100MB are not supported anymore
+        xit("Can store a file", function (done) {
             var fileID;
             eg.API.storage.path(testpath).startChunkedUpload("[chunk 1 content]", "text/plain")
                 .then(function (chunked) {
