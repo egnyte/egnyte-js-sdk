@@ -6,7 +6,6 @@
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
 |[Permissions API](#permissions-api-helpers)|
-|[Search](#search)|
 |[Events](#events)|
 |[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
@@ -247,7 +246,7 @@ API.storage.*identify(...)*.get | | Resolves to file or folder definition object
 API.storage.*identify(...)*.download |`entryID(optional)` , `isBinary` | Resolves to XHR object for the download file content query, from which response can be extracted and interpreted as needed. `xhr.responseType` is set to `arraybuffer` if `isBinary` is true (to get the gist of what this method can do take a look at `examples/filepicker_usecase.html`). `entryID` is the identifier of the version of the file if the operation should be performed on a version | browser only
 API.storage.*identify(...)*.getFileStream |`entryID(optional)` | Resolves to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently. | node.js only
 API.storage.*identify(...)*.createFolder | | Creates a folder at the given path, resolves to `{path:"..."}` or fails if folder can't be created (also if it already exists) |
-API.storage.*identify(...)*.storeFile | `Blob or Stream`, `mimeType (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `mimeType` will only be used in browsers that don't support `formData` factory in JS
+API.storage.*identify(...)*.storeFile | `Blob or Stream`, `mimeType (optional)`, `size (optional)`| Uploads a file and stores at the given path, resolves to `{path:"...",id:"<version ID>"}` (see below for details on Blob).   In the browser it accepts Blob, in node.js a stream should be passed as a second argument. | `size` argument only works in node.js
 API.storage.*identify(...)*.streamToChunks | `Stream`, `mimeType (optional)`, `chunksize(optional)` | splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file's big. Resolves to the same signature as `storeFile` and fails if any chunk failed to upload | node.js only
 API.storage.*identify(...)*.move |  `new path` | Moves a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
 API.storage.*identify(...)*.copy |  `new path` | Copies a file or folder to new path, resolves to `{path:"...", oldPath:"..."}`|
@@ -271,12 +270,14 @@ API.*.folderId | folder_id of the folder
 
 ```javascript
 var fileStream = fs.createReadStream('sample.txt')
-egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
+egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, "text/plain", 1105)
     .then(function(filemeta){
         //
     })
 
 ```
+
+If the API responds with an error that you cannot store an empty file, it means you have to provide the `size` argument.
 
 ### Storing a file - in the browser
 
@@ -302,7 +303,7 @@ $(".myForm").on("submit",function(){
 
 ```
 
-The `storeFile` method uses `FormData` constructor if available; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
+The `storeFile` method uses `FormData` constructor; documentation and detailed browser support can be found here: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 
 ### Downloading a file
 
@@ -558,27 +559,6 @@ Returns
 
 ```
 
-
-## Search
-
-
-
-Method | Arguments | Description
---- | --- | ---
-API.search.getResults| `query text` | Resolves to a helper object for fetching search results
-API.search.query| `query text`, `page number` | Low level search query function, resolves to a single body of the search response. Is used internally in getResults
-API.search.itemsPerPage| `number` | Updates the number of items per page for search. default: 10
-
-Results object:
-
-Name | Description
---- |  ---
-totalCount | Number of all results
-totalPages | Number of available pages with results
-sample  | First page of results (array of search results you'd get from calling `.page(0)`
-page(`num`) | method to get a certain page of results; resolves to an array of results
-
-Pages are numbered starting at 0.
 
 ## Events
 

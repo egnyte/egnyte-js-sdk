@@ -6,7 +6,6 @@ var streamsExtension = require("./api_elements/storageStreamsNode");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
 var Events = require("./api_elements/events");
-var Search = require("./api_elements/search");
 var helpers = require("./reusables/helpers");
 var UserPerms = require("./api_elements/userperms");
 
@@ -21,7 +20,6 @@ module.exports = function (options) {
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var events = new Events(requestEngine);
-    var search = new Search(requestEngine);
     var userPerms = new UserPerms(requestEngine);
 
     var api = {
@@ -31,7 +29,6 @@ module.exports = function (options) {
         notes: notes,
         link: link,
         events: events,
-        search: search,
         perms: perms,
         userPerms: userPerms
     };

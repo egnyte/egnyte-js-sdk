@@ -1,7 +1,3 @@
-### 2.3.0
-- Added search support
-- Added search bar to filepicker widget
-
 ### 2.2.0
 - Switched all uploads to multipart (browser: if supported)
 

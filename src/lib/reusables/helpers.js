@@ -29,15 +29,6 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
-function debounce(func, time) {
-    var timer;
-    return function () {
-        clearTimeout(timer);
-        timer = setTimeout(func, time);
-    }
-
-}
-
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -62,7 +53,6 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
-    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,

@@ -270,7 +270,7 @@ var createErrorAlias = function (promObj) {
 
 var Promises = function (value) {
     var promise = pinkySwear(createErrorAlias);
-    promise(true,[value]);
+    promise(value);
     return promise;
 }
 
@@ -341,7 +341,6 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-
 },{"1":1,"5":5}],4:[function(require,module,exports){
 var vkey = require(2);
 
@@ -388,24 +387,17 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
-                ev.preventDefault && ev.preventDefault();
-            }
-            ev.stopPropagation && ev.stopPropagation();
-            if (hasFocus===true || hasFocus()) {
-                if (actions[vkey[ev.keyCode]]) {
-                    actions[vkey[ev.keyCode]]();
-                } else {
-                    actions["other"] && actions["other"]();
-                }
+            ev.preventDefault && ev.preventDefault();
+            if (hasFocus() && actions[vkey[ev.keyCode]]) {
+                actions[vkey[ev.keyCode]]();
             }
             return false;
         });
     },
 
-    createFrame: function (url, scrolling) {
+    createFrame: function (url,scrolling) {
         var iframe = document.createElement("iframe");
-        if (!scrolling) {
+        if(!scrolling){
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
@@ -418,7 +410,6 @@ module.exports = {
     }
 
 }
-
 },{"2":2}],5:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
@@ -451,15 +442,6 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
-function debounce(func, time) {
-    var timer;
-    return function () {
-        clearTimeout(timer);
-        timer = setTimeout(func, time);
-    }
-
-}
-
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -484,7 +466,6 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
-    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,

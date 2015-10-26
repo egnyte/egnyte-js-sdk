@@ -1,13 +1,15 @@
-.eg-picker-back {
+
+.eg-btn.eg-picker-back{
     padding: @smallspacing @size/4;
-    position: relative;
+    position:relative;
     color: @fontclB;
-    &:hover {
-        color: @iconHover;
+    &:hover{
+        color: @arrowHover;
     }
+
     &:before {
         content: "";
-        display: block;
+        display:block;
         left: @smallspacing;
         border-style: solid;
         border-width: 0 0 3px 3px;
@@ -21,74 +23,29 @@
         position: absolute;
         bottom: @spacing;
     }
-}
-.eg-btn.eg-search-x {
-    margin: 1px;
-    text-decoration: none !important;
 
-    position: absolute;
-    color: @fontclB;
-    font-size: @size*0.9;
-    line-height: @size*0.4;
-    transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    -moz-transform: rotate(45deg);
-    -webkit-transform: rotate(45deg);
-    border-style: solid;
-    &:hover {
-        color: @iconHover;
-    }
 }
-.eg-search-ico {
-    &:before {
-        display: block;
-        content: "";
-        width: @searchsize;
-        height: @searchsize;
-        border-width: 3px;
-        border-style: solid;
-        background: transparent;
-        -webkit-border-radius: 50%;
-        -moz-border-radius: 50%;
-        border-radius: 50%;
-    }
-    &:after {
-        content: "";
-        position: absolute;
-        top: @searchsize*2;
-        left: @searchsize*2;
-        border-left-width: 3px;
-        border-left-style: solid;
-        height: @searchsize*0.8;
-        margin: 0;
-        -webkit-transform: rotate(-45deg);
-        -moz-transform: rotate(-45deg);
-        -ms-transform: rotate(-45deg);
-        -o-transform: rotate(-45deg);
-        transform: rotate(-45deg);
-    }
-}
+
 @-webkit-keyframes egspin {
-    to {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
+    to { 
+        -webkit-transform: rotate(360deg); 
+        transform: rotate(360deg); 
     }
 }
 @keyframes egspin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
+
 .eg-placeholder {
     margin: 33%;
     margin: ~"calc(50% - 88px)";
     margin-bottom: 0;
     text-align: center;
     color: @fontclB;
-    &>div {
-        margin: 0 auto 5px;
+    &>div{
+        margin:0 auto 5px auto;
     }
-    &>.eg-spinner {
+    &>.eg-spinner{
         content: "";
         -webkit-animation: egspin 1s infinite linear;
         animation: egspin 1s infinite linear;
@@ -99,12 +56,14 @@
         border-color: transparent transparent @framecl;
     }
 }
+
 .eg-picker-error:before {
-    content: "?!";
+    content:"?!";
     font-size: 32px;
     border: 2px solid @fontcl;
     padding: 0 @spacing;
 }
+
 .eg-ico {
     margin-right: @spacing;
     position: relative;
@@ -144,17 +103,19 @@
     background: #d19b6b;
 }
 .eg-mime-goog {
-    background: #0266c8;
+    background: #0266C8;
 }
 .eg-mime-unknown {
     background: #dbdbdb;
 }
-.eg-file .eg-ico {
+
+
+.eg-file .eg-ico{
     width: @size;
     height: @size;
     text-align: right;
-    &>span {
-        text-align: center;
+    &>span{
+        text-align:center;
         font-size: @size/3;
         line-height: @size/2 - 2;
         font-weight: 300;
@@ -165,25 +126,33 @@
         color: #fff;
     }
 }
+
 .eg-folder .eg-ico {
-    background: #fee999; //#F1DC8E
-    border-top: @size*0.12 #f1dc8e solid;
+    background: #e1e1ba;
+    border: 1px #d4d8bd solid;
+    border-top: @size*0.1 #dfe4b9 solid;
     margin-top: @size*0.22;
     height: @size*0.64 - 1;
+    background: #f3f7d3;
     overflow: visible;
-    border-radius: 2px;
     width: @size - 2;
+    
     &:before {
         display: block;
         position: absolute;
-        top: -@size*0.18;
-        border-radius: 3px;
-        background: #f1dc8e;
+        top: -@size*0.20;
+        left: -1px;
+        border: #d1dabc 1px solid;
+        border-bottom: none;
+        border-radius: 2px;
+        background: #dfe4b9;
         content: " ";
-        width: @size*0.4;
-        height: @size*0.15;
+        width: 60%;
+        height: @size*0.11;
     }
-    &>span {
-        display: none;
+
+    &>span{
+        display:none;
     }
 }
+

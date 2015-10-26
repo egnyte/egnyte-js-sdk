@@ -6,40 +6,35 @@ var resourceIdentifier = require("./resourceIdentifier");
 var PassThrough = require("stream").PassThrough;
 var ENDPOINTS = require("../enum/endpoints");
 
-var uploadChunkSize = 10500000; //above current minimal chunk size (minimum:10485760, maximum: 1073741824)
+var uploadChunkSize = 10240; //10k chunks
 
-function storeFile(pathFromRoot, stream) {
+function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*optional, if we start using multipart*/ ) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
-    return promises(true).then(function() {
+    return promises(true).then(function () {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
-
         var opts = {
             method: "POST",
-            headers: {
-                accept: "*/*",
-                "transfer-encoding": "chunked"
-            },
-            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
-            formData: {
-                file: {
-                    value: stream,
-                    options: {
-                        filename: "blob",
-                        contentType: "application/octet-stream"
-                    }
-                }
-            }
+            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot)
         }
 
-        return requestEngine.promiseRequest(decorate(opts), function(req) {
+        opts.headers = {};
+        if (size >= 0) {
+            opts.headers["Content-Length"] = size;
+        }
+        if (mimeType) {
+            opts.headers["Content-Type"] = mimeType;
+        }
+
+        return requestEngine.promiseRequest(decorate(opts), function (req) {
+                stream.pipe(req);
                 //for compatibility with streams created with request
                 //request returns a stream that is flowing, so we have to pause mannually and then it's hard to unpause at the right moment... so we're accepting a paused stream here too.
                 try {
                     stream.resume();
                 } catch (e) {};
             })
-            .then(function(result) { //result.response result.body
+            .then(function (result) { //result.response result.body
                 return ({
                     id: result.response.headers["etag"],
                     group_id: result.body.group_id,
@@ -60,12 +55,12 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
     var chunkNumber = 0;
     var chunkedUploader;
 
-    chunker.on('chunkStart', function(id, next) {
+    chunker.on('chunkStart', function (id, next) {
         chunkData = [];
         next();
     });
 
-    chunker.on('chunkEnd', function(id, next) {
+    chunker.on('chunkEnd', function (id, next) {
         var buf = Buffer.concat(chunkData);
         chunkNumber++;
         if (chunkNumber === 1) {
@@ -74,15 +69,15 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
                 var bufferStream = new PassThrough();
                 bufferStream.end(buf);
                 storeFile.call(self, pathFromRoot, bufferStream, mimeType, buf.size)
-                    .then(function(result) {
+                    .then(function (result) {
                         defer.resolve(result);
                     });
             } else {
                 self.internals.startChunkedUpload.call(self, pathFromRoot, buf, mimeType)
-                    .then(function(chunked) {
+                    .then(function (chunked) {
                         chunkedUploader = chunked;
                         next();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         //no idea what now xD
                         defer.reject(err);
                     })
@@ -90,12 +85,12 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
         } else {
             if (stream._readableState.pipesCount === 0) {
                 //last chunk
-                return chunkedUploader.sendLastChunk(buf).then(function(result) {
+                return chunkedUploader.sendLastChunk(buf).then(function (result) {
                     defer.resolve(result);
                 })
             } else {
                 chunkedUploader.sendChunk(buf, chunkNumber)
-                    .fail(function(err) {
+                    .fail(function (err) {
                         //chunk failed. retry?
                         defer.reject(err);
                     })
@@ -106,7 +101,7 @@ function streamToChunks(pathFromRoot, stream, mimeType /* optional */ , sizeOver
         }
     });
 
-    chunker.on('data', function(chunk) {
+    chunker.on('data', function (chunk) {
         chunkData.push(chunk.data);
     });
     stream.pipe(chunker);
@@ -135,10 +130,10 @@ function getFileStream(pathFromRoot, versionEntryId) {
 
     function oneTry() {
         requestEngine.retrieveStreamFromRequest(decorate(opts))
-            .then(function(requestObject) {
+            .then(function (requestObject) {
                 requestObject.pause();
-                requestObject.on('response', function(resp) {
-                    requestEngine.retryHandler(handleResponse, function() {
+                requestObject.on('response', function (resp) {
+                    requestEngine.retryHandler(handleResponse, function () {
                         setImmediate(oneTry);
                     })(null, resp, resp.body);
                 });

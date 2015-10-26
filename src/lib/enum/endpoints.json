@@ -7,7 +7,6 @@
     "perms": "/v1/perms",
     "userinfo": "/v1/userinfo",
     "events": "/v1/events",
-    "search": "/v1/search",
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
