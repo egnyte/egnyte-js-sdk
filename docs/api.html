@@ -97,21 +97,24 @@
         key: YOURAPIKEY,
         scope: SCOPE_STRING //optional, scope value to send with token requests
         mobile: true      //optional, changes login prompt to mobile friendly
-    });</code></pre>
+    });
+</code></pre>
 <p>Request an access token</p>
 <p>Call any of the <code>API.auth.requestToken*</code> methods.</p>
 <h3 id="initialize-with-token">Initialize with token</h3>
 <p>If the token is already stored securely and there is no need to request it, it can be passed as initial configuration.</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;https://mydomain.egnyte.com&quot;, {
         token: YOURAPITOKEN
-    });</code></pre>
+    });
+</code></pre>
 <h3 id="set-defaults-for-http-requests-to-api">Set defaults for http requests to API</h3>
 <p>If you want to set some defaults for all requests (like request timeout) you can pass them to the init function:</p>
 <pre><code class="lang-javascript">var egnyte = Egnyte.init(&quot;https://mydomain.egnyte.com&quot;, {
         requestDefaults: {
             timeout: 30000
         }
-    });</code></pre>
+    });
+</code></pre>
 <p>Defaults are added to the set of options passed to <code>xhr</code>(in browser) or <code>request</code>(in node) module.</p>
 <h3 id="user-quota-queries-per-second-handling">User Quota (queries per second) handling</h3>
 <p>The API has limits for the number of queries a single user can make. If one of the users of your app performs too many actions, the API endpoint will return <code>HTTP403</code> with the &quot;Developer over QPS&quot; error.</p>
@@ -122,7 +125,8 @@
         key: YOURAPIKEY,
         mobile: true,
         QPS: 2
-    });</code></pre>
+    });
+</code></pre>
 <p>To entirely disable the quota handling set <code>handleQuota</code> option to <code>false</code></p>
 <h2 id="authorization-methods">Authorization methods</h2>
 <table>
@@ -213,7 +217,8 @@
     //can work with API
 },function(){
     //request denied
-});</code></pre>
+});
+</code></pre>
 <p><code>API.auth.requestTokenPopup</code> method opens a window or tab with the log-in prompt. Once the user accepts or denies access, <code>postmessage_sender</code> is loaded in the window and the token is transmited to our main window. <code>postmessage_sender</code> must be a HTTPS URL pointing to a document, that calls <code>API.auth._postTokenUp()</code>, like the <code>token.html</code> file in <code>dist/resources</code>.</p>
 <pre><code class="lang-javascript">API.auth.requestTokenPopup(
     function(){
@@ -223,7 +228,8 @@
         //request denied
     },
     &quot;https://127.0.0.1:9999/dist/resources/token.html&quot;
-);</code></pre>
+);
+</code></pre>
 <p><code>API.auth.requestTokenIframe</code> method appends an iframe to given <code>node</code> and opens the log-in prompt in there. Once the user accepts or denies access, current page is loaded again in the iframe and the token is extracted from it. It is recommended to pass <code>path</code> to <code>API.auth.requestTokenIframe</code> to redirect to an empty page, not the current one. the <code>path</code> should be an absolute path in the current domain (starting with /).</p>
 <pre><code class="lang-javascript">API.auth.requestTokenIframe(
     document.body,
@@ -234,7 +240,8 @@
         //request denied
     },
     &quot;/empty.html&quot;
-);</code></pre>
+);
+</code></pre>
 <h3 id="token-failure-handling">Token failure handling</h3>
 <p>If you pass a stored token to your new Egnyte instance and the token is invalid, you should initialize again and request a new token.
 To ease the handling of this situation you can pass <code>onInvalidToken</code> option containing a function that will be called instead of error callback whenever your acces token turns out invalid.</p>
@@ -255,7 +262,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
             );
             //get the app working again
         }
-    });</code></pre>
+    });
+</code></pre>
 <h2 id="making-manual-requests">Making manual requests</h2>
 <table>
 <thead>
@@ -352,7 +360,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
         }else{
             //handle the error or rethrow
         }
-    });</code></pre>
+    });
+</code></pre>
 <pre><code class="lang-javascript">egnyte.API.manual.promiseRequest({
         ...
     }).then(function (response, body) {
@@ -360,7 +369,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
         //body contains response JSON converted to object
     }).fail(function(error, response, body){
         //handle the error
-    });</code></pre>
+    });
+</code></pre>
 <pre><code class="lang-javascript">egnyte.API.manual.promiseRequest({
        ...
     }).then(function (response, body) {
@@ -368,7 +378,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
         //body contains response JSON converted to object
     },function(error, response, body){
         //handle the error
-    });</code></pre>
+    });
+</code></pre>
 <p>Anywhere a response object is returned (except IE8/9, see Legacy support page) it is an XMLHttpRequest object extended with <code>statusCode</code> field and <code>headers</code> object (so you don&#39;t have to query headers individually)</p>
 <h2 id="file-system-api-helpers">File System API helpers</h2>
 <p>All API helpers return promises.</p>
@@ -496,7 +507,8 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     .then(function(filemeta){
         //
-    })</code></pre>
+    })
+</code></pre>
 <h3 id="storing-a-file-in-the-browser">Storing a file - in the browser</h3>
 <p>Storing a file requires a <code>Blob</code> compatible object. It can be created manually using the browser&#39;s <code>Blob</code> constructor or <code>BlobBuilder</code>. A file input in a form can also produce a blob: <code>fileInputNode.files[0]</code> is a <code>File</code> object, which actually extends <code>Blob</code>.</p>
 <p>To aid working with blobs cross-browser we recommend <a href="https://github.com/eligrey/Blob.js">https://github.com/eligrey/Blob.js</a> (a copy available in this repo in src/vendor/blob.js)</p>
@@ -511,7 +523,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
             //handle the error
         });
     return false;
-});</code></pre>
+});
+</code></pre>
 <p>The <code>storeFile</code> method uses <code>FormData</code> constructor if available; documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
 <h3 id="downloading-a-file">Downloading a file</h3>
 <p>It is possible to download a file to memory in modern browsers. A proof of concept of that can be found in <code>examples/filepicker_usecase.html</code></p>
@@ -520,7 +533,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     .then(function(pausedResponse){
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
-    });</code></pre>
+    });
+</code></pre>
 <h2 id="file-notes-api-helpers">File notes API helpers</h2>
 <p>All API helpers return promises.</p>
 <table>
@@ -665,9 +679,9 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
 <td>the number of clicks the link is valid for. Value must be between 1 and 10, inclusive. If expiry_clicks is specified then expiry_date cannot be set.</td>
 </tr>
 <tr>
-<td>add_filename</td>
+<td>add_file</td>
 <td>optional</td>
-<td>if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false.</td>
+<td>if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false. </td>
 </tr>
 </tbody>
 </table>
@@ -687,7 +701,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
         newLink.links[0].id; //link ID, useful when listing or removing link
         newLink.links[0].url; //the URL of your link
         newLink.password; //autogenerated password to enter the link
-    });</code></pre>
+    });
+</code></pre>
 <p><em>Full link description example</em></p>
 <pre><code class="lang-javascript">{
     &quot;links&quot;: [{
@@ -704,7 +719,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     &quot;creation_date&quot;: &quot;2014-05-28&quot;,
     &quot;send_mail&quot;: false,
     &quot;copy_me&quot;: false
-}</code></pre>
+}
+</code></pre>
 <h3 id="listing-links">Listing links</h3>
 <p><code>API.link.listLinks</code> and <code>API.link.findOne</code> methods accept filters definition. All filters are optional.</p>
 <table>
@@ -755,7 +771,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
    &quot;offset&quot;: 5,
    &quot;count&quot;: 3,
    &quot;ids&quot;: [&quot;47b774f66f344a67&quot;,&quot;56d35b2320d74948&quot;,&quot;426683f37dd64e41&quot;]
-}</code></pre>
+}
+</code></pre>
 <h2 id="permissions-api-helpers">Permissions API helpers</h2>
 <p>All API helpers return promises.</p>
 <p>All the methods below can be scoped to users or groups.</p>
@@ -836,12 +853,15 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
 </table>
 <h3 id="setting-permissions-for-users-and-groups">Setting permissions for users and groups</h3>
 <p>Scoping to users and groups can be merged</p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()
+</code></pre>
 <p>Scoping again will override the previous setting, so the example below will only set permissions for &quot;andy&quot;.</p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()
+</code></pre>
 <h3 id="getting-permissions-for-users-and-groups">Getting permissions for users and groups</h3>
 <p>All permissions for folder:</p>
-<pre><code class="lang-javascript">egnyte.API.perms.path(&quot;/Shared/marketing/events&quot;).getPerms()</code></pre>
+<pre><code class="lang-javascript">egnyte.API.perms.path(&quot;/Shared/marketing/events&quot;).getPerms()
+</code></pre>
 <p>Returns</p>
 <pre><code>{
     &quot;users&quot;: [{
@@ -858,9 +878,10 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
             &quot;subject&quot;: &quot;All Power Users&quot;,
             &quot;permission&quot;: &quot;Editor&quot;
         }]
-}</code></pre>
-<p>Filtered permissions information:</p>
-<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).path(&quot;/Shared/marketing/events&quot;).getPerms()</code></pre>
+}
+</code></pre><p>Filtered permissions information:</p>
+<pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).path(&quot;/Shared/marketing/events&quot;).getPerms()
+</code></pre>
 <p>Returns</p>
 <pre><code>{
     &quot;users&quot;: [{
@@ -868,8 +889,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
             &quot;permission&quot;: &quot;Editor&quot;
         }],
     &quot;groups&quot;: []
-}</code></pre>
-<h2 id="user-permissions">User Permissions</h2>
+}
+</code></pre><h2 id="user-permissions">User Permissions</h2>
 <p>All API helpers return promises.</p>
 <table>
 <thead>
@@ -907,12 +928,13 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
 </tbody>
 </table>
 <h3 id="getting-effective-user-permissions">Getting effective user permissions</h3>
-<pre><code class="lang-javascript">egnyte.API.userPerms.path(&quot;/Shared/Documents&quot;).get()</code></pre>
+<pre><code class="lang-javascript">egnyte.API.userPerms.path(&quot;/Shared/Documents&quot;).get()
+</code></pre>
 <p>Returns</p>
 <pre><code>{
   &quot;permission&quot;: &quot;Full&quot;
-}</code></pre>
-<h2 id="events">Events</h2>
+}
+</code></pre><h2 id="events">Events</h2>
 <table>
 <thead>
 <tr>
@@ -1034,7 +1056,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
 <pre><code class="lang-javascript">{
     folder: &quot;/folder/path&quot;,
     type: &quot;file_system&quot; or &quot;note&quot;
-}</code></pre>
+}
+</code></pre>
 <p><strong>Example:</strong></p>
 <pre><code class="lang-javascript">egnyte.API.events.notMy().filter({
     folder: &quot;/Shared/marketing/events&quot;
@@ -1048,7 +1071,8 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
     }
 }).then(function(polling){
     //call polling.stop() to turn the listener off
-})</code></pre>
+})
+</code></pre>
 <h2 id="error-handling">Error handling</h2>
 <p>All errors are returned in common format of a JavaScript error enhanced with additional fields</p>
 <table>
@@ -1082,11 +1106,13 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream)
 <p>Egnyte Public API accepts a <code>X-Egnyte-Act-As</code> header that can be set to perform an action on behalf of another user (if you are an admin).
 Every method call to <code>egnyte.API.*</code> can be preceded by impersonation like so:</p>
 <pre><code class="lang-javascript">egnyte.API.link.impersonate({username:&quot;username&quot;}).createLink(...
-egnyte.API.link.impersonate({email:&quot;username@example.com&quot;}).createLink(...</code></pre>
+egnyte.API.link.impersonate({email:&quot;username@example.com&quot;}).createLink(...
+</code></pre>
 <p>You can store an impersonated facade to use multiple times or pass it along to other components that don&#39;t need to have access to username, but need to perform on behalf of that user.</p>
 <pre><code class="lang-javascript">var impersonatedStorage = egnyte.API.storage.impersonate({username:&quot;username&quot;});
 
-impersonatedStorage.path(&quot;/path...&quot;).exists();</code></pre>
+impersonatedStorage.path(&quot;/path...&quot;).exists();
+</code></pre>
 <h2 id="providing-your-own-http-request-implementation">Providing your own http request implementation</h2>
 <p>You can provide a request function as the <code>httpRequest</code> option.</p>
 <p>It has to accept an <code>options</code> object and a result callback <code>function(error, responseObject, responseBody)</code></p>

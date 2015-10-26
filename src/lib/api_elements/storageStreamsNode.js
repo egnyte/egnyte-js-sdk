@@ -20,7 +20,7 @@ function storeFile(pathFromRoot, stream) {
                 accept: "*/*",
                 "transfer-encoding": "chunked"
             },
-            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            uri: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
             formData: {
                 file: {
                     value: stream,
@@ -121,7 +121,7 @@ function getFileStream(pathFromRoot, versionEntryId) {
 
     var opts = {
         method: "GET",
-        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+        url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
     }
     if (versionEntryId) {
         opts.params = opts.qs = { //xhr and request differ here

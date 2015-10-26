@@ -22,7 +22,7 @@ storageProto.exists = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
 
         return requestEngine.promiseRequest(decorate(opts));
@@ -48,7 +48,7 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
 
         if (versionEntryId) {
@@ -71,7 +71,7 @@ storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
 
         var opts = {
             method: "GET",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
         }
         if (versionEntryId) {
             opts.params = {
@@ -96,7 +96,7 @@ storageProto.createFolder = function (pathFromRoot) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: {
                 "action": "add_folder"
             }
@@ -128,7 +128,7 @@ function transfer(requestEngine, decorate, pathFromRoot, newPath, action) {
         newPath = helpers.encodeNameSafe(newPath);
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: {
                 "action": action,
                 "destination": newPath,
@@ -156,7 +156,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
         if (!window.FormData) {
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
                 body: file,
             }
             opts.headers = {};
@@ -168,7 +168,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
             formData.append('file', file);
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + encodeURI(pathFromRoot),
+                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
                 body: formData,
             };
         }
@@ -190,7 +190,7 @@ function remove(requestEngine, decorate, pathFromRoot, versionEntryId) {
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
         var opts = {
             method: "DELETE",
-            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot),
         };
         if (versionEntryId) {
             opts.params = {

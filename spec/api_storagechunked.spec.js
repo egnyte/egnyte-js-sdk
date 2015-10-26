@@ -40,7 +40,7 @@ describe("Storage API facade integration", function () {
     var testpath;
 
 
-    describe("Chunked file upload", function () {
+    xdescribe("Chunked file upload", function () {
 
         it("Needs a location to upload to", function (done) {
             eg.API.storage.path("/Private").get()

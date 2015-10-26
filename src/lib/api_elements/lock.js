@@ -19,7 +19,7 @@ exports.lock = function (pathFromRoot, lockToken, timeout) {
         }
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: body
         };
         return requestEngine.promiseRequest(decorate(opts));
@@ -41,7 +41,7 @@ exports.unlock = function (pathFromRoot, lockToken) {
         }
         var opts = {
             method: "POST",
-            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + encodeURI(pathFromRoot),
+            url: requestEngine.getEndpoint() + ENDPOINTS_fsmeta + helpers.encodeURIPath(pathFromRoot),
             json: body
         };
         return requestEngine.promiseRequest(decorate(opts));
