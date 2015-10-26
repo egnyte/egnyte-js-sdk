@@ -1,6 +1,6 @@
 //wrapper for any promises library
-var pinkySwear = require('pinkyswear');
-var helpers = require('./reusables/helpers');
+var pinkySwear = require("pinkyswear");
+var helpers = require("./reusables/helpers");
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -12,7 +12,7 @@ var createErrorAlias = function (promObj) {
 
 var Promises = function (value) {
     var promise = pinkySwear(createErrorAlias);
-    promise(value);
+    promise(true,[value]);
     return promise;
 }
 

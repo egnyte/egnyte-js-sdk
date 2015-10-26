@@ -604,12 +604,14 @@ module.exports = {
 },{}],11:[function(require,module,exports){
 var RequestEngine = require(21);
 var AuthEngine = require(12);
-var StorageFacade = require(23);
+var StorageFacade = require(24);
 var Notes = require(19);
 var LinkFacade = require(17);
 var PermFacade = require(20);
-var UserPerms = require(24);
+var UserPerms = require(25);
 var Events = require(16);
+var Search = require(23);
+
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -620,6 +622,7 @@ module.exports = function (options) {
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
+    var search = new Search(requestEngine);
     var events = new Events(requestEngine);
 
     var api = {
@@ -628,6 +631,7 @@ module.exports = function (options) {
         notes: notes,
         link: link,
         events: events,
+        search: search,
         perms: perms,
         userPerms: userPerms
     };
@@ -636,12 +640,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(25);
+            var responder = require(26);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(26);
+                var forwarder = require(27);
                 forwarder(options, api);
             }
         }
@@ -651,18 +655,19 @@ module.exports = function (options) {
 
     return api;
 };
-},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26}],12:[function(require,module,exports){
+
+},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26,"27":27}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(29);
-var helpers = require(32);
-var dom = require(30);
-var messages = require(33);
+var promises = require(30);
+var helpers = require(33);
+var dom = require(31);
+var messages = require(34);
 var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(27).userinfo;
-var ENDPOINTS_tokenauth = require(27).tokenauth;
+var ENDPOINTS_userinfo = require(28).userinfo;
+var ENDPOINTS_tokenauth = require(28).tokenauth;
 
 
 function Auth(options) {
@@ -876,10 +881,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"15":15,"27":27,"29":29,"30":30,"32":32,"33":33}],13:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
-var ENDPOINTS = require(27);
+},{"15":15,"28":28,"30":30,"31":31,"33":33,"34":34}],13:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
+var ENDPOINTS = require(28);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -988,8 +993,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"27":27,"29":29,"32":32}],14:[function(require,module,exports){
-var helpers = require(32);
+},{"28":28,"30":30,"33":33}],14:[function(require,module,exports){
+var helpers = require(33);
 
 var defaultDecorators = {
 
@@ -1055,7 +1060,7 @@ module.exports = {
 
     }
 }
-},{"32":32}],15:[function(require,module,exports){
+},{"33":33}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1118,13 +1123,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],16:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
-var every = require(31);
+var promises = require(30);
+var helpers = require(33);
+var every = require(32);
 var decorators = require(14);
 
-var ENDPOINTS_events = require(27).events;
-var ENDPOINTS_eventscursor = require(27).eventscursor;
+var ENDPOINTS_events = require(28).events;
+var ENDPOINTS_eventscursor = require(28).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1251,12 +1256,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"14":14,"27":27,"29":29,"31":31,"32":32}],17:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"14":14,"28":28,"30":30,"32":32,"33":33}],17:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 var decorators = require(14);
 
-var ENDPOINTS_links = require(27).links;
+var ENDPOINTS_links = require(28).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1348,11 +1353,11 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 
-},{"14":14,"27":27,"29":29,"32":32}],18:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"14":14,"28":28,"30":30,"33":33}],18:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 
-var ENDPOINTS_fsmeta = require(27).fsmeta;
+var ENDPOINTS_fsmeta = require(28).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1402,12 +1407,12 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"27":27,"29":29,"32":32}],19:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"28":28,"30":30,"33":33}],19:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 var decorators = require(14);
 
-var ENDPOINTS_notes = require(27).notes;
+var ENDPOINTS_notes = require(28).notes;
 
 
 function Notes(requestEngine) {
@@ -1497,13 +1502,13 @@ notesProto.removeNote = function (id) {
 Notes.prototype = notesProto;
 
 module.exports = Notes;
-},{"14":14,"27":27,"29":29,"32":32}],20:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"14":14,"28":28,"30":30,"33":33}],20:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 var decorators = require(14);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS_perms = require(27).perms;
+var ENDPOINTS_perms = require(28).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1594,11 +1599,11 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 
-},{"14":14,"22":22,"27":27,"29":29,"32":32}],21:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
-var dom = require(30);
-var messages = require(33);
+},{"14":14,"22":22,"28":28,"30":30,"33":33}],21:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
+var dom = require(31);
+var messages = require(34);
 var errorify = require(15);
 var request = require(3);
 
@@ -1871,8 +1876,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"15":15,"29":29,"3":3,"30":30,"32":32,"33":33}],22:[function(require,module,exports){
-var helpers = require(32);
+},{"15":15,"3":3,"30":30,"31":31,"33":33,"34":34}],22:[function(require,module,exports){
+var helpers = require(33);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1917,16 +1922,80 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"32":32}],23:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"33":33}],23:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
+var decorators = require(14);
+
+var ENDPOINTS_search = require(28).search;
+
+
+function Search(requestEngine) {
+    this.requestEngine = requestEngine;
+    this.count = 10;
+    decorators.install(this);
+}
+
+
+var searchProto = {};
+searchProto.itemsPerPage = function(count) {
+    this.count = count || 10;
+}
+searchProto.query = function(query, page) {
+    var self = this;
+    var requestEngine = self.requestEngine;
+    var decorate = self.getDecorator();
+    return promises(true).then(function() {
+        var qs = [
+            "query=" + encodeURIComponent(query),
+            "offset=" + (~~(page) * self.count),
+            "count=" + self.count,
+        ];
+        var querystring = "?" + qs.join("&");
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS_search + querystring
+        };
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function(result) { //result.response result.body
+        return result.body;
+    });
+
+};
+
+searchProto.getResults = function(query) {
+    var self = this;
+    return self.query(query)
+        .then(function(body) {
+            return {
+                page: function(number) {
+                    return self.query(query, number)
+                        .then(function(body) {
+                            return body.results;
+                        });
+                },
+                totalPages: Math.round(body.total_count/self.count),
+                sample: body.results,
+                totalCount: body.total_count
+            }
+        });
+};
+
+
+Search.prototype = searchProto;
+
+module.exports = Search;
+
+},{"14":14,"28":28,"30":30,"33":33}],24:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 var decorators = require(14);
 var notes = require(19);
 var lock = require(18);
 var chunkedUpload = require(13);
 var resourceIdentifier = require(22);
 
-var ENDPOINTS = require(27);
+var ENDPOINTS = require(28);
 
 
 function Storage(requestEngine) {
@@ -2163,12 +2232,12 @@ Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
 
-},{"13":13,"14":14,"18":18,"19":19,"22":22,"27":27,"29":29,"32":32}],24:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
+},{"13":13,"14":14,"18":18,"19":19,"22":22,"28":28,"30":30,"33":33}],25:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
 var decorators = require(14);
 
-var ENDPOINTS_perms = require(27).perms;
+var ENDPOINTS_perms = require(28).perms;
 
 function UserPerms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2208,10 +2277,10 @@ userPermsProto.get = function (user) {
 UserPerms.prototype = userPermsProto;
 
 module.exports = UserPerms;
-},{"14":14,"27":27,"29":29,"32":32}],25:[function(require,module,exports){
-var helpers = require(32);
-var dom = require(30);
-var messages = require(33);
+},{"14":14,"28":28,"30":30,"33":33}],26:[function(require,module,exports){
+var helpers = require(33);
+var dom = require(31);
+var messages = require(34);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2270,11 +2339,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"30":30,"32":32,"33":33}],26:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
-var dom = require(30);
-var messages = require(33);
+},{"31":31,"33":33,"34":34}],27:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
+var dom = require(31);
+var messages = require(34);
 
 
 
@@ -2404,7 +2473,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"29":29,"30":30,"32":32,"33":33}],27:[function(require,module,exports){
+},{"30":30,"31":31,"33":33,"34":34}],28:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2414,16 +2483,18 @@ module.exports={
     "perms": "/v1/perms",
     "userinfo": "/v1/userinfo",
     "events": "/v1/events",
+    "search": "/v1/search",
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
-},{}],28:[function(require,module,exports){
-var promises = require(29);
-var helpers = require(32);
-var dom = require(30);
-var messages = require(33);
+
+},{}],29:[function(require,module,exports){
+var promises = require(30);
+var helpers = require(33);
+var dom = require(31);
+var messages = require(34);
 var decorators = require(14);
-var ENDPOINTS = require(27);
+var ENDPOINTS = require(28);
 
 var plugins = {};
 module.exports = {
@@ -2450,10 +2521,10 @@ module.exports = {
         });
     }
 };
-},{"14":14,"27":27,"29":29,"30":30,"32":32,"33":33}],29:[function(require,module,exports){
+},{"14":14,"28":28,"30":30,"31":31,"33":33,"34":34}],30:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(32);
+var helpers = require(33);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -2465,7 +2536,7 @@ var createErrorAlias = function (promObj) {
 
 var Promises = function (value) {
     var promise = pinkySwear(createErrorAlias);
-    promise(value);
+    promise(true,[value]);
     return promise;
 }
 
@@ -2536,7 +2607,8 @@ Promises.allSettled = function (array) {
 }
 
 module.exports = Promises;
-},{"1":1,"32":32}],30:[function(require,module,exports){
+
+},{"1":1,"33":33}],31:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -2582,17 +2654,24 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            ev.preventDefault && ev.preventDefault();
-            if (hasFocus() && actions[vkey[ev.keyCode]]) {
-                actions[vkey[ev.keyCode]]();
+            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
+                ev.preventDefault && ev.preventDefault();
+            }
+            ev.stopPropagation && ev.stopPropagation();
+            if (hasFocus===true || hasFocus()) {
+                if (actions[vkey[ev.keyCode]]) {
+                    actions[vkey[ev.keyCode]]();
+                } else {
+                    actions["other"] && actions["other"]();
+                }
             }
             return false;
         });
     },
 
-    createFrame: function (url,scrolling) {
+    createFrame: function (url, scrolling) {
         var iframe = document.createElement("iframe");
-        if(!scrolling){
+        if (!scrolling) {
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
@@ -2605,8 +2684,9 @@ module.exports = {
     }
 
 }
-},{"2":2}],31:[function(require,module,exports){
-var promises = require(29);
+
+},{"2":2}],32:[function(require,module,exports){
+var promises = require(30);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -2645,7 +2725,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"29":29}],32:[function(require,module,exports){
+},{"30":30}],33:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -2677,6 +2757,15 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
+function debounce(func, time) {
+    var timer;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(func, time);
+    }
+
+}
+
 module.exports = {
     //simple extend function
     extend: function extend(target) {
@@ -2701,6 +2790,7 @@ module.exports = {
             return func.apply(that, arguments);
         }
     },
+    debounce: debounce,
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
@@ -2724,8 +2814,8 @@ module.exports = {
     }
 };
 
-},{}],33:[function(require,module,exports){
-var helpers = require(32);
+},{}],34:[function(require,module,exports){
+var helpers = require(33);
 
 
 //returns postMessage specific handler
@@ -2778,9 +2868,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"32":32}],34:[function(require,module,exports){
-var helpers = require(32);
-var plugins = require(28);
+},{"33":33}],35:[function(require,module,exports){
+var helpers = require(33);
+var plugins = require(29);
 var defaults = require(10);
 
 module.exports = {
@@ -2803,5 +2893,5 @@ module.exports = {
     plugin: plugins.define
 
 }
-},{"10":10,"11":11,"28":28,"32":32}]},{},[34])(34)
+},{"10":10,"11":11,"29":29,"33":33}]},{},[35])(35)
 });

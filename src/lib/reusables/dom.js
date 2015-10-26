@@ -43,17 +43,24 @@ module.exports = {
 
     onKeys: function (elem, actions, hasFocus) {
         return addListener(elem, "keyup", function (ev) {
-            ev.preventDefault && ev.preventDefault();
-            if (hasFocus() && actions[vkey[ev.keyCode]]) {
-                actions[vkey[ev.keyCode]]();
+            if (ev.target.tagName && ev.target.tagName.toLowerCase() !== "input") {
+                ev.preventDefault && ev.preventDefault();
+            }
+            ev.stopPropagation && ev.stopPropagation();
+            if (hasFocus===true || hasFocus()) {
+                if (actions[vkey[ev.keyCode]]) {
+                    actions[vkey[ev.keyCode]]();
+                } else {
+                    actions["other"] && actions["other"]();
+                }
             }
             return false;
         });
     },
 
-    createFrame: function (url,scrolling) {
+    createFrame: function (url, scrolling) {
         var iframe = document.createElement("iframe");
-        if(!scrolling){
+        if (!scrolling) {
             iframe.setAttribute("scrolling", "no");
         }
         iframe.style.width = "100%";
