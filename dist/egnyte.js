@@ -1048,6 +1048,9 @@ var defaultDecorators = {
             opts.headers["X-Egnyte-Act-As-Email"] = data.email;
         }
         return opts;
+    },
+    "customizeRequest": function (opts, transformation) {
+        return transformation(opts);
     }
 
 }
@@ -1074,7 +1077,7 @@ module.exports = {
                 that[name] = function (data) {
                     var Decorated = function () {};
                     Decorated.prototype = this;
-                    var instance = new Decorated;
+                    var instance = new Decorated();
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
                     instance._decorations[name] = data || null;
@@ -1099,6 +1102,7 @@ module.exports = {
 
     }
 }
+
 },{"46":46}],17:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
