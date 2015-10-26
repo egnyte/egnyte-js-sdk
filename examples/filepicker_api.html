@@ -28,6 +28,7 @@
     <button onclick="openPicker3()">open picker folders only</button>
     <button onclick="openPicker4()">open picker single select</button>
     <button onclick="openPicker5()">open picker, googledocs filter off</button>
+    <button onclick="openPicker6()">open picker, png only</button>
     <script>
         var node = document.getElementById("there");
 
@@ -45,9 +46,9 @@
                     console.warn("cancelled");
                 },
                 error: function (e) {
-                    console.error(e);
-                }
-                //defaults kick in
+                        console.error(e);
+                    }
+                    //defaults kick in
             });
 
         }
@@ -105,6 +106,20 @@
                     console.warn("cancelled");
                 },
                 filterExtensions: false
+            });
+        }
+
+        function openPicker6() {
+            eg.filePicker(node, {
+                selection: function (fileData) {
+                    console.info(fileData);
+                },
+                cancel: function () {
+                    console.warn("cancelled");
+                },
+                filterExtensions: function (ext) {
+                    return ext === 'png';
+                }
             });
         }
 

@@ -8,3 +8,4 @@ APIUsername = "user";
 APIPassword = "foo";
 APIKeyImplicit = "9876543" //API key for implicit grant
 OtherUsername = "dude"; //other existing user (for impersonation)
+existingFile = "/Shared/Documents/test.txt";

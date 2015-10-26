@@ -6,6 +6,7 @@
 |[FileSystem API](#file-system-api-helpers)|
 |[Link API](#link-api-helpers)|
 |[Permissions API](#permissions-api-helpers)|
+|[Search](#search)|
 |[Events](#events)|
 |[Impersonation](#impersonation)|
 |[Error handling](#error-handling)|
@@ -557,6 +558,27 @@ Returns
 
 ```
 
+
+## Search
+
+
+
+Method | Arguments | Description
+--- | --- | ---
+API.search.getResults| `query text` | Resolves to a helper object for fetching search results
+API.search.query| `query text`, `page number` | Low level search query function, resolves to a single body of the search response. Is used internally in getResults
+API.search.itemsPerPage| `number` | Updates the number of items per page for search. default: 10
+
+Results object:
+
+Name | Description
+--- |  ---
+totalCount | Number of all results
+totalPages | Number of available pages with results
+sample  | First page of results (array of search results you'd get from calling `.page(0)`
+page(`num`) | method to get a certain page of results; resolves to an array of results
+
+Pages are numbered starting at 0.
 
 ## Events
 
