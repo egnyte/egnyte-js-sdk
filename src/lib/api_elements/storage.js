@@ -153,10 +153,11 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
         var opts;
         var file = fileOrBlob;
         pathFromRoot = helpers.encodeNameSafe(pathFromRoot) || "";
+        var url = requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot);
         if (!window.FormData) {
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
+                url: url,
                 body: file,
             }
             opts.headers = {};
@@ -168,7 +169,7 @@ storageProto.storeFile = function (pathFromRoot, fileOrBlob, mimeType /* optiona
             formData.append('file', file);
             var opts = {
                 method: "POST",
-                url: requestEngine.getEndpoint() + ENDPOINTS.fscontent + helpers.encodeURIPath(pathFromRoot),
+                url: url,
                 body: formData,
             };
         }
