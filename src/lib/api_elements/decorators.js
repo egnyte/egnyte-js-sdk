@@ -1,4 +1,4 @@
-var helpers = require('../reusables/helpers');
+var helpers = require("../reusables/helpers");
 
 var defaultDecorators = {
 
@@ -13,6 +13,9 @@ var defaultDecorators = {
             opts.headers["X-Egnyte-Act-As-Email"] = data.email;
         }
         return opts;
+    },
+    "customizeRequest": function (opts, transformation) {
+        return transformation(opts);
     }
 
 }
@@ -39,7 +42,7 @@ module.exports = {
                 that[name] = function (data) {
                     var Decorated = function () {};
                     Decorated.prototype = this;
-                    var instance = new Decorated;
+                    var instance = new Decorated();
                     instance.getDecorator = getDecorator;
                     instance._decorations = helpers.extend({}, this._decorations)
                     instance._decorations[name] = data || null;
