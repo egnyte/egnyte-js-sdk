@@ -3,4 +3,4 @@ stages:
 
 testing:
   stage: test
-  script: "gitlab-ci-test.sh"
+  script: "./gitlab-ci-test.sh"
