@@ -4,6 +4,3 @@ stages:
 testing:
   stage: test
   script: "gitlab-ci-test.sh"
-  tags:
-    - node-4.x
-    - node-0.10
