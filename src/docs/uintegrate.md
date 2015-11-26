@@ -4,13 +4,13 @@
 
 Go to `dist/` and pick one of the versions:
 
-- `dist/egnyte-uintegrate*` - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser
-- `dist/uintegrate*` - Just the UIntegrate interaction functionality (documented below)
+- `dist/uintegrate.js` - UIntegrate interaction functionality (documented below)
+
+It will merge with the global Egnyte namespace when available.
 
 When using CommonJS dependency management, you can require the plugin:
 
-- `require("egnyte-js-sdk/plugins/UIntegrate")` - Full Egnyte JS SDK with the UIntegrate plugin for apps working in the browser
-- `require("egnyte-js-sdk/plugins/UIntegrate/standalone")` - Just the UIntegrate interaction functionality (documented below)
+- `var Egnyte = require("egnyte-js-sdk/plugins/UIntegrate")`
 
 ## Usage
 
@@ -30,6 +30,17 @@ reload | function() | call this function to make Egnyte UI reload the current fo
 error | function(message) | inform Egnyte UI that your app had an error. The app is closed and a notification containing the `message` shows.
 complete | function(message) | inform Egnyte UI that your app finished what it was doing and it can be closed. `message` will be shown to the user as a notification. Ending the app by just calling `window.close()` is not recommended and will not close the app if it works in an iframe.
 
+
+In CommonJS/Node if you already loaded the SDK to the Egnyte variable, just use a separate reference for the plugin:
+
+
+```javascript
+var Egnyte = require("egnyte-js-sdk")
+var UIntegrate = require("egnyte-js-sdk/plugins/UIntegrate")
+UIntegrate.appInit(function(uint){
+    //use the uint object to interact with Egnyte UI and/or APIs
+})
+```
 
 ## Technical details
 

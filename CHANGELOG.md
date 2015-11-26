@@ -1,3 +1,9 @@
+### 2.3.2
+- removed unused uintegrate plugin export version
+
+### 2.3.1
+- low level utility exposed allowing overriding any http request options
+
 ### 2.3.0
 - Added search support
 - Added search bar to filepicker widget

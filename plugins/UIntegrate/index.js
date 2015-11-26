@@ -1,1 +1,1 @@
-module.exports = require("../../src/plugins/UIntegrate/uintegrateAppPlugin")
+module.exports = require("../../src/plugins/UIntegrate/uintegrateStandalone")
