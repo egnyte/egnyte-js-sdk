@@ -1,3 +1,6 @@
+### 2.4.1
+- consistent errors in API.user methods for user not found
+
 ### 2.4.0
 - added API.user methods for getting user metadata
 
