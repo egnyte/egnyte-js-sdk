@@ -366,7 +366,7 @@ notify | optional  | if True send notification emails to link creator when link 
 link_to_current | optional  | if True, link to the current version of the file. Otherwise link to latest version of file. Only applies to file links, not folder links. Defaults to false.
 expiry_date | optional  | the expiry date for the link. Date must be in the future. If expiry_date is specified then expiry_clicks cannot be set.
 expiry_clicks | optional  | the number of clicks the link is valid for. Value must be between 1 and 10, inclusive. If expiry_clicks is specified then expiry_date cannot be set.
-add_file | optional  | if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false. 
+add_file | optional  | if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false.
 
 
 accessibility options:
@@ -559,6 +559,15 @@ Returns
 }
 
 ```
+
+## Users
+
+All API helpers return promises.
+
+Method | Arguments | Description
+--- | --- | ---
+API.user.getByName | `user name` | Resolves to complete user metadata object
+API.user.getById | `user id` | Resolves to complete user metadata object
 
 
 ## Search

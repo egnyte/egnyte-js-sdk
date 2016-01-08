@@ -5,6 +5,7 @@ var Notes = require("./api_elements/notes");
 var LinkFacade = require("./api_elements/link");
 var PermFacade = require("./api_elements/permissions");
 var UserPerms = require("./api_elements/userperms");
+var User = require("./api_elements/user");
 var Events = require("./api_elements/events");
 var Search = require("./api_elements/search");
 
@@ -18,6 +19,7 @@ module.exports = function (options) {
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
+    var user = new User(requestEngine);
     var search = new Search(requestEngine);
     var events = new Events(requestEngine);
 
@@ -29,7 +31,8 @@ module.exports = function (options) {
         events: events,
         search: search,
         perms: perms,
-        userPerms: userPerms
+        userPerms: userPerms,
+        user: user
     };
 
     //onlt in IE8 and IE9

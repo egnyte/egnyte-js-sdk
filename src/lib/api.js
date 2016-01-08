@@ -9,6 +9,7 @@ var Events = require("./api_elements/events");
 var Search = require("./api_elements/search");
 var helpers = require("./reusables/helpers");
 var UserPerms = require("./api_elements/userperms");
+var User = require("./api_elements/user");
 
 module.exports = function (options) {
     var auth = new AuthEngine(options);
@@ -23,6 +24,7 @@ module.exports = function (options) {
     var events = new Events(requestEngine);
     var search = new Search(requestEngine);
     var userPerms = new UserPerms(requestEngine);
+    var user = new User(requestEngine);
 
     var api = {
         manual: requestEngine,
@@ -33,7 +35,8 @@ module.exports = function (options) {
         events: events,
         search: search,
         perms: perms,
-        userPerms: userPerms
+        userPerms: userPerms,
+        user: user
     };
 
     return api;

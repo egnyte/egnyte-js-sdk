@@ -1,3 +1,6 @@
+### 2.4.0
+- added API.user methods for getting user metadata
+
 ### 2.3.2
 - removed unused uintegrate plugin export version
 

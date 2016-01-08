@@ -685,7 +685,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
 <tr>
 <td>add_file</td>
 <td>optional</td>
-<td>if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false. </td>
+<td>if True then the filename will be appended to the end of the link. Only applies to file links, not folder links. Defaults to false.</td>
 </tr>
 </tbody>
 </table>
@@ -938,7 +938,30 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
 <pre><code>{
   &quot;permission&quot;: &quot;Full&quot;
 }
-</code></pre><h2 id="search">Search</h2>
+</code></pre><h2 id="users">Users</h2>
+<p>All API helpers return promises.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API.user.getByName</td>
+<td><code>user name</code></td>
+<td>Resolves to complete user metadata object</td>
+</tr>
+<tr>
+<td>API.user.getById</td>
+<td><code>user id</code></td>
+<td>Resolves to complete user metadata object</td>
+</tr>
+</tbody>
+</table>
+<h2 id="search">Search</h2>
 <table>
 <thead>
 <tr>

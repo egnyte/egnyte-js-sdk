@@ -602,9 +602,9 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var slim = require(50);
-var filepicker = require(35)
-var prompt = require(43)
+var slim = require(51);
+var filepicker = require(36)
+var prompt = require(44)
 var authPrompt = require(14)
 
 slim.plugin("filePicker", function (root, resources) {
@@ -616,14 +616,15 @@ slim.plugin("prompt", function (root, resources) {
 });
 
 module.exports = slim;
-},{"14":14,"35":35,"43":43,"50":50}],12:[function(require,module,exports){
+},{"14":14,"36":36,"44":44,"51":51}],12:[function(require,module,exports){
 var RequestEngine = require(23);
 var AuthEngine = require(13);
 var StorageFacade = require(26);
 var Notes = require(21);
 var LinkFacade = require(19);
 var PermFacade = require(22);
-var UserPerms = require(27);
+var UserPerms = require(28);
+var User = require(27);
 var Events = require(18);
 var Search = require(25);
 
@@ -637,6 +638,7 @@ module.exports = function (options) {
     var link = new LinkFacade(requestEngine);
     var perms = new PermFacade(requestEngine);
     var userPerms = new UserPerms(requestEngine);
+    var user = new User(requestEngine);
     var search = new Search(requestEngine);
     var events = new Events(requestEngine);
 
@@ -648,19 +650,20 @@ module.exports = function (options) {
         events: events,
         search: search,
         perms: perms,
-        userPerms: userPerms
+        userPerms: userPerms,
+        user: user
     };
 
     //onlt in IE8 and IE9
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(28);
+            var responder = require(29);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(29);
+                var forwarder = require(30);
                 forwarder(options, api);
             }
         }
@@ -671,18 +674,18 @@ module.exports = function (options) {
     return api;
 };
 
-},{"13":13,"18":18,"19":19,"21":21,"22":22,"23":23,"25":25,"26":26,"27":27,"28":28,"29":29}],13:[function(require,module,exports){
+},{"13":13,"18":18,"19":19,"21":21,"22":22,"23":23,"25":25,"26":26,"27":27,"28":28,"29":29,"30":30}],13:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(42);
-var helpers = require(46);
-var dom = require(44);
-var messages = require(47);
+var promises = require(43);
+var helpers = require(47);
+var dom = require(45);
+var messages = require(48);
 var errorify = require(17);
 
-var ENDPOINTS_userinfo = require(30).userinfo;
-var ENDPOINTS_tokenauth = require(30).tokenauth;
+var ENDPOINTS_userinfo = require(31).userinfo;
+var ENDPOINTS_tokenauth = require(31).tokenauth;
 
 
 function Auth(options) {
@@ -896,9 +899,9 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"17":17,"30":30,"42":42,"44":44,"46":46,"47":47}],14:[function(require,module,exports){
-var prompt = require(43)
-var helpers = require(46)
+},{"17":17,"31":31,"43":43,"45":45,"47":47,"48":48}],14:[function(require,module,exports){
+var prompt = require(44)
+var helpers = require(47)
 
 function egmitifyDomain(domain) {
     if (domain.indexOf('.') === -1) {
@@ -920,10 +923,10 @@ module.exports = function (root, resources) {
         });
     }
 };
-},{"43":43,"46":46}],15:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
-var ENDPOINTS = require(30);
+},{"44":44,"47":47}],15:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
+var ENDPOINTS = require(31);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -1032,8 +1035,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"30":30,"42":42,"46":46}],16:[function(require,module,exports){
-var helpers = require(46);
+},{"31":31,"43":43,"47":47}],16:[function(require,module,exports){
+var helpers = require(47);
 
 var defaultDecorators = {
 
@@ -1103,7 +1106,7 @@ module.exports = {
     }
 }
 
-},{"46":46}],17:[function(require,module,exports){
+},{"47":47}],17:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1166,13 +1169,13 @@ module.exports = function (result) {
     return error;
 }
 },{}],18:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
-var every = require(45);
+var promises = require(43);
+var helpers = require(47);
+var every = require(46);
 var decorators = require(16);
 
-var ENDPOINTS_events = require(30).events;
-var ENDPOINTS_eventscursor = require(30).eventscursor;
+var ENDPOINTS_events = require(31).events;
+var ENDPOINTS_eventscursor = require(31).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1299,12 +1302,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"16":16,"30":30,"42":42,"45":45,"46":46}],19:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"16":16,"31":31,"43":43,"46":46,"47":47}],19:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 var decorators = require(16);
 
-var ENDPOINTS_links = require(30).links;
+var ENDPOINTS_links = require(31).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1396,11 +1399,11 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 
-},{"16":16,"30":30,"42":42,"46":46}],20:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"16":16,"31":31,"43":43,"47":47}],20:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 
-var ENDPOINTS_fsmeta = require(30).fsmeta;
+var ENDPOINTS_fsmeta = require(31).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1450,12 +1453,12 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"30":30,"42":42,"46":46}],21:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"31":31,"43":43,"47":47}],21:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 var decorators = require(16);
 
-var ENDPOINTS_notes = require(30).notes;
+var ENDPOINTS_notes = require(31).notes;
 
 
 function Notes(requestEngine) {
@@ -1545,13 +1548,13 @@ notesProto.removeNote = function (id) {
 Notes.prototype = notesProto;
 
 module.exports = Notes;
-},{"16":16,"30":30,"42":42,"46":46}],22:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"16":16,"31":31,"43":43,"47":47}],22:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 var decorators = require(16);
 var resourceIdentifier = require(24);
 
-var ENDPOINTS_perms = require(30).perms;
+var ENDPOINTS_perms = require(31).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1642,11 +1645,11 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 
-},{"16":16,"24":24,"30":30,"42":42,"46":46}],23:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
-var dom = require(44);
-var messages = require(47);
+},{"16":16,"24":24,"31":31,"43":43,"47":47}],23:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
+var dom = require(45);
+var messages = require(48);
 var errorify = require(17);
 var request = require(3);
 
@@ -1919,8 +1922,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"17":17,"3":3,"42":42,"44":44,"46":46,"47":47}],24:[function(require,module,exports){
-var helpers = require(46);
+},{"17":17,"3":3,"43":43,"45":45,"47":47,"48":48}],24:[function(require,module,exports){
+var helpers = require(47);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1965,12 +1968,12 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"46":46}],25:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"47":47}],25:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 var decorators = require(16);
 
-var ENDPOINTS_search = require(30).search;
+var ENDPOINTS_search = require(31).search;
 
 
 function Search(requestEngine) {
@@ -2029,16 +2032,16 @@ Search.prototype = searchProto;
 
 module.exports = Search;
 
-},{"16":16,"30":30,"42":42,"46":46}],26:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"16":16,"31":31,"43":43,"47":47}],26:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
 var decorators = require(16);
 var notes = require(21);
 var lock = require(20);
 var chunkedUpload = require(15);
 var resourceIdentifier = require(24);
 
-var ENDPOINTS = require(30);
+var ENDPOINTS = require(31);
 
 
 function Storage(requestEngine) {
@@ -2275,12 +2278,62 @@ Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
 
-},{"15":15,"16":16,"20":20,"21":21,"24":24,"30":30,"42":42,"46":46}],27:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
+},{"15":15,"16":16,"20":20,"21":21,"24":24,"31":31,"43":43,"47":47}],27:[function(require,module,exports){
+var promises = require(43);
 var decorators = require(16);
 
-var ENDPOINTS_perms = require(30).perms;
+var ENDPOINTS_users = require(31).users;
+
+function User(requestEngine) {
+    this.requestEngine = requestEngine;
+    decorators.install(this);
+}
+
+var userProto = {};
+
+userProto.getById = function (userId) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+
+    return promises(true)
+        .then(function () {
+            var opts = {
+                method: "GET",
+                url: requestEngine.getEndpoint() + ENDPOINTS_users + userId
+            };
+            return requestEngine.promiseRequest(decorate(opts));
+        }).then(function (result) { //result.response result.body
+            return result.body;
+        });
+};
+userProto.getByName = function (username) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+
+    return promises(true)
+        .then(function () {
+            var opts = {
+                method: "GET",
+                url: requestEngine.getEndpoint() + ENDPOINTS_users,
+                params: {
+                    filter: "userName eq \"" + username + "\""
+                }
+            };
+            return requestEngine.promiseRequest(decorate(opts));
+        }).then(function (result) { //result.response result.body
+            return result.body.resources[0];
+        });
+};
+
+User.prototype = userProto;
+
+module.exports = User;
+
+},{"16":16,"31":31,"43":43}],28:[function(require,module,exports){
+var promises = require(43);
+var decorators = require(16);
+
+var ENDPOINTS_perms = require(31).perms;
 
 function UserPerms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2320,10 +2373,11 @@ userPermsProto.get = function (user) {
 UserPerms.prototype = userPermsProto;
 
 module.exports = UserPerms;
-},{"16":16,"30":30,"42":42,"46":46}],28:[function(require,module,exports){
-var helpers = require(46);
-var dom = require(44);
-var messages = require(47);
+
+},{"16":16,"31":31,"43":43}],29:[function(require,module,exports){
+var helpers = require(47);
+var dom = require(45);
+var messages = require(48);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2382,11 +2436,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"44":44,"46":46,"47":47}],29:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
-var dom = require(44);
-var messages = require(47);
+},{"45":45,"47":47,"48":48}],30:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
+var dom = require(45);
+var messages = require(48);
 
 
 
@@ -2516,7 +2570,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"42":42,"44":44,"46":46,"47":47}],30:[function(require,module,exports){
+},{"43":43,"45":45,"47":47,"48":48}],31:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2525,14 +2579,15 @@ module.exports={
     "links": "/v1/links",
     "perms": "/v1/perms",
     "userinfo": "/v1/userinfo",
+    "users": "/v2/users/",
     "events": "/v1/events",
     "search": "/v1/search",
     "eventscursor": "/v1/events/cursor",
     "tokenauth": "/puboauth/token"
 }
 
-},{}],31:[function(require,module,exports){
-var helpers = require(46);
+},{}],32:[function(require,module,exports){
+var helpers = require(47);
 
 module.exports = function (opts, model) {
     var page = 1;
@@ -2633,8 +2688,8 @@ module.exports = function (opts, model) {
 
 }
 
-},{"46":46}],32:[function(require,module,exports){
-var helpers = require(46);
+},{"47":47}],33:[function(require,module,exports){
+var helpers = require(47);
 
 module.exports = function (opts, model) {
     var currentQuery;
@@ -2714,7 +2769,7 @@ module.exports = function (opts, model) {
 
 }
 
-},{"46":46}],33:[function(require,module,exports){
+},{"47":47}],34:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2727,8 +2782,8 @@ module.exports={
     "?": "Unknown error"
 }
 
-},{}],34:[function(require,module,exports){
-var helpers = require(46);
+},{}],35:[function(require,module,exports){
+var helpers = require(47);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2781,11 +2836,11 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-},{"46":46}],35:[function(require,module,exports){
-var helpers = require(46);
-var dom = require(44);
-var View = require(40);
-var Model = require(36);
+},{"47":47}],36:[function(require,module,exports){
+var helpers = require(47);
+var dom = require(45);
+var View = require(41);
+var Model = require(37);
 
 function noGoog(ext, mime) {
     return mime !== "goog";
@@ -2854,12 +2909,12 @@ function init(API) {
 }
 
 module.exports = init;
-},{"36":36,"40":40,"44":44,"46":46}],36:[function(require,module,exports){
-var helpers = require(46);
-var exts = require(34);
-var Item = require(37);
-var folderFetchProvider = require(31);
-var searchProvider = require(32);
+},{"37":37,"41":41,"45":45,"47":47}],37:[function(require,module,exports){
+var helpers = require(47);
+var exts = require(35);
+var Item = require(38);
+var folderFetchProvider = require(32);
+var searchProvider = require(33);
 
 //Collection
 function Model(API, opts) {
@@ -2973,8 +3028,8 @@ Model.prototype.getCurrent = function () {
 
 module.exports = Model;
 
-},{"31":31,"32":32,"34":34,"37":37,"46":46}],37:[function(require,module,exports){
-var exts = require(34);
+},{"32":32,"33":33,"35":35,"38":38,"47":47}],38:[function(require,module,exports){
+var exts = require(35);
 
 //Item model
 function Item(data, parent) {
@@ -3012,9 +3067,9 @@ Item.prototype.toggleSelect = function() {
 
 module.exports = Item;
 
-},{"34":34}],38:[function(require,module,exports){
-var helpers = require(46);
-var jungle = require(51);
+},{"35":35}],39:[function(require,module,exports){
+var helpers = require(47);
+var jungle = require(52);
 
 function beradcrumbView(parent) {
     var self = this;
@@ -3093,10 +3148,10 @@ beradcrumbView.prototype.render = function () {
 
 module.exports = beradcrumbView;
 
-},{"46":46,"51":51}],39:[function(require,module,exports){
-var helpers = require(46);
-var dom = require(44);
-var jungle = require(51);
+},{"47":47,"52":52}],40:[function(require,module,exports){
+var helpers = require(47);
+var dom = require(45);
+var jungle = require(52);
 
 var airaExpanded = "aria-expanded";
 
@@ -3173,18 +3228,18 @@ function actionImplementation() {
 
 module.exports = searchView;
 
-},{"44":44,"46":46,"51":51}],40:[function(require,module,exports){
+},{"45":45,"47":47,"52":52}],41:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(44);
-var helpers = require(46);
-var texts = require(48);
-var jungle = require(51);
-var SubvBread = require(38);
-var SubvSearch = require(39);
+var dom = require(45);
+var helpers = require(47);
+var texts = require(49);
+var jungle = require(52);
+var SubvBread = require(39);
+var SubvSearch = require(40);
 
-require(49);
+require(50);
 
 var fontLoaded = false;
 
@@ -3483,7 +3538,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(33);
+var msgs = require(34);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -3565,13 +3620,13 @@ View.prototype = viewPrototypeMethods;
 
 module.exports = View;
 
-},{"33":33,"38":38,"39":39,"44":44,"46":46,"48":48,"49":49,"51":51}],41:[function(require,module,exports){
-var promises = require(42);
-var helpers = require(46);
-var dom = require(44);
-var messages = require(47);
+},{"34":34,"39":39,"40":40,"45":45,"47":47,"49":49,"50":50,"52":52}],42:[function(require,module,exports){
+var promises = require(43);
+var helpers = require(47);
+var dom = require(45);
+var messages = require(48);
 var decorators = require(16);
-var ENDPOINTS = require(30);
+var ENDPOINTS = require(31);
 
 var plugins = {};
 module.exports = {
@@ -3598,10 +3653,10 @@ module.exports = {
         });
     }
 };
-},{"16":16,"30":30,"42":42,"44":44,"46":46,"47":47}],42:[function(require,module,exports){
+},{"16":16,"31":31,"43":43,"45":45,"47":47,"48":48}],43:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(46);
+var helpers = require(47);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -3685,13 +3740,13 @@ Promises.allSettled = function (array) {
 
 module.exports = Promises;
 
-},{"1":1,"46":46}],43:[function(require,module,exports){
-var helpers = require(46);
-var dom = require(44);
-var jungle = require(52);
-var texts = require(48);
+},{"1":1,"47":47}],44:[function(require,module,exports){
+var helpers = require(47);
+var dom = require(45);
+var jungle = require(53);
+var texts = require(49);
 
-require(49);
+require(50);
 
 function openPrompt(node, setup) {
     if (!setup) {
@@ -3741,7 +3796,7 @@ function openPrompt(node, setup) {
 };
 
 module.exports = openPrompt;
-},{"44":44,"46":46,"48":48,"49":49,"52":52}],44:[function(require,module,exports){
+},{"45":45,"47":47,"49":49,"50":50,"53":53}],45:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -3818,8 +3873,8 @@ module.exports = {
 
 }
 
-},{"2":2}],45:[function(require,module,exports){
-var promises = require(42);
+},{"2":2}],46:[function(require,module,exports){
+var promises = require(43);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -3858,7 +3913,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"42":42}],46:[function(require,module,exports){
+},{"43":43}],47:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -3947,8 +4002,8 @@ module.exports = {
     }
 };
 
-},{}],47:[function(require,module,exports){
-var helpers = require(46);
+},{}],48:[function(require,module,exports){
+var helpers = require(47);
 
 
 //returns postMessage specific handler
@@ -4001,7 +4056,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"46":46}],48:[function(require,module,exports){
+},{"47":47}],49:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -4015,11 +4070,11 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],49:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:1px;text-decoration:none !important;position:absolute;color:#777;font-size:36px;line-height:16px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-in *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px 10px 0;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{display:block;float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width .5s ease;-webkit-transition:width .5s ease;-moz-transition:width .5s ease}.eg-search *{visibility:hidden}.eg-search[aria-expanded]{width:100%}.eg-search[aria-expanded] *{visibility:visible}.eg-search-inpt{width:calc(100% - 55px);padding-left:40px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],50:[function(require,module,exports){
-var helpers = require(46);
-var plugins = require(41);
+(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:1px;text-decoration:none !important;position:absolute;color:#777;font-size:36px;line-height:16px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{margin:33%;margin:calc(50% - 88px);margin-bottom:0;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-in *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px 10px 0;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{display:block;float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item:hover{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a{opacity:.6}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width .5s ease;-webkit-transition:width .5s ease;-moz-transition:width .5s ease}.eg-search *{visibility:hidden}.eg-search[aria-expanded]{width:100%}.eg-search[aria-expanded] *{visibility:visible}.eg-search-inpt{width:calc(100% - 55px);padding-left:40px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],51:[function(require,module,exports){
+var helpers = require(47);
+var plugins = require(42);
 var defaults = require(10);
 
 module.exports = {
@@ -4043,8 +4098,8 @@ module.exports = {
 
 }
 
-},{"10":10,"12":12,"41":41,"46":46}],51:[function(require,module,exports){
-var jungle = require(52);
+},{"10":10,"12":12,"42":42,"47":47}],52:[function(require,module,exports){
+var jungle = require(53);
 module.exports = {
     tree: jungle,
     node: function (i) {
@@ -4052,7 +4107,7 @@ module.exports = {
     }
 }
 
-},{"52":52}],52:[function(require,module,exports){
+},{"53":53}],53:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *
