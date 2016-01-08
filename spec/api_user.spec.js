@@ -48,6 +48,21 @@ describe("User API", function () {
 
     });
 
+
+    it("Throws when user doesn't exist", function (done) {
+        //would be nice to create the user first...
+        eg.API.user.getByName("stotysiecykalafiorow")
+            .then(function (res) {
+                expect(this).toAutoFail("did not throw");
+                done();
+            }).fail(function (e) {
+                expect(e.statusCode).toEqual(404)
+                done();
+            });
+    });
+
+
+
     it("Can get user details by id", function (done) {
         //would be nice to create the user first...
         eg.API.user.getById(userId)
@@ -59,5 +74,19 @@ describe("User API", function () {
                 done();
             });
     });
+
+
+    it("Throws when user doesn't exist", function (done) {
+        //would be nice to create the user first...
+        eg.API.user.getById(12345678987654321345678)
+            .then(function (res) {
+                expect(this).toAutoFail("did not throw");
+                done();
+            }).fail(function (e) {
+                expect(e.statusCode).toEqual(404)
+                done();
+            });
+    });
+
 
 });

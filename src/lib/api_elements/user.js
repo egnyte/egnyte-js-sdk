@@ -40,7 +40,13 @@ userProto.getByName = function (username) {
             };
             return requestEngine.promiseRequest(decorate(opts));
         }).then(function (result) { //result.response result.body
-            return result.body.resources[0];
+            if(result.body.resources && result.body.resources[0]){
+                return result.body.resources[0];
+            } else {
+                var err = Error("User not found")
+                err.statusCode = 404;
+                throw err;
+            }
         });
 };
 
