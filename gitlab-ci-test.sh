@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git clone --depth=1 ssh://git@egnyte-git.egnyte.com:2022/integrations/pint-runner-environment.git
+git clone --depth=1 ssh://git@git.egnyte-internal.com/integrations/pint-runner-environment.git
 cp ./pint-runner-environment/egnyte-js-sdk/apiaccess.js ./spec/conf/
 killall node || true
 npm install
