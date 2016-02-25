@@ -4,5 +4,5 @@ stages:
 testing:
   stage: test
   script: "./gitlab-ci-test.sh"
-tags:
-  - node-4.x
+  tags:
+    - node-4.x
