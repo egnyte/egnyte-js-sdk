@@ -1,7 +1,6 @@
 {
   "name": "egnyte-js-sdk",
   "version": "2.4.1",
-  "npm-shrinkwrap-version": "5.1.0",
   "dependencies": {
     "bundle-collapser": {
       "version": "1.2.1",
@@ -1744,17 +1743,17 @@
                     "array-filter": {
                       "version": "0.0.1",
                       "from": "array-filter@~0.0.0",
-                      "resolved": "http://npm.purato.com/array-filter/-/array-filter-0.0.1.tgz"
+                      "resolved": "https://registry.npmjs.org/array-filter/-/array-filter-0.0.1.tgz"
                     },
                     "array-reduce": {
                       "version": "0.0.0",
                       "from": "array-reduce@~0.0.0",
-                      "resolved": "http://npm.purato.com/array-reduce/-/array-reduce-0.0.0.tgz"
+                      "resolved": "https://registry.npmjs.org/array-reduce/-/array-reduce-0.0.0.tgz"
                     },
                     "array-map": {
                       "version": "0.0.0",
                       "from": "array-map@~0.0.0",
-                      "resolved": "http://npm.purato.com/array-map/-/array-map-0.0.0.tgz"
+                      "resolved": "https://registry.npmjs.org/array-map/-/array-map-0.0.0.tgz"
                     }
                   }
                 }
