@@ -123,8 +123,7 @@ authPrototypeMethods.requestTokenPopup = function (callback, denied, recvrURL) {
     var self = this;
     if (!this.token) {
         var url = this._buildTokenQuery(recvrURL);
-        var win = window.open(url);
-        win.name = this.options.channelMarker;
+        var win = window.open(url, this.options.channelMarker, "width=300,height=400");
         var handler = messages.createMessageHandler(null, this.options.channelMarker, function (message) {
             listener.destroy();
             win.close();
