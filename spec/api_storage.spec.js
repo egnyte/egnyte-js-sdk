@@ -60,6 +60,7 @@ describe("Storage API facade integration", function () {
 
 
     var testpath;
+    var testFolderId;
     var testpath2;
     var testpath3;
 
@@ -106,6 +107,36 @@ describe("Storage API facade integration", function () {
                 })
                 .then(function (e) {
                     expect(e).toBe(true);
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
+        it("Can list a folder", function (done) {
+            eg.API.storage.path(testpath).get()
+                .then(function (e) {
+                    expect(e.path).toEqual(testpath);
+                    expect(e.is_folder).toBeTruthy();
+                    expect(e.folder_id).toBeTruthy();
+                    testFolderId = e.folder_id;
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
+
+        });
+
+        it("Can list folder ancestors", function (done) {
+            //undocumented, will bo official in v3
+            eg.API.storage.folderId(testFolderId).parents()
+                .then(function (e) {
+                    expect(e.self).toBeTruthy()
+                    expect(e.self.folder_id).toEqual(testFolderId)
+                    expect(e.parents).toBeTruthy()
+                    expect(e.parents[0].path).toEqual("/")
                     done();
                 }).fail(function (e) {
                     expect(this).toAutoFail(e);
