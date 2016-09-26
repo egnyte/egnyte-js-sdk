@@ -2098,6 +2098,23 @@ storageProto.get = function (pathFromRoot, versionEntryId) {
     });
 }
 
+//undocumented, will bo official in v3
+storageProto.parents = function (pathFromRoot) {
+    var requestEngine = this.requestEngine;
+    var decorate = this.getDecorator();
+    return promises(true).then(function () {
+        pathFromRoot = helpers.encodeNameSafe(pathFromRoot);
+        var opts = {
+            method: "GET",
+            url: requestEngine.getEndpoint() + ENDPOINTS.fsmeta + helpers.encodeURIPath(pathFromRoot) + "/parents",
+        };
+
+        return requestEngine.promiseRequest(decorate(opts));
+    }).then(function (result) { //result.response result.body
+        return result.body;
+    });
+}
+
 storageProto.download = function (pathFromRoot, versionEntryId, isBinary) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();

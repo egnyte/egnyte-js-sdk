@@ -1,10 +1,6 @@
 {
     "name": "egnyte-js-sdk",
-<<<<<<< HEAD
-    "version": "2.4.1",
-=======
     "version": "2.4.2",
->>>>>>> master
     "description": "An SDK for Egnyte integrations",
     "main": "dist/egnyte.min.js",
     "moduleType": [
