@@ -1,3 +1,9 @@
+### 2.5.0
+- add parents to API.storeage
+
+### 2.4.2
+- bugfix release
+
 ### 2.4.1
 - consistent errors in API.user methods for user not found
 
