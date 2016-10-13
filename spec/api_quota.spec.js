@@ -188,7 +188,7 @@ describe("API Quota response", function () {
 
         var manyRequests = [];
         for (var i = 0; i < 12; i++) {
-            manyRequests.push(eg.API.storage.path("/jiberish").exists());
+            manyRequests.push(eg.API.storage.path("/jiberish"+Math.random().toFixed(4)).exists());
         }
         eg.API.manual.Promise.all(manyRequests).then(function () {
             expect(this).toAutoFail("Quota not reached, no 403 response");
