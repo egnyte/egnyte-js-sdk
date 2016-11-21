@@ -1,3 +1,6 @@
+### 2.5.1
+- update dependencies to fix installation issues and security
+
 ### 2.5.0
 - add parents to API.storeage
 
