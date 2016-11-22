@@ -1,3 +1,6 @@
+### 2.6.0
+- improve single selection in filepicker
+
 ### 2.5.1
 - update dependencies to fix installation issues and security
 
