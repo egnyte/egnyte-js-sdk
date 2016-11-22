@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "dependencies": {
     "bundle-collapser": {
       "version": "1.2.1",
