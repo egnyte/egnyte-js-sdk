@@ -194,7 +194,7 @@ a.eg-btn {
     list-style: none;
     padding: @smallspacing 0;
     border-bottom: 1px solid @frameclA;
-    &:hover {
+    &.selected {
         background: @itemhover;
         outline: 1px solid @framecl;
     }
@@ -214,6 +214,9 @@ a.eg-btn {
     & [disabled]~a {
         opacity: 0.6;
     }
+}
+.eg-picker-name {
+    margin-left:  @smallspacing;
 }
 
 //search

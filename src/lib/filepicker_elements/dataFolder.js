@@ -4,6 +4,7 @@ module.exports = function (opts, model) {
     var page = 1;
     var totalPages = 1;
     var rawItems;
+    var rawItemSelf;
     var currentPath;
 
 
@@ -36,13 +37,15 @@ module.exports = function (opts, model) {
             switchPage: switchPage,
             page: page,
             totalPages: totalPages,
-            items: pageArr
+            items: pageArr,
+            itemSelf: rawItemSelf
         };
     }
 
     function setData(m) {
         page = 1;
         rawItems = [];
+        rawItemSelf = null;
         if (m) {
             currentPath = m.path;
 
@@ -57,6 +60,9 @@ module.exports = function (opts, model) {
                     }
                 });
             }
+            rawItemSelf = m
+            delete rawItemSelf.files
+            delete rawItemSelf.folders
         }
 
         totalPages = ~~(rawItems.length / opts.pageSize) + 1;

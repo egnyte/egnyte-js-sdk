@@ -63,7 +63,7 @@ function View(opts, txtOverride) {
     self.handlers.close = helpers.bindThis(self, self.handlers.close);
 
     this.model.onchange = function () {
-        if (self.model.getSelected().length > 0) {
+        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !self.model.forbidSelection)) {
             self.els.ok.removeAttribute("disabled");
         } else {
             self.els.ok.setAttribute("disabled", "");
@@ -262,8 +262,8 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     var itemCheckbox = jungle.node([checkboxSetup]);
     itemCheckbox.checked = itemModel.selected;
 
-    var itemNode = jungle.node(["li.eg-picker-item",
-        itemCheckbox,
+    var itemNode = jungle.node(["li.eg-picker-item"+(itemModel.selected?".selected":""),
+        (self.model.opts.select.multiple === false)? [] : itemCheckbox,
         itemName
     ]);
 
@@ -282,6 +282,7 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     itemModel.onchange = function () {
         self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
+        itemNode.setAttribute("class", "eg-picker-item"+(itemModel.selected?" selected":""));
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
             try { //IE8 dies on this randomly :/
@@ -360,6 +361,8 @@ viewPrototypeMethods.confirmSelection = function () {
     var selected = this.model.getSelected();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
+    } else if (this.model.opts.select.folder && !this.model.forbidSelection) {
+        this.handlers.selection.call(this, this.model.itemSelf)
     }
 }
 

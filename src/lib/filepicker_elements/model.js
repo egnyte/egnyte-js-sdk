@@ -47,11 +47,13 @@ Model.prototype._itemsUpdated = function (data) {
         this.hasPages = data.totalPages > 1;
         this.totalPages = data.totalPages;
         this.page = data.page;
+        this.itemSelf = data.itemSelf;
     } else {
         this.items = [];
         this.isEmpty = true;
         this.hasPages = false;
     }
+
     this.onupdate();
     this.onchange();
 
