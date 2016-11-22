@@ -1,3 +1,6 @@
+### 2.6.1
+- fix regression in filepicker selection format
+
 ### 2.6.0
 - improve single selection in filepicker
 

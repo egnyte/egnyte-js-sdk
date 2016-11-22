@@ -3624,7 +3624,7 @@ viewPrototypeMethods.confirmSelection = function () {
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
     } else if (this.model.opts.select.folder && !this.model.forbidSelection) {
-        this.handlers.selection.call(this, this.model.itemSelf)
+        this.handlers.selection.call(this, [this.model.itemSelf])
     }
 }
 
