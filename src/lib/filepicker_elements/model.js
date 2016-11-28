@@ -14,7 +14,7 @@ function Model(API, opts) {
     var dataProviderSettings = {
         API: API,
         pageSize: 100,
-        filesOn: opts.select.file,
+        filesOn: opts.select.filesRemainVisible || opts.select.file,
         fileFilter: opts.filterExtensions && exts.getExtensionFilter(opts.filterExtensions)
     };
     //creates this.fetch and this.goUp

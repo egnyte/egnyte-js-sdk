@@ -262,7 +262,9 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     var itemCheckbox = jungle.node([checkboxSetup]);
     itemCheckbox.checked = itemModel.selected;
 
-    var itemNode = jungle.node(["li.eg-picker-item"+(itemModel.selected?".selected":""),
+    var itemNode = jungle.node(["li.eg-picker-item" +
+            (itemModel.isSelectable?"":".eg-disabled") +
+            (itemModel.selected?".eg-selected":""),
         (self.model.opts.select.multiple === false)? [] : itemCheckbox,
         itemName
     ]);
@@ -282,7 +284,10 @@ viewPrototypeMethods.renderItem = function (itemModel) {
     itemModel.onchange = function () {
         self.handlers.events("itemChange", itemModel);
         itemCheckbox.checked = itemModel.selected;
-        itemNode.setAttribute("class", "eg-picker-item"+(itemModel.selected?" selected":""));
+        itemNode.setAttribute("class", "eg-picker-item" +
+            (itemModel.selected?" eg-selected":"") +
+            (itemModel.isSelectable?"":" eg-disabled")
+        );
         itemNode.setAttribute("aria-selected", itemModel.isCurrent);
         if (itemModel.isCurrent) {
             try { //IE8 dies on this randomly :/

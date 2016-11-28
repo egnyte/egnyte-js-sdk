@@ -194,7 +194,7 @@ a.eg-btn {
     list-style: none;
     padding: @smallspacing 0;
     border-bottom: 1px solid @frameclA;
-    &.selected {
+    &.eg-selected {
         background: @itemhover;
         outline: 1px solid @framecl;
     }
@@ -211,7 +211,8 @@ a.eg-btn {
         max-width: 300px;
         max-width: ~"calc(100% - 88px)";
     }
-    & [disabled]~a {
+    & [disabled]~a,
+    &.eg-disabled {
         opacity: 0.6;
     }
 }
