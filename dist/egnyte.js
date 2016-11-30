@@ -2982,6 +2982,7 @@ Model.prototype._itemsUpdated = function (data) {
         this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
         this.items = [];
         helpers.each(data.items, function (item) {
+            item.forbidSelection = helpers.contains(self.opts.select.forbidden, item.path);
             self.items.push(new Item(item, self));
         });
         this.isEmpty = data.items.length === 0;
@@ -3072,7 +3073,7 @@ function Item(data, parent) {
         this.ext = "";
         this.mime = "folder";
     }
-    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
+    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !data.forbidSelection;
     this.parent = parent;
     this.isCurrent = false;
 }

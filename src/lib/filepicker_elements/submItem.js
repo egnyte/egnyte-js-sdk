@@ -10,7 +10,7 @@ function Item(data, parent) {
         this.ext = "";
         this.mime = "folder";
     }
-    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
+    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !data.forbidSelection;
     this.parent = parent;
     this.isCurrent = false;
 }
