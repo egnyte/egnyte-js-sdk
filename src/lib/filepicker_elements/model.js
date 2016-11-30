@@ -38,10 +38,10 @@ Model.prototype._itemsUpdated = function (data) {
     this.currentItem = -1;
     if (data) {
         //force disabled selection on root or other path
-        this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
+        this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
         this.items = [];
         helpers.each(data.items, function (item) {
-            item.forbidSelection = helpers.contains(self.opts.select.forbidden, item.path);
+            item.forbidSelection = helpers.contains(self.opts.select.forbidden, helpers.normalizePath(item.path));
             self.items.push(new Item(item, self));
         });
         this.isEmpty = data.items.length === 0;

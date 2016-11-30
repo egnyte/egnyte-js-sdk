@@ -451,6 +451,10 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
+function normalizePath(path) {
+    return (path).replace(/\/*$/g, "") || "/";
+};
+
 function debounce(func, time) {
     var timer;
     return function () {
@@ -488,6 +492,7 @@ module.exports = {
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
+    normalizePath: normalizePath,
     httpsURL: function (url) {
         return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
