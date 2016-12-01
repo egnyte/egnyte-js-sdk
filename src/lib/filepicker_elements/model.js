@@ -41,7 +41,6 @@ Model.prototype._itemsUpdated = function (data) {
         this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
         this.items = [];
         helpers.each(data.items, function (item) {
-            item.forbidSelection = helpers.contains(self.opts.select.forbidden, helpers.normalizePath(item.path));
             self.items.push(new Item(item, self));
         });
         this.isEmpty = data.items.length === 0;
