@@ -3629,10 +3629,11 @@ viewPrototypeMethods.goUp = function () {
 }
 viewPrototypeMethods.confirmSelection = function () {
     var selected = this.model.getSelected();
+    console.log();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
-    } else if (this.model.opts.select.folder && !this.model.forbidSelection) {
-        this.handlers.selection.call(this, this.model.itemSelf)
+    } else if (this.model.opts.select.folder && !(this.model.forbidSelection || this.model.forbidParentSelection)) {
+        this.handlers.selection.call(this, [this.model.itemSelf])
     }
 }
 
