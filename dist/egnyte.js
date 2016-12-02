@@ -2977,6 +2977,9 @@ Model.prototype._itemsUpdated = function (data) {
     self.processing = false;
     self.dataSrc = data;
     this.currentItem = -1;
+    var pathArray = helpers.normalizePath(this.path).split("/");
+    pathArray.pop();
+    this.forbidParentSelection = pathArray.length > 0 ? helpers.contains(this.opts.select.forbidden, pathArray.join("/") || "/") : false;
     if (data) {
         //force disabled selection on root or other path
         this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
@@ -3325,7 +3328,7 @@ function View(opts, txtOverride) {
     self.handlers.close = helpers.bindThis(self, self.handlers.close);
 
     this.model.onchange = function () {
-        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !self.model.forbidSelection)) {
+        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !(self.model.forbidSelection || self.model.forbidParentSelection))) {
             self.els.ok.removeAttribute("disabled");
         } else {
             self.els.ok.setAttribute("disabled", "");
