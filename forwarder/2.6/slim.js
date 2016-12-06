@@ -2840,7 +2840,7 @@ function normalizeURL(url) {
 };
 
 function normalizePath(path) {
-    return (path).replace(/\/*$/g, "") || "/";
+    return (path).replace(/\/*$/, "") || "/";
 };
 
 function debounce(func, time) {
