@@ -38,7 +38,7 @@ Model.prototype._itemsUpdated = function (data) {
     this.currentItem = -1;
     var pathArray = helpers.normalizePath(this.path).split("/");
     pathArray.pop();
-    this.forbidParentSelection = pathArray.length > 0 ? helpers.contains(this.opts.select.forbidden, pathArray.join("/") || "/") : false;
+    this.parentForbidsSelection = pathArray.length > 0 ? helpers.contains(this.opts.select.forbidden, pathArray.join("/") || "/") : false;
     if (data) {
         //force disabled selection on root or other path
         this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));

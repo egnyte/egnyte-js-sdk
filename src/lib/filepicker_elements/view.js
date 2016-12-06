@@ -63,7 +63,7 @@ function View(opts, txtOverride) {
     self.handlers.close = helpers.bindThis(self, self.handlers.close);
 
     this.model.onchange = function () {
-        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !(self.model.forbidSelection || self.model.forbidParentSelection))) {
+        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !(self.model.forbidSelection || self.model.parentForbidsSelection))) {
             self.els.ok.removeAttribute("disabled");
         } else {
             self.els.ok.setAttribute("disabled", "");
@@ -367,7 +367,7 @@ viewPrototypeMethods.confirmSelection = function () {
     console.log();
     if (selected && selected.length) {
         this.handlers.selection.call(this, this.model.getSelected());
-    } else if (this.model.opts.select.folder && !(this.model.forbidSelection || this.model.forbidParentSelection)) {
+    } else if (this.model.opts.select.folder && !(this.model.forbidSelection || this.model.parentForbidsSelection)) {
         this.handlers.selection.call(this, [this.model.itemSelf])
     }
 }
