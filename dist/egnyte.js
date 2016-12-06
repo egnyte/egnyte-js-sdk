@@ -2979,7 +2979,7 @@ Model.prototype._itemsUpdated = function (data) {
     this.currentItem = -1;
     if (data) {
         //force disabled selection on root or other path
-        this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
+        this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
         this.items = [];
         helpers.each(data.items, function (item) {
             self.items.push(new Item(item, self));
@@ -3984,6 +3984,10 @@ function normalizeURL(url) {
     return (url).replace(/\/*$/, "");
 };
 
+function normalizePath(path) {
+    return (path).replace(/\/*$/, "") || "/";
+};
+
 function debounce(func, time) {
     var timer;
     return function () {
@@ -4021,6 +4025,7 @@ module.exports = {
     contains: contains,
     each: each,
     normalizeURL: normalizeURL,
+    normalizePath: normalizePath,
     httpsURL: function (url) {
         return "https://" + (normalizeURL(url).replace(/^https?:\/\//, ""));
     },
