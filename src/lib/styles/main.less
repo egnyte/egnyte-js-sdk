@@ -194,7 +194,7 @@ a.eg-btn {
     list-style: none;
     padding: @smallspacing 0;
     border-bottom: 1px solid @frameclA;
-    &.selected {
+    &.eg-selected {
         background: @itemhover;
         outline: 1px solid @framecl;
     }
@@ -211,8 +211,12 @@ a.eg-btn {
         max-width: 300px;
         max-width: ~"calc(100% - 88px)";
     }
-    & [disabled]~a {
+    & [disabled]~a,
+    &.eg-disabled>a {
         opacity: 0.6;
+    }
+    &.eg-disabled>a.eg-file {
+        cursor: default;
     }
 }
 .eg-picker-name {

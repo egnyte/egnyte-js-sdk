@@ -14,7 +14,7 @@ function Model(API, opts) {
     var dataProviderSettings = {
         API: API,
         pageSize: 100,
-        filesOn: opts.select.file,
+        filesOn: opts.select.filesRemainVisible || opts.select.file,
         fileFilter: opts.filterExtensions && exts.getExtensionFilter(opts.filterExtensions)
     };
     //creates this.fetch and this.goUp
@@ -36,9 +36,12 @@ Model.prototype._itemsUpdated = function (data) {
     self.processing = false;
     self.dataSrc = data;
     this.currentItem = -1;
+    var pathArray = helpers.normalizePath(this.path).split("/");
+    pathArray.pop();
+    this.parentForbidsSelection = pathArray.length > 0 ? helpers.contains(this.opts.select.forbidden, pathArray.join("/") || "/") : false;
     if (data) {
         //force disabled selection on root or other path
-        this.forbidSelection = helpers.contains(this.opts.select.forbidden, this.path);
+        this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
         this.items = [];
         helpers.each(data.items, function (item) {
             self.items.push(new Item(item, self));

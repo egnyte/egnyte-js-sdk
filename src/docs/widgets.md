@@ -36,6 +36,7 @@ The options are:
  select: {
    folder: true, //should folders be selectable
    file: true,   //should files be selectable (files are hidden when not selectable)
+   filesRemainVisible: false,   //should files be visible even if not selectable
    multiple: true,   //should allow multiselection
    forbidden: []  //array of folder paths that selection is forbidden in
  }
@@ -51,7 +52,7 @@ The options are:
  ```
 
  - `keys` _Map_ to override default keybinding, set to false to disable all keyboard handling
- 
+
  ```javascript
  keys: {
     "up": "<up>",
@@ -66,14 +67,14 @@ The options are:
 All keys handled by https://github.com/chrisdickinson/vkey are available.
 
  - `filterExtensions` _Function_ - a filter function that decides if file should be visible to the user. Google drive files are filtered out by default. Pass `false` explicitly to disable filtering.  First argument to the function is 3 first characters of file extension, second is the internal mime group name (used for icon colors too).
- 
+
  ```javascript
  filterExtensions: function(ext3chars, mime){
     return ext3chars==="htm"; //show only htm* files
  }
  ```
  Possible values of mime: `"audio", "video", "pdf", "word_processing", "spreadsheet", "presentation", "cad", "text", "image", "archive", "goog"`
- 
+
  - `noFont` _Boolean_ - set to true to opt-out from linking Open Sans from google fonts. The font will be linked to only once if at least one filepicker instance doesn't have `noFont:true` in options.
 
 ----
@@ -101,7 +102,7 @@ var picker = egnyte.filePicker(containerNode,{
     });
 ```
 
-Added a detailed error handler for 
+Added a detailed error handler for
 ```javascript
 var picker = egnyte.filePicker(containerNode,{
     selection: function(list){
@@ -148,7 +149,7 @@ _Folder_
 }
 ```
 
-### Close file picker 
+### Close file picker
 
 File picker can be closed without the user clicking "cancel":
 ```javascript
@@ -183,10 +184,10 @@ You can also modify the defaults to keep everything in one package. Change the c
 The options are:
  - `result` _Function_ - a callback to run when the user clicks ok. First argument is the string from user input
  - `barAlign` _String_ - decide if buttons on the bottom bar should be aligned to left or right, default: "right"
- - `texts` _Map_ of labels in the widget to replace with given replacements. Put your question in the `question` field 
- 
- 
-### Close the prompt 
+ - `texts` _Map_ of labels in the widget to replace with given replacements. Put your question in the `question` field
+
+
+### Close the prompt
 
 Prompt can be closed without the user clicking the button:
 ```javascript

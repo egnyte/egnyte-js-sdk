@@ -96,6 +96,7 @@
 <li><code>select</code> <em>Map</em> of selectables configuration<pre><code class="lang-javascript">select: {
 folder: true, //should folders be selectable
 file: true,   //should files be selectable (files are hidden when not selectable)
+filesRemainVisible: false,   //should files be visible even if not selectable
 multiple: true,   //should allow multiselection
 forbidden: []  //array of folder paths that selection is forbidden in
 }
@@ -153,7 +154,7 @@ forbidden: []  //array of folder paths that selection is forbidden in
         }
     });
 </code></pre>
-<p>Added a detailed error handler for </p>
+<p>Added a detailed error handler for</p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
     selection: function(list){
         //handle selection
@@ -215,7 +216,7 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <ul>
 <li><code>result</code> <em>Function</em> - a callback to run when the user clicks ok. First argument is the string from user input</li>
 <li><code>barAlign</code> <em>String</em> - decide if buttons on the bottom bar should be aligned to left or right, default: &quot;right&quot;</li>
-<li><code>texts</code> <em>Map</em> of labels in the widget to replace with given replacements. Put your question in the <code>question</code> field </li>
+<li><code>texts</code> <em>Map</em> of labels in the widget to replace with given replacements. Put your question in the <code>question</code> field</li>
 </ul>
 <h3 id="close-the-prompt">Close the prompt</h3>
 <p>Prompt can be closed without the user clicking the button:</p>
