@@ -1,3 +1,6 @@
+### 2.6.2
+- minor fixes to filepicker UI, option to show files when not selectable
+
 ### 2.6.1
 - fix regression in filepicker selection format
 
