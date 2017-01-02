@@ -3380,7 +3380,7 @@ function View(opts, txtOverride) {
         keys[keybinding["confirm"]] = self.confirmSelection;
         keys[keybinding["close"]] = self.handlers.close;
 
-        document.activeElement && document.activeElement.blur();
+        document.activeElement && document.activeElement.blur && document.activeElement.blur();
         this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
     }
 
