@@ -1,3 +1,6 @@
+### 2.6.4
+- fix for IE11 with activeElement being truthy, but not a DOM node
+
 ### 2.6.3
 - css fix in filepicker
 
