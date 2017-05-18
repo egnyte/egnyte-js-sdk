@@ -156,6 +156,18 @@ File picker can be closed without the user clicking "cancel":
     picker.close();
 ```
 
+### Get current path
+
+```javascript
+    picker.getPath();
+```
+
+### Get if current path is forbidden to selection
+
+```javascript
+    picker.isSelectionForbidden();
+```
+
 ### Change the style
 
 File picker is easily stylable on its own. To ease the work of theming start with the `examples/theme.css` file and modify available properties. To see how the theme affects the filepicker see `examples/filepicker_theme.html`

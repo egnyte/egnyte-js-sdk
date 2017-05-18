@@ -89,6 +89,30 @@ if (ImInBrowser) {
             });
         });
 
+        it('should return current path on getPath method and check that selection is not forbidden', function (done) {
+
+            var picker = eg.filePicker(node, {
+                ready: function () {
+                    expect(picker.getPath()).toBe("/");
+                    expect(picker.isSelectionForbidden()).toBeFalsy();
+                    done();
+                }
+            });
+        });
+
+        it('should return current path on getPath method and check that selection is forbidden', function (done) {
+
+            var picker = eg.filePicker(node, {
+                select: {
+                    forbidden: ["/"]
+                },
+                ready: function () {
+                    expect(picker.getPath()).toBe("/");
+                    expect(picker.isSelectionForbidden()).toBeTruthy();
+                    done();
+                }
+            });
+        });
 
         it('should handle selection', function (done) {
 

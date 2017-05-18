@@ -2928,6 +2928,12 @@ function init(API) {
         openPath(setup.path || "/");
 
         return {
+            getPath: function() {
+              return fpModel.path;
+            },
+            isSelectionForbidden: function () {
+                return fpModel.forbidSelection;
+            },
             openPath: openPath,
             close: close,
         };

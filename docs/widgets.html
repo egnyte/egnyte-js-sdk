@@ -195,6 +195,12 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
 <pre><code class="lang-javascript">    picker.close();
 </code></pre>
+<h3 id="get-current-path">Get current path</h3>
+<pre><code class="lang-javascript">    picker.getPath();
+</code></pre>
+<h3 id="get-if-current-path-is-forbidden-to-selection">Get if current path is forbidden to selection</h3>
+<pre><code class="lang-javascript">    picker.isSelectionForbidden();
+</code></pre>
 <h3 id="change-the-style">Change the style</h3>
 <p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
 <p>You can also modify the defaults to keep everything in one package. Change the colors in variables of <code>src/lib/filepicker_elements.view.less</code> and rebuild the package <code>grunt dist</code> (requires grunt and other dependencies installed via <code>npm</code>)</p>
