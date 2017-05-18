@@ -37,8 +37,8 @@ function init(API) {
             select: selectOpts,
             filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
             handlers: {
-                fetch: function () {
-                    setup.open && setup.open();
+                navigation: function (currentFolder) {
+                    setup.navigation && setup.navigation(currentFolder);
                 }
             }
         });
@@ -65,11 +65,12 @@ function init(API) {
         openPath(setup.path || "/");
 
         return {
-            getPath: function() {
-              return fpModel.path;
-            },
-            isSelectionForbidden: function () {
-                return fpModel.forbidSelection;
+            getCurrentFolder: function() {
+              return {
+                  path: fpModel.path,
+                  folder_id: fpModel.itemSelf.folder_id,
+                  forbidSelection: fpModel.forbidSelection
+              };
             },
             openPath: openPath,
             close: close,

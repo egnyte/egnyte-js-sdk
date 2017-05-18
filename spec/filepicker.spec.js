@@ -89,26 +89,14 @@ if (ImInBrowser) {
             });
         });
 
-        it('should return current path on getPath method and check that selection is not forbidden', function (done) {
+        it('should return current folder data on getCurrentFolder', function (done) {
 
             var picker = eg.filePicker(node, {
                 ready: function () {
-                    expect(picker.getPath()).toBe("/");
-                    expect(picker.isSelectionForbidden()).toBeFalsy();
-                    done();
-                }
-            });
-        });
-
-        it('should return current path on getPath method and check that selection is forbidden', function (done) {
-
-            var picker = eg.filePicker(node, {
-                select: {
-                    forbidden: ["/"]
-                },
-                ready: function () {
-                    expect(picker.getPath()).toBe("/");
-                    expect(picker.isSelectionForbidden()).toBeTruthy();
+                    expect(picker.getCurrentFolder()).toEqual(jasmine.objectContaining({
+                        path: "/",
+                        forbidSelection: false
+                    }));
                     done();
                 }
             });
