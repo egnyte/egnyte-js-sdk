@@ -2695,6 +2695,7 @@ module.exports = function (opts, model) {
             self.onloading();
             fetchImplementation(self.path).then(function (data) {
                 self._itemsUpdated(data)
+                model.opts.handlers.fetch();
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);
@@ -2903,7 +2904,12 @@ function init(API) {
 
         fpModel = new Model(API, {
             select: selectOpts,
-            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
+            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
+            handlers: {
+                fetch: function () {
+                    setup.open && setup.open();
+                }
+            }
         });
 
         fpView = new View({

@@ -139,6 +139,9 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <p>Open on <code>/Private</code> location, with single selection and changed labels for OK and empty folder</p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
     path: &quot;/Private&quot;,
+    open: function(){
+        //handle open folder
+        },
     selection: function(list){
         //handle selection
         },

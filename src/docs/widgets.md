@@ -86,6 +86,9 @@ Open on `/Private` location, with single selection and changed labels for OK and
 ```javascript
 var picker = egnyte.filePicker(containerNode,{
     path: "/Private",
+    open: function(){
+        //handle open folder
+        },
     selection: function(list){
         //handle selection
         },

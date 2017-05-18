@@ -35,7 +35,12 @@ function init(API) {
 
         fpModel = new Model(API, {
             select: selectOpts,
-            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
+            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
+            handlers: {
+                fetch: function () {
+                    setup.open && setup.open();
+                }
+            }
         });
 
         fpView = new View({

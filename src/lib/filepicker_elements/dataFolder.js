@@ -83,6 +83,7 @@ module.exports = function (opts, model) {
             self.onloading();
             fetchImplementation(self.path).then(function (data) {
                 self._itemsUpdated(data)
+                model.opts.handlers.fetch();
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);
