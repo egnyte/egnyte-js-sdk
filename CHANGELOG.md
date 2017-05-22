@@ -1,3 +1,8 @@
+### 2.7.0
+- update dependencies to remove security warnings (coming from test dependencies, no threats found in directly used code)
+- add getCurrentFolder to filepicker
+- add navigation callback to filepicker
+
 ### 2.6.4
 - fix for IE11 with activeElement being truthy, but not a DOM node
 
