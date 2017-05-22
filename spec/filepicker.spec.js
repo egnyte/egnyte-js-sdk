@@ -89,6 +89,18 @@ if (ImInBrowser) {
             });
         });
 
+        it('should return current folder data on getCurrentFolder', function (done) {
+
+            var picker = eg.filePicker(node, {
+                ready: function () {
+                    expect(picker.getCurrentFolder()).toEqual(jasmine.objectContaining({
+                        path: "/",
+                        forbidSelection: false
+                    }));
+                    done();
+                }
+            });
+        });
 
         it('should handle selection', function (done) {
 

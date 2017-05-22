@@ -86,6 +86,9 @@ Open on `/Private` location, with single selection and changed labels for OK and
 ```javascript
 var picker = egnyte.filePicker(containerNode,{
     path: "/Private",
+    navigation: function(currentFolder){
+        //handle change folder
+        },
     selection: function(list){
         //handle selection
         },
@@ -121,6 +124,16 @@ var picker = egnyte.filePicker(containerNode,{
 
 File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px
 
+The `currentFolder` returned to the navigaion callback is an object matching the following signature:
+
+```javascript
+{
+    folder_id: "f78ee5e7-afbd-4b18-89db-4526e32ae271",
+    path: "/Private/jsmith",
+    forbidSelection: false
+}
+```
+
 The `list` returned to the selection callback is an array of objects matching the followng signatures:
 
 _File_
@@ -154,6 +167,12 @@ _Folder_
 File picker can be closed without the user clicking "cancel":
 ```javascript
     picker.close();
+```
+
+### Get current folder
+
+```javascript
+    picker.getCurrentFolder();
 ```
 
 ### Change the style

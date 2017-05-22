@@ -602,31 +602,16 @@ module.exports = {
     
 }
 },{}],11:[function(require,module,exports){
-var slim = require(51);
-var filepicker = require(36)
-var prompt = require(44)
-var authPrompt = require(14)
-
-slim.plugin("filePicker", function (root, resources) {
-    root.filePicker = filepicker(resources.API);
-});
-slim.plugin("authPrompt", authPrompt);
-slim.plugin("prompt", function (root, resources) {
-    root.prompt = prompt;
-});
-
-module.exports = slim;
-},{"14":14,"36":36,"44":44,"51":51}],12:[function(require,module,exports){
-var RequestEngine = require(23);
-var AuthEngine = require(13);
-var StorageFacade = require(26);
-var Notes = require(21);
-var LinkFacade = require(19);
-var PermFacade = require(22);
-var UserPerms = require(28);
-var User = require(27);
-var Events = require(18);
-var Search = require(25);
+var RequestEngine = require(21);
+var AuthEngine = require(12);
+var StorageFacade = require(24);
+var Notes = require(19);
+var LinkFacade = require(17);
+var PermFacade = require(20);
+var UserPerms = require(26);
+var User = require(25);
+var Events = require(16);
+var Search = require(23);
 
 
 module.exports = function (options) {
@@ -658,12 +643,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(29);
+            var responder = require(27);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(30);
+                var forwarder = require(28);
                 forwarder(options, api);
             }
         }
@@ -674,18 +659,18 @@ module.exports = function (options) {
     return api;
 };
 
-},{"13":13,"18":18,"19":19,"21":21,"22":22,"23":23,"25":25,"26":26,"27":27,"28":28,"29":29,"30":30}],13:[function(require,module,exports){
+},{"12":12,"16":16,"17":17,"19":19,"20":20,"21":21,"23":23,"24":24,"25":25,"26":26,"27":27,"28":28}],12:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var errorify = require(17);
+var promises = require(31);
+var helpers = require(34);
+var dom = require(32);
+var messages = require(35);
+var errorify = require(15);
 
-var ENDPOINTS_userinfo = require(31).userinfo;
-var ENDPOINTS_tokenauth = require(31).tokenauth;
+var ENDPOINTS_userinfo = require(29).userinfo;
+var ENDPOINTS_tokenauth = require(29).tokenauth;
 
 
 function Auth(options) {
@@ -899,34 +884,10 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"17":17,"31":31,"43":43,"45":45,"47":47,"48":48}],14:[function(require,module,exports){
-var prompt = require(44)
-var helpers = require(47)
-
-function egmitifyDomain(domain) {
-    if (domain.indexOf('.') === -1) {
-        domain += '.egnyte.com';
-    }
-    return domain;
-}
-
-module.exports = function (root, resources) {
-    root.API.auth.requestTokenIframeWithPrompt = function (targetNode, callback, denied, emptyPageURL) {
-        prompt(targetNode, {
-            texts: {
-                question: "Your egnyte domain address"
-            },
-            result: function (choice) {
-                root.setDomain(helpers.httpsURL(egmitifyDomain(choice)));
-                root.API.auth.requestTokenIframe(targetNode, callback, denied, emptyPageURL);
-            }
-        });
-    }
-};
-},{"44":44,"47":47}],15:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var ENDPOINTS = require(31);
+},{"15":15,"29":29,"31":31,"32":32,"34":34,"35":35}],13:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var ENDPOINTS = require(29);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -1035,8 +996,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"31":31,"43":43,"47":47}],16:[function(require,module,exports){
-var helpers = require(47);
+},{"29":29,"31":31,"34":34}],14:[function(require,module,exports){
+var helpers = require(34);
 
 var defaultDecorators = {
 
@@ -1106,7 +1067,7 @@ module.exports = {
     }
 }
 
-},{"47":47}],17:[function(require,module,exports){
+},{"34":34}],15:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1168,14 +1129,14 @@ module.exports = function (result) {
     }
     return error;
 }
-},{}],18:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var every = require(46);
-var decorators = require(16);
+},{}],16:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var every = require(33);
+var decorators = require(14);
 
-var ENDPOINTS_events = require(31).events;
-var ENDPOINTS_eventscursor = require(31).eventscursor;
+var ENDPOINTS_events = require(29).events;
+var ENDPOINTS_eventscursor = require(29).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1302,12 +1263,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"16":16,"31":31,"43":43,"46":46,"47":47}],19:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"14":14,"29":29,"31":31,"33":33,"34":34}],17:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var decorators = require(14);
 
-var ENDPOINTS_links = require(31).links;
+var ENDPOINTS_links = require(29).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1399,11 +1360,11 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 
-},{"16":16,"31":31,"43":43,"47":47}],20:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
+},{"14":14,"29":29,"31":31,"34":34}],18:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
 
-var ENDPOINTS_fsmeta = require(31).fsmeta;
+var ENDPOINTS_fsmeta = require(29).fsmeta;
 
 exports.lock = function (pathFromRoot, lockToken, timeout) {
     var requestEngine = this.requestEngine;
@@ -1453,12 +1414,12 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"31":31,"43":43,"47":47}],21:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"29":29,"31":31,"34":34}],19:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var decorators = require(14);
 
-var ENDPOINTS_notes = require(31).notes;
+var ENDPOINTS_notes = require(29).notes;
 
 
 function Notes(requestEngine) {
@@ -1548,13 +1509,13 @@ notesProto.removeNote = function (id) {
 Notes.prototype = notesProto;
 
 module.exports = Notes;
-},{"16":16,"31":31,"43":43,"47":47}],22:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
-var resourceIdentifier = require(24);
+},{"14":14,"29":29,"31":31,"34":34}],20:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var decorators = require(14);
+var resourceIdentifier = require(22);
 
-var ENDPOINTS_perms = require(31).perms;
+var ENDPOINTS_perms = require(29).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1645,12 +1606,12 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 
-},{"16":16,"24":24,"31":31,"43":43,"47":47}],23:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var errorify = require(17);
+},{"14":14,"22":22,"29":29,"31":31,"34":34}],21:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var dom = require(32);
+var messages = require(35);
+var errorify = require(15);
 var request = require(3);
 
 
@@ -1922,8 +1883,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"17":17,"3":3,"43":43,"45":45,"47":47,"48":48}],24:[function(require,module,exports){
-var helpers = require(47);
+},{"15":15,"3":3,"31":31,"32":32,"34":34,"35":35}],22:[function(require,module,exports){
+var helpers = require(34);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1968,12 +1929,12 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"47":47}],25:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"34":34}],23:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var decorators = require(14);
 
-var ENDPOINTS_search = require(31).search;
+var ENDPOINTS_search = require(29).search;
 
 
 function Search(requestEngine) {
@@ -2032,16 +1993,16 @@ Search.prototype = searchProto;
 
 module.exports = Search;
 
-},{"16":16,"31":31,"43":43,"47":47}],26:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
-var notes = require(21);
-var lock = require(20);
-var chunkedUpload = require(15);
-var resourceIdentifier = require(24);
+},{"14":14,"29":29,"31":31,"34":34}],24:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var decorators = require(14);
+var notes = require(19);
+var lock = require(18);
+var chunkedUpload = require(13);
+var resourceIdentifier = require(22);
 
-var ENDPOINTS = require(31);
+var ENDPOINTS = require(29);
 
 
 function Storage(requestEngine) {
@@ -2295,11 +2256,11 @@ Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
 
-},{"15":15,"16":16,"20":20,"21":21,"24":24,"31":31,"43":43,"47":47}],27:[function(require,module,exports){
-var promises = require(43);
-var decorators = require(16);
+},{"13":13,"14":14,"18":18,"19":19,"22":22,"29":29,"31":31,"34":34}],25:[function(require,module,exports){
+var promises = require(31);
+var decorators = require(14);
 
-var ENDPOINTS_users = require(31).users;
+var ENDPOINTS_users = require(29).users;
 
 function User(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2352,11 +2313,11 @@ User.prototype = userProto;
 
 module.exports = User;
 
-},{"16":16,"31":31,"43":43}],28:[function(require,module,exports){
-var promises = require(43);
-var decorators = require(16);
+},{"14":14,"29":29,"31":31}],26:[function(require,module,exports){
+var promises = require(31);
+var decorators = require(14);
 
-var ENDPOINTS_perms = require(31).perms;
+var ENDPOINTS_perms = require(29).perms;
 
 function UserPerms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2397,10 +2358,10 @@ UserPerms.prototype = userPermsProto;
 
 module.exports = UserPerms;
 
-},{"16":16,"31":31,"43":43}],29:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
+},{"14":14,"29":29,"31":31}],27:[function(require,module,exports){
+var helpers = require(34);
+var dom = require(32);
+var messages = require(35);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2459,11 +2420,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"45":45,"47":47,"48":48}],30:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
+},{"32":32,"34":34,"35":35}],28:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var dom = require(32);
+var messages = require(35);
 
 
 
@@ -2593,7 +2554,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"43":43,"45":45,"47":47,"48":48}],31:[function(require,module,exports){
+},{"31":31,"32":32,"34":34,"35":35}],29:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2609,1084 +2570,13 @@ module.exports={
     "tokenauth": "/puboauth/token"
 }
 
-},{}],32:[function(require,module,exports){
-var helpers = require(47);
-
-module.exports = function (opts, model) {
-    var page = 1;
-    var totalPages = 1;
-    var rawItems;
-    var rawItemSelf;
-    var currentPath;
-
-
-    function fetchImplementation(path) {
-        if (path) {
-            currentPath = path;
-        }
-        return opts.API.storage.path(currentPath).get().then(function (m) {
-            return setData(m);
-        });
-    }
-
-    function canJump(offset) {
-        var newPage = page + offset;
-        return (newPage <= totalPages && newPage > 0)
-    }
-
-    function switchPage(offset) {
-        if (canJump(offset)) {
-            page += offset;
-        }
-        return opts.API.manual.promise(buildDataObj());
-    }
-
-    function buildDataObj() {
-        var pageArr = rawItems.slice((page - 1) * opts.pageSize, page * opts.pageSize);
-
-        return {
-            canJump: canJump,
-            switchPage: switchPage,
-            page: page,
-            totalPages: totalPages,
-            items: pageArr,
-            itemSelf: rawItemSelf
-        };
-    }
-
-    function setData(m) {
-        page = 1;
-        rawItems = [];
-        rawItemSelf = null;
-        if (m) {
-            currentPath = m.path;
-
-            helpers.each(m.folders, function (f) {
-                rawItems.push(f);
-            });
-            //ignore files if they're not selectable
-            if (opts.filesOn) {
-                helpers.each(m.files, function (f) {
-                    if (!opts.fileFilter || opts.fileFilter(f)) {
-                        rawItems.push(f);
-                    }
-                });
-            }
-            rawItemSelf = m
-            delete rawItemSelf.files
-            delete rawItemSelf.folders
-        }
-
-        totalPages = ~~(rawItems.length / opts.pageSize) + 1;
-
-        return buildDataObj();
-
-
-    }
-
-    model.fetch = function (path) {
-        var self = this;
-        if (!self.processing) {
-            self.processing = true;
-            if (path) {
-                self.path = path;
-            }
-            this.viewState.searchOn=false;
-            self.onloading();
-            fetchImplementation(self.path).then(function (data) {
-                self._itemsUpdated(data)
-                model.opts.handlers.navigation({
-                    path: model.path,
-                    folder_id: model.itemSelf.folder_id,
-                    forbidSelection: model.forbidSelection
-                });
-            }).fail(function (e) {
-                self._itemsUpdated()
-                self.onerror(e);
-            });
-        }
-    }
-
-
-    model.goUp = function () {
-        var path = this.path.replace(/\/[^\/]+\/?$/i, "") || "/";
-
-        if (path !== this.path) {
-            this.fetch(path);
-        }
-    }
-
-
-
-
-
-}
-
-},{"47":47}],33:[function(require,module,exports){
-var helpers = require(47);
-
-module.exports = function (opts, model) {
-    var currentQuery;
-    var previousQuery;
-    var currentResult;
-    var page;
-
-    opts.API.search.itemsPerPage(opts.pageSize)
-
-
-    function searchImplementation(query) {
-        currentQuery = query;
-        return opts.API.search.getResults(query).then(function (response) {
-            //if no query was started in the meantime
-            if (currentQuery === query) {
-                currentResult = response;
-                page = 0;
-                return buildDataObj(response.sample);
-            }
-        });
-    }
-
-    function canJump(offset) {
-        var newPage = page + offset;
-        return (newPage <= currentResult.totalPages && newPage > 0)
-    }
-
-    function switchPage(offset) {
-        if (canJump(offset)) {
-            page += offset;
-        }
-        return currentResult.page(page).then(buildDataObj);
-    }
-
-    function buildDataObj(items) {
-        if (opts.fileFilter) {
-            helpers.each(items, function (item) {
-                if (!opts.fileFilter(item)) {
-                    item.disabled = true;
-                }
-            });
-        }
-        return {
-            canJump: canJump,
-            switchPage: switchPage,
-            page: page + 1,
-            totalPages: currentResult.totalPages,
-            items: items
-        };
-    }
-
-    model.cancelSearch = function () {
-        currentQuery=null;
-        previousQuery=null;
-        this.processing = false;
-        //hide search results by reloading current folder
-        this.fetch();
-    }
-    model.search = function (query) {
-        var self = this;
-        if (previousQuery !== query) {
-            self.processing = true;
-            this.viewState.searchOn = true;
-            self.onloading();
-            previousQuery = query;
-            searchImplementation(query).then(function (data) {
-                if (data) {
-                    self._itemsUpdated(data)
-                }
-            }).fail(function (e) {
-                self._itemsUpdated()
-                self.onerror(e);
-            });
-        }
-    }
-
-
-}
-
-},{"47":47}],34:[function(require,module,exports){
-module.exports={
-    "404": "This item doesn't exist (404)",
-    "403": "Access denied (403)",
-    "409": "Forbidden location (409)",
-    "596": "Path contains an unexpected character (596)",
-    "4XX": "Incorrect API request",
-    "5XX": "API server error, try again later",
-    "R": "API use limit reached",
-    "0": "Browser error, try again",
-    "?": "Unknown error"
-}
-
-},{}],35:[function(require,module,exports){
-var helpers = require(47);
-var mapping = {};
-helpers.each({
-    "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
-    "video": ["wmv", "avi", "mpg", "mpeg", "mp4", "webm", "ogv", "flv", "mov"],
-    "pdf": ["pdf"],
-    "word_processing": ["doc", "dot", "docx", "dotx", "docm", "dotm", "odt ", "ott", "oth", "odm", "sxw", "stw", "sxg", "sdw", "sgl", "rtf", "hwp", "uot", "wpd", "wps"],
-    "spreadsheet": ["123", "xls", "xlt", "xla", "xlsx", "xltx", "xlsm", "xltm", "xlam", "xlsb", "ods", "fods", "ots", "sxc", "stc", "sdc", "csv", "uos"],
-    "presentation": ["ppt", "pot", "pps", "ppa", "pptx", "potx", "ppsx", "ppam", "pptm", "potm", "ppsm", "odp", "fodp", "otp", "sxi", "sti", "sdd", "sdp"],
-    "cad": ["dwg", "dwf", "dxf", "sldprt", "sldasm", "slddrw"],
-    "text": ["txt", "log"],
-    "image": ["odg", "otg", "odi", "sxd", "std", "sda", "svm", "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "psd", "eps", "tga", "wmf", "ai", "cgm", "fodg", "jfif", "pbm", "pcd", "pct", "pcx", "pgm", "ppm", "ras", "sgf", "svg"],
-    "code": ["html", "htm", "sql", "xml", "java", "cpp", "c", "perl", "py", "rb", "php", "js", "css", "applescript", "as3", "as", "bash", "shell", "sh", "cfm", "cfml", "cs", "pas", "dcu", "diff", "patch", "ez", "erl", "groovy", "gvy", "gy", "gsh", "javafx", "jfx", "pl", "pm", "ps1", "ruby", "sass", "scss", "scala", "vb", "vbscript", "xhtml", "xslt"],
-    "archive": ["zip", "rar", "tar", "gz", "7z", "bz2", "z", "xz", "ace", "sit", "sitx", "tgz", "apk"],
-    "goog": ["gdoc", "gsheet", "gslides", "gdraw"]
-    //    "email": ["msg", "olk14message", "pst", "emlx", "olk14event", "eml", "olk14msgattach", "olk14msgsource"],
-}, function (list, mime) {
-    helpers.each(list, function (ex) {
-        mapping[ex] = mime;
-    });
-});
-
-
-function _mime(ext) {
-    return mapping[ext] || "unknown";
-}
-
-function getExt(name) {
-    var splitted = name.split(".");
-    if (splitted.length>1) {
-        return splitted[splitted.length-1];
-    } else {
-        return "";
-    }
-}
-
-function getMime(name) {
-    return _mime(getExt(name));
-}
-
-
-function getExtensionFilter(filter) {
-    return function (file) {
-        var ext = getExt(file.name);
-        return filter(ext, _mime(ext));
-    }
-}
-
-module.exports = {
-    getMime: getMime,
-    getExt: getExt,
-    getExtensionFilter: getExtensionFilter
-}
-},{"47":47}],36:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var View = require(41);
-var Model = require(37);
-
-function noGoog(ext, mime) {
-    return mime !== "goog";
-}
-
-function init(API) {
-    var filePicker;
-
-    filePicker = function (node, setup) {
-        if (!setup) {
-            throw new Error("Setup required as a second argument");
-        }
-        var close, openPath, fpView, fpModel,
-            defaults = {
-                folder: true,
-                file: true,
-                multiple: true,
-                forbidden: []
-            };
-        var selectOpts = helpers.extend(defaults, setup.select);
-
-        close = function () {
-            fpView.destroy();
-            fpView = null;
-            fpModel = null;
-        };
-
-        openPath = function (path) {
-            fpModel.fetch(path || "/");
-        }
-
-        fpModel = new Model(API, {
-            select: selectOpts,
-            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
-            handlers: {
-                navigation: function (currentFolder) {
-                    setup.navigation && setup.navigation(currentFolder);
-                }
-            }
-        });
-
-        fpView = new View({
-            el: node,
-            model: fpModel,
-            barAlign: setup.barAlign,
-            handlers: {
-                ready: setup.ready,
-                selection: function (items) {
-                    close();
-                    setup.selection && setup.selection(items);
-                },
-                close: function (e) {
-                    close();
-                    setup.cancel && setup.cancel(e);
-                },
-                error: setup.error
-            },
-            keys: setup.keys
-        }, setup.texts);
-
-        openPath(setup.path || "/");
-
-        return {
-            getCurrentFolder: function() {
-              return {
-                  path: fpModel.path,
-                  folder_id: fpModel.itemSelf.folder_id,
-                  forbidSelection: fpModel.forbidSelection
-              };
-            },
-            openPath: openPath,
-            close: close,
-        };
-    };
-
-    return filePicker;
-
-}
-
-module.exports = init;
-},{"37":37,"41":41,"45":45,"47":47}],37:[function(require,module,exports){
-var helpers = require(47);
-var exts = require(35);
-var Item = require(38);
-var folderFetchProvider = require(32);
-var searchProvider = require(33);
-
-//Collection
-function Model(API, opts) {
-    this.opts = opts;
-    this.page = 1;
-    this.isMultiselectable = (this.opts.select.multiple);
-    this.viewState={}
-
-    var dataProviderSettings = {
-        API: API,
-        pageSize: 100,
-        filesOn: opts.select.filesRemainVisible || opts.select.file,
-        fileFilter: opts.filterExtensions && exts.getExtensionFilter(opts.filterExtensions)
-    };
-    //creates this.fetch and this.goUp
-    folderFetchProvider(dataProviderSettings, this);
-    //creates this.search
-    searchProvider(dataProviderSettings, this);
-
-}
-
-
-Model.prototype.onloading = helpers.noop;
-Model.prototype.onupdate = helpers.noop;
-Model.prototype.onerror = helpers.noop;
-
-
-
-Model.prototype._itemsUpdated = function (data) {
-    var self = this;
-    self.processing = false;
-    self.dataSrc = data;
-    this.currentItem = -1;
-    var pathArray = helpers.normalizePath(this.path).split("/");
-    pathArray.pop();
-    this.parentForbidsSelection = pathArray.length > 0 ? helpers.contains(this.opts.select.forbidden, pathArray.join("/") || "/") : false;
-    if (data) {
-        //force disabled selection on root or other path
-        this.forbidSelection = helpers.contains(this.opts.select.forbidden, helpers.normalizePath(this.path));
-        this.items = [];
-        helpers.each(data.items, function (item) {
-            self.items.push(new Item(item, self));
-        });
-        this.isEmpty = data.items.length === 0;
-        this.hasPages = data.totalPages > 1;
-        this.totalPages = data.totalPages;
-        this.page = data.page;
-        this.itemSelf = data.itemSelf;
-    } else {
-        this.items = [];
-        this.isEmpty = true;
-        this.hasPages = false;
-    }
-
-    this.onupdate();
-    this.onchange();
-
-}
-
-Model.prototype.switchPage = function (offset) {
-    var self = this;
-    if (!self.processing && self.dataSrc.canJump(offset)) {
-        self.processing = true;
-        self.dataSrc.switchPage(offset).then(function (data) {
-            self._itemsUpdated(data)
-        }, function (e) {
-            self._itemsUpdated()
-            self.onerror(e);
-        }).fail(self.onerror);
-    }
-}
-
-
-
-Model.prototype.getSelected = function () {
-    var selected = [];
-    helpers.each(this.items, function (item) {
-        if (item.selected) {
-            selected.push(item.data);
-        }
-    });
-    return selected;
-}
-
-Model.prototype.deselect = function () {
-    helpers.each(this.items, function (item) {
-        if (item.selected) {
-            item.selected = false;
-            item.onchange();
-        }
-    });
-}
-Model.prototype.setAllSelection = function (selected) {
-    helpers.each(this.items, function (item) {
-        item.selected = selected;
-        item.onchange();
-    });
-    this.onchange();
-}
-
-Model.prototype.mvCurrent = function (offset) {
-    if (this.currentItem + offset < this.items.length && this.currentItem + offset >= 0) {
-        if (this.items[this.currentItem]) {
-            this.items[this.currentItem].isCurrent = false;
-            this.items[this.currentItem].onchange();
-        }
-        this.currentItem += offset;
-        this.items[this.currentItem].isCurrent = true;
-        this.items[this.currentItem].onchange();
-    }
-}
-
-Model.prototype.getCurrent = function () {
-    return this.items[this.currentItem];
-}
-
-module.exports = Model;
-
-},{"32":32,"33":33,"35":35,"38":38,"47":47}],38:[function(require,module,exports){
-var exts = require(35);
-
-//Item model
-function Item(data, parent) {
-    this.data = data;
-    if (!this.data.is_folder) {
-        this.ext = exts.getExt(data.name).substr(0, 3);
-        this.mime = exts.getMime(data.name);
-    } else {
-        this.ext = "";
-        this.mime = "folder";
-    }
-    this.isSelectable = (!data.disabled) && ((parent.opts.select.folder && data.is_folder) || (parent.opts.select.file && !data.is_folder)) && !parent.forbidSelection;
-    this.parent = parent;
-    this.isCurrent = false;
-}
-
-Item.prototype.defaultAction = function() {
-    if (this.data.is_folder) {
-        this.parent.fetch(this.data.path);
-    } else {
-        this.toggleSelect();
-    }
-};
-
-Item.prototype.toggleSelect = function() {
-    if (this.isSelectable) {
-        if (!this.parent.opts.select.multiple) {
-            this.parent.deselect();
-        }
-        this.selected = !this.selected;
-        this.onchange();
-        this.parent.onchange();
-    }
-};
-
-module.exports = Item;
-
-},{"35":35}],39:[function(require,module,exports){
-var helpers = require(47);
-var jungle = require(52);
-
-function beradcrumbView(parent) {
-    var self = this;
-    var myElements = this.els = {};
-    self.model = parent.model;
-
-    myElements.selectAll = jungle.node(
-        ["input[type=checkbox]", {
-            title: parent.txt("Select all")
-        }]
-    );
-    myElements.back = jungle.node(["a.eg-picker-back.eg-btn[title=back]"]);
-    myElements.crumb = jungle.node(["span.eg-picker-path"]);
-
-
-    parent.handleClick(myElements.selectAll, function (e) {
-        parent.model.setAllSelection(!!e.target.checked);
-    });
-    parent.handleClick(myElements.back, parent.goUp);
-    parent.handleClick(myElements.crumb, function (e) {
-        var path = e.target.getAttribute("data-path");
-        if (path) {
-            self.model.fetch(path);
-        }
-    });
-
-
-}
-beradcrumbView.prototype.getTree = function () {
-    var myElements = this.els;
-    var topbar = ["div.eg-bar.eg-top"];
-    if (this.model.isMultiselectable) {
-        myElements.selectAll.checked = false;
-        topbar.push(myElements.selectAll);
-    }
-    topbar.push(myElements.back);
-    topbar.push(myElements.crumb);
-
-    topbar = jungle.node(topbar);
-
-    return topbar;
-}
-
-
-beradcrumbView.prototype.render = function () {
-    var currentPath = "/";
-    var path = this.model.path || currentPath; //in case path was not provided, go for root
-
-    var list = path.split("/");
-    var crumbItems = [];
-    var maxSpace = ~~(100 / list.length); //assigns maximum space for text
-    helpers.each(list, function (folder, num) {
-        if (folder) {
-            currentPath += folder + "/";
-            num > 1 && (crumbItems.push(["span", "/"]));
-            crumbItems.push(["a", {
-                    "data-path": currentPath,
-                    "title": folder,
-                    "style": "max-width:" + maxSpace + "%"
-                },
-                folder
-            ]);
-
-        } else {
-            if (num === 0) {
-                crumbItems.push(["a", {
-                    "data-path": currentPath
-                }, "/"]);
-            }
-        }
-    });
-    this.els.crumb.innerHTML = "";
-    this.els.crumb.appendChild(jungle.tree([crumbItems]));
-
-}
-
-module.exports = beradcrumbView;
-
-},{"47":47,"52":52}],40:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var jungle = require(52);
-
-var airaExpanded = "aria-expanded";
-
-function searchView(parent) {
-    var self = this;
-    var myElements = this.els = {};
-    self.evs = [];
-    self.model = parent.model;
-
-    self.action = helpers.bindThis(self, actionImplementation);
-
-    myElements.close = jungle.node(["a.eg-search-x.eg-btn", "+"]);
-    myElements.ico = jungle.node(["a.eg-btn.eg-search-ico[tabindex=2]"]);
-    myElements.input = jungle.node(["input[placeholder=" + parent.txt("Search in files") + "][tabindex=1]"]);
-    myElements.field = jungle.node(["div.eg-search-inpt", myElements.input]);
-
-    parent.handleClick(myElements.close, function () {
-        self.model.viewState.searchOn = false;
-        self.model.cancelSearch();
-
-        self.el.removeAttribute(airaExpanded);
-    });
-
-    function invoke() {
-        if (self.model.viewState.searchOn) {
-            self.action();
-        } else {
-            self.model.viewState.searchOn = true;
-            self.el.setAttribute(airaExpanded, true);
-            myElements.input.focus();
-        }
-    }
-
-    parent.handleClick(myElements.ico, invoke);
-    parent.evs.push(dom.onKeys(myElements.ico, {
-        "<space>": invoke
-    }, true));
-    parent.evs.push(dom.onKeys(myElements.input, {
-        "<enter>": self.action,
-        "other": helpers.debounce(self.action, 800)
-    }, true));
-
-}
-searchView.prototype.getTree = function () {
-    var myElements = this.els;
-    var searchBarDefinition = "div.eg-search.eg-bar"
-    if (this.model.viewState.searchOn) {
-        searchBarDefinition += "[" + airaExpanded + "=true]";
-    }
-    var el = [searchBarDefinition];
-
-    el.push(myElements.close);
-    el.push(myElements.field);
-    el.push(myElements.ico);
-
-    el = jungle.node(el);
-    this.el = el;
-
-    return el;
-}
-searchView.prototype.render = function () {
-    if (this.model.viewState.searchOn) {
-        setTimeout(this.els.input.focus(), 0);
-    }
-}
-
-function actionImplementation() {
-    var myElements = this.els;
-    if (myElements.input.value && myElements.input.value.length > 2) {
-        this.model.search(myElements.input.value)
-    }
-}
-
-
-module.exports = searchView;
-
-},{"45":45,"47":47,"52":52}],41:[function(require,module,exports){
-"use strict";
-
-//template engine based upon JsonML
-var dom = require(45);
-var helpers = require(47);
-var texts = require(49);
-var jungle = require(52);
-var SubvBread = require(39);
-var SubvSearch = require(40);
-
-require(50);
-
-var fontLoaded = false;
-
-var currentGlobalKeyboadrFocus = "no";
-
-function View(opts, txtOverride) {
-    var self = this;
-    this.uid = Math.random();
-    currentGlobalKeyboadrFocus = this.uid;
-    this.el = opts.el;
-    this.evs = [];
-    var myElements = this.els = {};
-
-    if (!opts.noFont) {
-        renderFont();
-    }
-
-    this.txt = texts(txtOverride);
-
-    this.bottomBarClass = (opts.barAlign === "left") ? "" : ".eg-bar-right";
-
-    this.handlers = helpers.extend({
-        selection: helpers.noop,
-        events: helpers.noop,
-        close: helpers.noop,
-        error: null
-    }, opts.handlers);
-
-    //action handlers
-    //this.selection = helpers.extend(this.selection, opts.selection);
-    this.model = opts.model;
-
-    //bind to model events
-    this.model.onloading = helpers.bindThis(self, self.renderLoading);
-    this.model.onupdate = function () {
-        self.handlers.events("beforeRender", self.model);
-        self.render();
-        self.handlers.events("render", self.model);
-        if (self.handlers.ready) {
-            var runReady = self.handlers.ready;
-            self.handlers.ready = null;
-            setTimeout(runReady, 0);
-        }
-    }
-    this.model.onerror = helpers.bindThis(this, this.errorHandler);
-    self.kbNav_up = helpers.bindThis(self, self.kbNav_up);
-    self.kbNav_down = helpers.bindThis(self, self.kbNav_down);
-    self.kbNav_select = helpers.bindThis(self, self.kbNav_select);
-    self.kbNav_explore = helpers.bindThis(self, self.kbNav_explore);
-    self.model.goUp = helpers.bindThis(self.model, self.model.goUp);
-    self.confirmSelection = helpers.bindThis(self, self.confirmSelection);
-    self.handlers.close = helpers.bindThis(self, self.handlers.close);
-
-    this.model.onchange = function () {
-        if (self.model.getSelected().length > 0 || (self.model.opts.select.folder && !(self.model.forbidSelection || self.model.parentForbidsSelection))) {
-            self.els.ok.removeAttribute("disabled");
-        } else {
-            self.els.ok.setAttribute("disabled", "");
-        }
-    }
-
-    //create reusable view elements
-    myElements.container = jungle.node(["div.eg-in"]);
-    myElements.close = jungle.node(["a.eg-picker-close.eg-btn", this.txt("Cancel")]);
-    myElements.ok = jungle.node(["span.eg-picker-ok.eg-btn.eg-btn-prim[tabindex=0][role=button]", this.txt("OK")]);
-    myElements.pgup = jungle.node(["span.eg-picker-pgup.eg-btn", ">"]);
-    myElements.pgdown = jungle.node(["span.eg-picker-pgup.eg-btn", "<"]);
-
-
-    //bind events and store references to unbind later
-    this.handleClick(this.el, self.focused); //maintains focus when multiple instances exist
-
-    this.handleClick(myElements.close, function () {
-        self.handlers.close();
-    });
-    this.handleClick(myElements.ok, self.confirmSelection);
-    this.evs.push(dom.onKeys(myElements.ok, {
-        "<space>": self.confirmSelection
-    }, true));
-
-    this.handleClick(myElements.pgup, function (e) {
-        self.model.switchPage(1);
-    });
-    this.handleClick(myElements.pgdown, function (e) {
-        self.model.switchPage(-1);
-    });
-
-    if (opts.keys !== false) {
-        var keybinding = helpers.extend({
-            "up": "<up>",
-            "down": "<down>",
-            "select": "<space>",
-            "explore": "<right>",
-            "back": "<left>",
-            "confirm": "none",
-            "close": "<escape>"
-        }, opts.keys);
-        var keys = {};
-        keys[keybinding["up"]] = self.kbNav_up;
-        keys[keybinding["down"]] = self.kbNav_down;
-        keys[keybinding["select"]] = self.kbNav_select;
-        keys[keybinding["explore"]] = self.kbNav_explore;
-        keys[keybinding["back"]] = self.model.goUp;
-        keys[keybinding["confirm"]] = self.confirmSelection;
-        keys[keybinding["close"]] = self.handlers.close;
-
-        document.activeElement && document.activeElement.blur && document.activeElement.blur();
-        this.evs.push(dom.onKeys(document, keys, helpers.bindThis(self, self.hasFocus)));
-    }
-
-    //initialize subviews
-    self.subviews = {
-        breadcrumb: new SubvBread(this),
-        search: new SubvSearch(this)
-    }
-
-    this.buildLayout();
-}
-
-var viewPrototypeMethods = {};
-
-viewPrototypeMethods.destroy = function () {
-    helpers.each(this.evs, function (ev) {
-        ev.destroy();
-    });
-    this.evs = null;
-    this.el.innerHTML = "";
-    this.el = null;
-    this.els = null;
-    this.model = null;
-    this.handlers = null;
-}
-
-viewPrototypeMethods.handleClick = function (el, method) {
-    this.evs.push(dom.addListener(el, "click", helpers.bindThis(this, method)));
-}
-
-viewPrototypeMethods.errorHandler = function (e) {
-    if (this.handlers.error) {
-        var message = this.handlers.error(e);
-        if (typeof message === "string") {
-            this.renderProblem("*", message);
-            return;
-        } else {
-            if (message === false) {
-                return;
-            }
-        }
-    }
-    this.renderProblem((e.RATE) ? "R" : e.statusCode, e.message);
-}
-
-
-//=================================================================
-// rendering
-//=================================================================
-
-//all this mess is because IE8 dies on @include in css
-function renderFont() {
-    if (!fontLoaded) {
-        (document.getElementsByTagName("head")[0]).appendChild(jungle.tree([
-            ["link", {
-                href: "https://fonts.googleapis.com/css?family=Open+Sans:400,600",
-                type: "text/css",
-                rel: "stylesheet"
-            }]
-        ]));
-        fontLoaded = true;
-    }
-}
-
-viewPrototypeMethods.buildLayout = function () {
-    var self = this;
-    var myElements = this.els;
-
-    var search = self.subviews.search.getTree();
-
-    var layoutFragm = jungle.tree([
-        ["div.eg-theme.eg-picker.eg-widget", search,
-            myElements.container
-        ]
-    ]);
-
-    this.el.innerHTML = "";
-    this.el.appendChild(layoutFragm);
-
-}
-
-viewPrototypeMethods.render = function () {
-    var self = this;
-    var myElements = this.els;
-
-    myElements.list = document.createElement("ul");
-
-    var topbar = self.subviews.breadcrumb.getTree();
-
-    var layoutFragm = jungle.tree([
-
-        topbar,
-        myElements.list, ["div.eg-bar" + this.bottomBarClass, ["a.eg-brand", {
-                title: "egnyte.com"
-            }],
-            myElements.ok,
-            myElements.close, ["div.eg-picker-pager" + (this.model.hasPages ? "" : ".eg-not"),
-                myElements.pgdown, ["span", this.model.page + "/" + this.model.totalPages],
-                myElements.pgup
-            ]
-        ]
-
-    ]);
-
-    myElements.container.innerHTML = "";
-    myElements.container.appendChild(layoutFragm);
-    //couldn't CSS it. blame old browsers
-    myElements.list.style.height = (this.el.offsetHeight - 2 * topbar.offsetHeight) + "px";
-
-    self.subviews.breadcrumb.render();
-
-    if (this.model.isEmpty) {
-        this.renderEmpty();
-    } else {
-        helpers.each(this.model.items, function (item) {
-            self.renderItem(item);
-        });
-    }
-
-
-}
-
-
-viewPrototypeMethods.renderItem = function (itemModel) {
-    var self = this;
-
-    var itemName = jungle.node(["a.eg-picker-name" + (itemModel.data.is_folder ? ".eg-folder" : ".eg-file"), {
-            "title": itemModel.data.name,
-        },
-        ["span.eg-ico.eg-mime-" + itemModel.mime, {
-                "data-ext": itemModel.ext
-            },
-            ["span", itemModel.ext]
-        ], itemModel.data.name
-    ]);
-
-    var checkboxSetup = "input[type=checkbox]";
-    if (!itemModel.isSelectable) {
-        checkboxSetup += (itemModel.data.is_folder ? ".eg-not" : "[disabled=disabled][title=" +
-            this.txt("This file cannot be selected") +
-            "]");
-    }
-
-    var itemCheckbox = jungle.node([checkboxSetup]);
-    itemCheckbox.checked = itemModel.selected;
-
-    var itemNode = jungle.node(["li.eg-picker-item" +
-            (itemModel.isSelectable?"":".eg-disabled") +
-            (itemModel.selected?".eg-selected":""),
-        (self.model.opts.select.multiple === false)? [] : itemCheckbox,
-        itemName
-    ]);
-
-    dom.addListener(itemName, "click", function (e) {
-        if (e.stopPropagation) {
-            e.stopPropagation();
-        }
-        itemModel.defaultAction();
-        return false;
-    });
-
-    dom.addListener(itemNode, "click", function () {
-        itemModel.toggleSelect();
-    });
-
-    itemModel.onchange = function () {
-        self.handlers.events("itemChange", itemModel);
-        itemCheckbox.checked = itemModel.selected;
-        itemNode.setAttribute("class", "eg-picker-item" +
-            (itemModel.selected?" eg-selected":"") +
-            (itemModel.isSelectable?"":" eg-disabled")
-        );
-        itemNode.setAttribute("aria-selected", itemModel.isCurrent);
-        if (itemModel.isCurrent) {
-            try { //IE8 dies on this randomly :/
-                self.els.list.scrollTop = itemNode.offsetTop - self.els.list.offsetHeight
-            } catch (e) {}
-            //itemNode.scrollIntoView(false);
-        }
-    };
-
-    this.els.list.appendChild(itemNode);
-}
-
-
-
-
-viewPrototypeMethods.renderLoading = function () {
-    if (this.els.list) {
-        this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle.tree([
-            ["div.eg-placeholder", ["div.eg-spinner"], this.txt("Loading")]
-        ]));
-    }
-}
-
-
-var msgs = require(34);
-
-viewPrototypeMethods.renderProblem = function (code, message) {
-    message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
-    if (this.els.list) {
-        this.els.list.innerHTML = "";
-        this.els.list.appendChild(jungle.tree([
-            ["div.eg-placeholder", ["div.eg-picker-error"], message]
-        ]));
-    } else {
-        this.handlers.close({
-            message: message
-        });
-    }
-}
-viewPrototypeMethods.renderEmpty = function () {
-    if (this.els.list) {
-        this.els.list.innerHTML = "";
-        if (this.model.viewState.searchOn) {
-            this.els.list.appendChild(jungle.tree([
-                ["div.eg-search-no", ["p", this.txt("No search results found")]]
-            ]));
-        } else {
-
-            this.els.list.appendChild(jungle.tree([
-                ["div.eg-placeholder.eg-folder", ["div.eg-ico"], this.txt("This folder is empty")]
-            ]));
-        }
-    }
-}
-
-//=================================================================
-// focus
-//=================================================================
-
-viewPrototypeMethods.hasFocus = function () {
-    return currentGlobalKeyboadrFocus === this.uid;
-}
-viewPrototypeMethods.focused = function () {
-    currentGlobalKeyboadrFocus = this.uid;
-}
-
-//=================================================================
-// navigation
-//=================================================================
-
-viewPrototypeMethods.goUp = function () {
-    this.model.goUp();
-}
-viewPrototypeMethods.confirmSelection = function () {
-    var selected = this.model.getSelected();
-    console.log();
-    if (selected && selected.length) {
-        this.handlers.selection.call(this, this.model.getSelected());
-    } else if (this.model.opts.select.folder && !(this.model.forbidSelection || this.model.parentForbidsSelection)) {
-        this.handlers.selection.call(this, [this.model.itemSelf])
-    }
-}
-
-viewPrototypeMethods.kbNav_up = function () {
-    this.model.mvCurrent(-1);
-}
-
-viewPrototypeMethods.kbNav_down = function () {
-    this.model.mvCurrent(1);
-}
-viewPrototypeMethods.kbNav_select = viewPrototypeMethods.kbNav_confirm = function () {
-    var item = this.model.getCurrent();
-    if (item) {
-        item.toggleSelect();
-    }
-}
-
-
-viewPrototypeMethods.kbNav_explore = function () {
-    var item = this.model.getCurrent();
-    if (item && item.data.is_folder) {
-        item.defaultAction();
-    }
-}
-
-View.prototype = viewPrototypeMethods;
-
-module.exports = View;
-
-},{"34":34,"39":39,"40":40,"45":45,"47":47,"49":49,"50":50,"52":52}],42:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var decorators = require(16);
-var ENDPOINTS = require(31);
+},{}],30:[function(require,module,exports){
+var promises = require(31);
+var helpers = require(34);
+var dom = require(32);
+var messages = require(35);
+var decorators = require(14);
+var ENDPOINTS = require(29);
 
 var plugins = {};
 module.exports = {
@@ -3713,10 +2603,10 @@ module.exports = {
         });
     }
 };
-},{"16":16,"31":31,"43":43,"45":45,"47":47,"48":48}],43:[function(require,module,exports){
+},{"14":14,"29":29,"31":31,"32":32,"34":34,"35":35}],31:[function(require,module,exports){
 //wrapper for any promises library
 var pinkySwear = require(1);
-var helpers = require(47);
+var helpers = require(34);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -3800,63 +2690,7 @@ Promises.allSettled = function (array) {
 
 module.exports = Promises;
 
-},{"1":1,"47":47}],44:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var jungle = require(53);
-var texts = require(49);
-
-require(50);
-
-function openPrompt(node, setup) {
-    if (!setup) {
-        throw new Error("Setup required as a second argument");
-    }
-    var render, cleanup, ev;
-
-    var txt = texts(setup.texts);
-
-    cleanup = function () {
-        ev.destroy();
-        node.innerHTML = "";
-    };
-
-
-    var btOk = jungle([["span.eg-prompt-ok.eg-btn.eg-btn-prim", txt("Ok")]]).childNodes[0];
-    var input = jungle([["input[type=text]"]]).childNodes[0];
-
-    ev = (dom.addListener(btOk, "click", function () {
-        var val = input.value;
-        cleanup();
-        setup.result(input.value);
-    }));
-
-    var bottomBarClass = (setup.barAlign === "left") ? "" : ".eg-bar-right";
-
-    var layoutFragm = jungle([["div.eg-theme.eg-widget.eg-prompt",
-        ["a.eg-brand",{title:"egnyte.com"}],
-        ["div.eg-ctlgrp",
-            ["label.eg-prompt-ask", txt("question")],
-            input
-        ],
-        ["div.eg-bar" + bottomBarClass,
-            [
-                btOk
-            ]
-        ]
-    ]]);
-
-    node.innerHTML = "";
-    node.appendChild(layoutFragm);
-    input.focus();
-
-    return {
-        close: cleanup,
-    };
-};
-
-module.exports = openPrompt;
-},{"45":45,"47":47,"49":49,"50":50,"53":53}],45:[function(require,module,exports){
+},{"1":1,"34":34}],32:[function(require,module,exports){
 var vkey = require(2);
 
 
@@ -3933,8 +2767,8 @@ module.exports = {
 
 }
 
-},{"2":2}],46:[function(require,module,exports){
-var promises = require(43);
+},{"2":2}],33:[function(require,module,exports){
+var promises = require(31);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -3973,7 +2807,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"43":43}],47:[function(require,module,exports){
+},{"31":31}],34:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -4067,8 +2901,8 @@ module.exports = {
     }
 };
 
-},{}],48:[function(require,module,exports){
-var helpers = require(47);
+},{}],35:[function(require,module,exports){
+var helpers = require(34);
 
 
 //returns postMessage specific handler
@@ -4121,25 +2955,9 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
-},{"47":47}],49:[function(require,module,exports){
-module.exports = function (overrides) {
-    return function (txt) {
-        if (overrides) {
-            if (overrides[txt]) {
-                return overrides[txt];
-            } else if (overrides[txt.toLowerCase()]) {
-                return overrides[txt.toLowerCase()];
-            }
-        }
-        return txt;
-    };
-};
-
-},{}],50:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:1px;text-decoration:none !important;position:absolute;color:#777;font-size:36px;line-height:16px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{position:absolute;width:100%;top:50%;bottom:50%;margin-top:-34px;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-in *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px 10px 0;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{display:block;float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item.eg-selected{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a,.eg-picker-item.eg-disabled>a{opacity:.6}.eg-picker-item.eg-disabled>a.eg-file{cursor:default}.eg-picker-name{margin-left:4px}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width .5s ease;-webkit-transition:width .5s ease;-moz-transition:width .5s ease}.eg-search *{visibility:hidden}.eg-search[aria-expanded]{width:100%}.eg-search[aria-expanded] *{visibility:visible}.eg-search-inpt{width:calc(100% - 55px);padding-left:40px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],51:[function(require,module,exports){
-var helpers = require(47);
-var plugins = require(42);
+},{"34":34}],36:[function(require,module,exports){
+var helpers = require(34);
+var plugins = require(30);
 var defaults = require(10);
 
 module.exports = {
@@ -4152,7 +2970,7 @@ module.exports = {
             setDomain: function (d) {
                 this.domain = options.egnyteDomainURL = helpers.normalizeURL(d);
             },
-            API: require(12)(options)
+            API: require(11)(options)
         }
         plugins.install(exporting);
 
@@ -4163,134 +2981,5 @@ module.exports = {
 
 }
 
-},{"10":10,"12":12,"42":42,"47":47}],52:[function(require,module,exports){
-var jungle = require(53);
-module.exports = {
-    tree: jungle,
-    node: function (i) {
-        return jungle([i]).childNodes[0];
-    }
-}
-
-},{"53":53}],53:[function(require,module,exports){
-/**
- * zenjungle - HTML via JSON with elements of Zen Coding
- *
- * https://github.com/radmen/zenjungle
- * Copyright (c) 2012 Radoslaw Mejer <radmen@gmail.com>
- */
-
-var zenjungle = (function () {
-    // helpers
-    var is_object = function (object) {
-            return (!!object && '[object Object]' == Object.prototype.toString.call(object) && !object.nodeType);
-        },
-        is_array = function (object) {
-            return '[object Array]' == Object.prototype.toString.call(object);
-        },
-        each = function (object, callback) {
-            var key;
-            if (object) {
-                if (object.length) {
-                    for (key = 0; key < object.length; key++) {
-                        callback(object[key], key);
-                    }
-                } else {
-                    for (key in object) {
-                        object.hasOwnProperty(key) && callback(object[key], key);
-                    }
-                }
-            }
-        },
-        merge = function () {
-            var merged = {}
-
-            each(arguments, function (arg) {
-                each(arg, function (value, key) {
-                    merged[key] = value;
-                })
-            });
-
-            return merged;
-        }
-
-    // converts some patterns to properties
-    var zen = function (string) {
-        var replace = {
-                '\\[([a-z\\-]+)=([^\\]]+)\\]': function (match) {
-                    var prop = {};
-                    prop[match[1]] = match[2].replace(/^["']/, '').replace(/["']$/, '');
-
-                    return prop;
-                },
-                '#([a-zA-Z][a-zA-Z0-9\\-_]*)': function (match) {
-                    return {
-                        'id': match[1]
-                    };
-                },
-                '(\\.[a-zA-Z][a-zA-Z0-9\\-_]*)+': function (match) {
-                    return {
-                        'class': match[0].substr(1).split(".").join(" ")
-                    };
-                }
-            },
-            props = {};
-
-        each(replace, function (parser, regex) {
-            var match;
-
-            regex = new RegExp(regex);
-
-            while (regex.test(string)) {
-                match = regex.exec(string);
-                string = string.replace(match[0], '');
-
-                props = merge(props, parser(match));
-            }
-        });
-
-        return [string, props];
-    }
-
-    var monkeys = function (what, where) {
-        where = where || document.createDocumentFragment();
-
-        each(what, function (element) {
-            var zenned,
-                props,
-                new_el;
-
-            if (is_array(element)) {
-
-                if ('string' === typeof element[0]) {
-                    zenned = zen(element.shift());
-                    props = is_object(element[0]) ? element.shift() : {};
-                    new_el = document.createElement(zenned[0]);
-
-                    each(merge(zenned[1], props), function (value, key) {
-                        new_el.setAttribute(key, value);
-                    });
-
-                    where.appendChild(new_el);
-                    monkeys(element, new_el);
-                } else {
-                    monkeys(element, where);
-                }
-            } else if (element.nodeType) {
-                where.appendChild(element);
-            } else if ('string' === typeof (element) || 'number' === typeof (element)) {
-                where.appendChild(document.createTextNode(element));
-            }
-        });
-
-        return where;
-    }
-
-    return monkeys;
-})();
-
-if (typeof module !== "undefined") {
-    module.exports = zenjungle;
-}
-},{}]},{},[11])(11)
+},{"10":10,"11":11,"30":30,"34":34}]},{},[36])(36)
 });
