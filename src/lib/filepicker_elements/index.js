@@ -35,7 +35,12 @@ function init(API) {
 
         fpModel = new Model(API, {
             select: selectOpts,
-            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
+            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
+            handlers: {
+                navigation: function (currentFolder) {
+                    setup.navigation && setup.navigation(currentFolder);
+                }
+            }
         });
 
         fpView = new View({
@@ -60,6 +65,13 @@ function init(API) {
         openPath(setup.path || "/");
 
         return {
+            getCurrentFolder: function() {
+              return {
+                  path: fpModel.path,
+                  folder_id: fpModel.itemSelf.folder_id,
+                  forbidSelection: fpModel.forbidSelection
+              };
+            },
             openPath: openPath,
             close: close,
         };

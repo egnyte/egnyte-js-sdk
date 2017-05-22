@@ -83,6 +83,11 @@ module.exports = function (opts, model) {
             self.onloading();
             fetchImplementation(self.path).then(function (data) {
                 self._itemsUpdated(data)
+                model.opts.handlers.navigation({
+                    path: model.path,
+                    folder_id: model.itemSelf.folder_id,
+                    forbidSelection: model.forbidSelection
+                });
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);

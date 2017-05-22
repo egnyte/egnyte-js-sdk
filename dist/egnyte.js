@@ -2695,6 +2695,11 @@ module.exports = function (opts, model) {
             self.onloading();
             fetchImplementation(self.path).then(function (data) {
                 self._itemsUpdated(data)
+                model.opts.handlers.navigation({
+                    path: model.path,
+                    folder_id: model.itemSelf.folder_id,
+                    forbidSelection: model.forbidSelection
+                });
             }).fail(function (e) {
                 self._itemsUpdated()
                 self.onerror(e);
@@ -2903,7 +2908,12 @@ function init(API) {
 
         fpModel = new Model(API, {
             select: selectOpts,
-            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions
+            filterExtensions: (typeof setup.filterExtensions === "undefined") ? noGoog : setup.filterExtensions,
+            handlers: {
+                navigation: function (currentFolder) {
+                    setup.navigation && setup.navigation(currentFolder);
+                }
+            }
         });
 
         fpView = new View({
@@ -2928,6 +2938,13 @@ function init(API) {
         openPath(setup.path || "/");
 
         return {
+            getCurrentFolder: function() {
+              return {
+                  path: fpModel.path,
+                  folder_id: fpModel.itemSelf.folder_id,
+                  forbidSelection: fpModel.forbidSelection
+              };
+            },
             openPath: openPath,
             close: close,
         };

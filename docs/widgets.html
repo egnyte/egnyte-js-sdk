@@ -139,6 +139,9 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <p>Open on <code>/Private</code> location, with single selection and changed labels for OK and empty folder</p>
 <pre><code class="lang-javascript">var picker = egnyte.filePicker(containerNode,{
     path: &quot;/Private&quot;,
+    navigation: function(currentFolder){
+        //handle change folder
+        },
     selection: function(list){
         //handle selection
         },
@@ -170,6 +173,13 @@ forbidden: []  //array of folder paths that selection is forbidden in
     });
 </code></pre>
 <p>File picker will fill the container node (width and height 100%). Minimal dimensions of the container node are 400x400 px</p>
+<p>The <code>currentFolder</code> returned to the navigaion callback is an object matching the following signature:</p>
+<pre><code class="lang-javascript">{
+    folder_id: &quot;f78ee5e7-afbd-4b18-89db-4526e32ae271&quot;,
+    path: &quot;/Private/jsmith&quot;,
+    forbidSelection: false
+}
+</code></pre>
 <p>The <code>list</code> returned to the selection callback is an array of objects matching the followng signatures:</p>
 <p><em>File</em></p>
 <pre><code class="lang-javascript">{
@@ -194,6 +204,9 @@ forbidden: []  //array of folder paths that selection is forbidden in
 <h3 id="close-file-picker">Close file picker</h3>
 <p>File picker can be closed without the user clicking &quot;cancel&quot;:</p>
 <pre><code class="lang-javascript">    picker.close();
+</code></pre>
+<h3 id="get-current-folder">Get current folder</h3>
+<pre><code class="lang-javascript">    picker.getCurrentFolder();
 </code></pre>
 <h3 id="change-the-style">Change the style</h3>
 <p>File picker is easily stylable on its own. To ease the work of theming start with the <code>examples/theme.css</code> file and modify available properties. To see how the theme affects the filepicker see <code>examples/filepicker_theme.html</code></p>
