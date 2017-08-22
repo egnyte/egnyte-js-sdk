@@ -15,7 +15,7 @@ const helpers = {
     },
     encodePathComponents (path) {
         path = helpers.encodeNameSafe(path)
-        return path.split("/").map(encodeURIComponent).join("/")
+        return path.split("/").map(encodeURIComponent).join("/").replace(/#/g,"%23");
         //TODO: handle special chars not covered by this.
     },
     normalizeEgnyteDomain (domain) {
@@ -23,6 +23,9 @@ const helpers = {
     },
     normalizeURL(url) {
         return (url).replace(/\/*$/, "");
+    }
+    hintDeveloper(hint){
+        console && console.warn(hint)
     }
 }
 

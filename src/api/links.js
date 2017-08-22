@@ -4,7 +4,11 @@ module.exports = {
     init(core) {
         const mkReqFunction = core._.mkReqFunction()
         linksAPI = {
-            createLink: mkReqFunction((tools, linkSetup) => {
+            createLink: mkReqFunction({
+                required: ["path","linkSetup"],
+                fsIdentification:true
+            }, (tools, decorate, input) => {
+                const linkSetup = input.linkSetup
                 var defaults = {
                     path: null,
                     type: "file",
@@ -12,44 +16,42 @@ module.exports = {
                 };
                 return Promise.resolve()
                     .then(() => {
-                        const setup = Object.assign(defaults, linkSetup);
-                        setup.path = tools.encodeNameSafe(setup.path);
+                        const setup = Object.assign(defaults, linkSetup, { path: input.pathFromRoot });
+                        // setup.path = tools.encodeNameSafe(setup.path);
 
-                        if (!setup.path) {
-                            throw tools.mkerr("Path attribute missing or incorrect");
-                        }
-
-                        return tools.requestEngine.promiseRequest(tools.decorate({
+                        return tools.requestEngine.promiseRequest(decorate({
                             method: "POST",
                             url: tools.requestEngine.getEndpoint() + ENDPOINTS_links,
-                            json: setup
+                            body: setup,
+                            json: true
                         }));
                     }).then(function (result) { //result.response result.body
                         return result.body;
                     });
             }),
-            removeLink: mkReqFunction((tools, id) => {
-                return tools.requestEngine.promiseRequest(tools.decorate({
+            removeLink: mkReqFunction({required: ["id"]},(tools, decorate, input) => {
+                return tools.requestEngine.promiseRequest(decorate({
                     method: "DELETE",
-                    url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
+                    url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
                 })).then(function (result) { //result.response result.body
                     return result.response.statusCode;
                 });
             }),
-            listLink: mkReqFunction((tools, id) => {
-                return tools.requestEngine.promiseRequest(tools.decorate({
+            listLink: mkReqFunction({required: ["id"]},(tools, decorate, input) => {
+                return tools.requestEngine.promiseRequest(decorate({
                     method: "GET",
-                    url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + id
+                    url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
                 })).then(function (result) { //result.response result.body
                     return result.body;
                 });
             }),
-            listLinks: mkReqFunction((tools, filters) => {
+            listLinks: mkReqFunction({required: ["filters"]},(tools, decorate, input) => {
+                const filters = input.filters
                 return promises(true)
                     .then(function () {
                         filters.path = filters.path && helpers.encodeNameSafe(filters.path);
 
-                        return tools.requestEngine.promiseRequest(tools.decorate({
+                        return tools.requestEngine.promiseRequest(decorate({
                             method: "get",
                             url: tools.requestEngine.getEndpoint() + ENDPOINTS_links,
                             params: filters
@@ -58,8 +60,8 @@ module.exports = {
                         return result.body;
                     });
             }),
-            findOne: mkReqFunction((tools, filters) => {
-                return linksAPI.listLinks(filters).then(function (list) {
+            findOne: mkReqFunction({required: ["filters"]},(tools, decorate, input) => {
+                return linksAPI.listLinks(input.filters).then(function (list) {
                     if (list.ids && list.ids.length > 0) {
                         return linksAPI.listLink(list.ids[0]);
                     } else {

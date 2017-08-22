@@ -1,33 +1,25 @@
 "use strict"
 const requestEngineFactory = require("./reqengine")
 const helpers = require("./helpers")
+const decorators = require("./decorators")
+const inputHandler = require("./inputHandler")
 const mkerr = require("./error/mkerr")
 
 const plugins = new Set()
 
-// const mkReqFunctionFactory => tools => apiFacadeMethod => apiFacadeMethod.bind(null, tools)
-// in case your brain hurts from parsing this, here's a good old ES5 version
-function mkReqFunctionFactory(tools){
-    return function mkReqFunction(apiFacadeMethod){
-        return function(){
-
-            return apiFacadeMethod.bind(null, tools).apply(null, arguments)
-        }
-    }
-}
+const mkReqFunctionFactory = tools => (guarantees, apiFacadeMethod) => input =>
+    apiFacadeMethod(tools, decorators.configure(input), inputHandler.process(input, guarantees))
 
 
 module.exports = {
     instance(options){
         const tools = {
-            decorate() {
-
-            },
             requestEngine: requestEngineFactory({
                 request: options.request
             }),
-            encodeNameSafe: helpers.encodeNameSafe,
+            helpers: helpers,
             mkerr,
+            inputHandler
 
         }
         const core = {
