@@ -1,6 +1,6 @@
 
 module.exports = {
-    setup(input){
+    configure(input){
         return (opts) => {
             // Modify XHR opts using context from the inputs
 

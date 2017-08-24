@@ -1,4 +1,4 @@
-{
+module.exports = {
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
     "fschunked": "/v1/fs-content-chunked",

@@ -3,9 +3,6 @@
   "version": "2.7.0",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
-  "engines": {
-    "node": ">=0.10.28"
-  },
   "repository": {
     "type": "git",
     "url": "http://github.com/egnyte/egnyte-js-sdk.git"
@@ -19,7 +16,8 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "scripts": {
-    "test": "grunt test-node"
+    "test": "mocha --recursive test/* --reporter spec --require should",
+    "test-old": "grunt test-node"
   },
   "dependencies": {
     "chunking-streams": "0.0.8",
@@ -50,8 +48,10 @@
     "grunt-dependo": "^0.1.2",
     "grunt-jasmine-nodejs": "^1.4.3",
     "grunt-markdown": "^0.7.0",
+    "mocha": "^3.5.0",
     "node-lessify": "0.0.10",
     "readable-stream": "^2.0.2",
+    "should": "^11.2.1",
     "through2": "^2.0.0"
   }
 }

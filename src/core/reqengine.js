@@ -1,29 +1,27 @@
-var errorify = require("./errorify");
+var errorify = require("./errors/errorify");
 
 var enginePrototypeMethods = {};
 
+function Engine(options) {
+    this.authType = "Bearer";
+    this.options = options;
+    this.token = options.token;
 
-module.exports = function createEngine(settings) {
-  //settings.request request or xhr instance
+    this.requestHandler = options.httpRequest;
 
-  function Engine(options) {
-      this.authType = "Bearer";
-      this.options = options;
-      this.token = options.token;
+    this.quota = {
+        startOfTheSecond: 0,
+        calls: 0,
+        retrying: 0
+    }
+    this.queue = [];
 
-      this.requestHandler = (options.httpRequest) ? options.httpRequest : settings.request;
+    this.queueHandler = _rollQueue.bind(this);
+}
+Engine.prototype = enginePrototypeMethods;
 
-      this.quota = {
-          startOfTheSecond: 0,
-          calls: 0,
-          retrying: 0
-      }
-      this.queue = [];
-
-      this.queueHandler = _rollQueue.bind(this);
-  }
-  Engine.prototype = enginePrototypeMethods;
-  return Engine;
+module.exports = function createEngine(options) {
+    return new Engine(options);
 }
 
 
@@ -81,7 +79,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
     opts = Object.assign({}, self.options.requestDefaults, opts); //merging in the defaults
     var originalOpts = Object.assign({}, opts); //just copying the object
 
-    if (this.auth.isAuthorized() || forceNoAuth) {
+    if (this.isAuthorized() || forceNoAuth) {
         opts.url += params(opts.params);
         opts.headers = opts.headers || {};
         if (!forceNoAuth) {

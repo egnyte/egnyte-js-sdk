@@ -19,13 +19,14 @@ const helpers = {
         //TODO: handle special chars not covered by this.
     },
     normalizeEgnyteDomain (domain) {
-        return "https://" + (helpers.normalizeURL(url).replace(/^https?:\/\//, ""));
+        return "https://" + (helpers.normalizeURL(domain).replace(/^https?:\/\//, ""));
     },
     normalizeURL(url) {
         return (url).replace(/\/*$/, "");
-    }
-    hintDeveloper(hint){
-        console && console.warn(hint)
+    },
+    hintDeveloper(hint, err){
+        //TODO: make this optinal, by configuration or dev build
+        console && console.warn(hint, err)
     }
 }
 

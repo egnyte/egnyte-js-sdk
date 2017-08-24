@@ -1,11 +1,10 @@
 const core = require("./core")
 const defaults = require("./defaults.js");
 
-// TODO: expose core in a reasonable and pluggable way
-
 module.exports = {
     init(egnyteDomainURL, opts) {
-        const instance = core.instance(Object.assign({}, defaults, opts))
+        //TODO: plug in httpRequest depending on env
+        const instance = core.instance(Object.assign({httpRequest: require("request")}, defaults, opts))
         instance.setDomain(egnyteDomainURL)
         return instance
     }

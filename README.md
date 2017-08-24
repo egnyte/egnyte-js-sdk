@@ -1,13 +1,18 @@
 Egnyte JavaScript SDK
 =============
 
+----
+# See rewrite.md
+----
+
+
 ## Features
 
 This package contains:
 
- - a JavaScript wrapper on Egnyte Public API with methods for working with File System, Links, Permissions and more 
+ - a JavaScript wrapper on Egnyte Public API with methods for working with File System, Links, Permissions and more
  - a file picker implementation working on top of the File System API
- 
+
 
 ## Installation
 
@@ -57,7 +62,7 @@ Firefox, Chrome, Opera, Safari 5+, IE10+ and multiple mobile browsers.
 
 All browsers that support Cross Origin Resource Sharing are supported. See: [CORS support table](http://caniuse.com/#feat=cors)
 
-The SDK code overall supports IE8 and IE9, but due to certain limitations in their implementations of Cross Origin Resource Sharing requests to Egnyte Public API cannot be authorized. 
+The SDK code overall supports IE8 and IE9, but due to certain limitations in their implementations of Cross Origin Resource Sharing requests to Egnyte Public API cannot be authorized.
 
 This SDK includes tools to bring support to IE8 and IE9, see [Legacy browsers support](./src/docs/ie8or9.md)
 

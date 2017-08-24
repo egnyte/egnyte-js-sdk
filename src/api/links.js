@@ -1,22 +1,24 @@
-const ENDPOINTS_links = require("./endpoints").links;
+const ENDPOINTS_links = require("./ENDPOINTS").links;
 
 module.exports = {
     init(core) {
-        const mkReqFunction = core._.mkReqFunction()
-        linksAPI = {
+        const mkReqFunction = core._.mkReqFunction
+        const linksAPI = {
             createLink: mkReqFunction({
-                required: ["path","linkSetup"],
-                fsIdentification:true
+                requires: ["path", "linkSetup"],
+                fsIdentification: true
             }, (tools, decorate, input) => {
                 const linkSetup = input.linkSetup
-                var defaults = {
+                const defaults = {
                     path: null,
                     type: "file",
                     accessibility: "domain"
                 };
                 return Promise.resolve()
                     .then(() => {
-                        const setup = Object.assign(defaults, linkSetup, { path: input.pathFromRoot });
+                        const setup = Object.assign(defaults, linkSetup, {
+                            path: input.pathFromRoot
+                        });
                         // setup.path = tools.encodeNameSafe(setup.path);
 
                         return tools.requestEngine.promiseRequest(decorate({
@@ -29,7 +31,9 @@ module.exports = {
                         return result.body;
                     });
             }),
-            removeLink: mkReqFunction({required: ["id"]},(tools, decorate, input) => {
+            removeLink: mkReqFunction({
+                requires: ["id"]
+            }, (tools, decorate, input) => {
                 return tools.requestEngine.promiseRequest(decorate({
                     method: "DELETE",
                     url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
@@ -37,7 +41,9 @@ module.exports = {
                     return result.response.statusCode;
                 });
             }),
-            listLink: mkReqFunction({required: ["id"]},(tools, decorate, input) => {
+            listLink: mkReqFunction({
+                requires: ["id"]
+            }, (tools, decorate, input) => {
                 return tools.requestEngine.promiseRequest(decorate({
                     method: "GET",
                     url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
@@ -45,11 +51,13 @@ module.exports = {
                     return result.body;
                 });
             }),
-            listLinks: mkReqFunction({required: ["filters"]},(tools, decorate, input) => {
+            listLinks: mkReqFunction({
+                requires: ["filters"]
+            }, (tools, decorate, input) => {
                 const filters = input.filters
-                return promises(true)
+                return Promise.resolve()
                     .then(function () {
-                        filters.path = filters.path && helpers.encodeNameSafe(filters.path);
+                        filters.path = filters.path && tools.helpers.encodeNameSafe(filters.path);
 
                         return tools.requestEngine.promiseRequest(decorate({
                             method: "get",
@@ -60,10 +68,14 @@ module.exports = {
                         return result.body;
                     });
             }),
-            findOne: mkReqFunction({required: ["filters"]},(tools, decorate, input) => {
-                return linksAPI.listLinks(input.filters).then(function (list) {
+            findOne: mkReqFunction({
+                requires: ["filters"]
+            }, (tools, decorate, input) => {
+                return linksAPI.listLinks(input).then(function (list) {
                     if (list.ids && list.ids.length > 0) {
-                        return linksAPI.listLink(list.ids[0]);
+                        return linksAPI.listLink({
+                            id: list.ids[0]
+                        });
                     } else {
                         return null;
                     }

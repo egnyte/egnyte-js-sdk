@@ -1,14 +1,20 @@
-var ImInBrowser = (typeof window !== "undefined");
-
-if (!ImInBrowser) {
     var stream = require('stream')
     var concat = require('concat-stream')
-    Egnyte = require("../src/slim");
+    Egnyte = require("../../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
 
+    // TODO: rewrite all assertions to shouldjs or to chai.expect
+    //   both have syntax different from the expect in jasmine unfortunately.
+    // var expect = require('chai').expect
+
+    // TODO: rewrite test cases to return promises to mocha
+    // TODO: consider introducing nicer test configurataion loading
+
+    // DON'T try to fix the logic and cross-dependency of tests for now
+    // DON'T introduce assertions library yet
+
     process.setMaxListeners(0);
-}
 
 describe("Link API facade integration", function () {
 
@@ -22,40 +28,17 @@ describe("Link API facade integration", function () {
 
     function getTestBlob(txt) {
         var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-        if (ImInBrowser) {
-            // JavaScript file-like object...
-            //PhanthomJS has a broken Blob
-            try {
-                var blob = new Blob([content], {
-                    type: "text/xml"
-                });
-            } catch (e) {
-                //napaeeee!
-                var blob = content;
-            }
-            return blob;
-        } else {
             var s = new stream.Readable();
             s.push(content);
             s.push(null);
             return s;
-        }
     }
 
-    if (ImInBrowser) {
-        if (!window.egnyteDomain || !window.APIToken) {
-            throw new Error("spec/conf/apiaccess.js is missing");
-        }
-    } else {
         if (!egnyteDomain || !APIToken) {
             throw new Error("spec/conf/apiaccess.js is missing");
         }
-    }
 
-    beforeEach(function () {
-        jasmine.getEnv().defaultTimeoutInterval = 20000; //QA API can be laggy
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000; //QA API can be laggy
-    });
+    this.timeout = 20000  //QA API can be laggy
 
     it('should accept an existing token', function () {
         //token was passed in beforeEach

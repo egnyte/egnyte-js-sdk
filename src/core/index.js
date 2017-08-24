@@ -3,7 +3,7 @@ const requestEngineFactory = require("./reqengine")
 const helpers = require("./helpers")
 const decorators = require("./decorators")
 const inputHandler = require("./inputHandler")
-const mkerr = require("./error/mkerr")
+const mkerr = require("./errors/mkerr")
 
 const plugins = new Set()
 
@@ -14,23 +14,20 @@ const mkReqFunctionFactory = tools => (guarantees, apiFacadeMethod) => input =>
 module.exports = {
     instance(options){
         const tools = {
-            requestEngine: requestEngineFactory({
-                request: options.request
-            }),
+            requestEngine: requestEngineFactory(options),
             helpers: helpers,
             mkerr,
             inputHandler
-
         }
         const core = {
             setDomain(domain){
-                const normalizedDomain = helpers.normalizeEgnyteDomain(domain)
+                const normalizedDomain = domain? helpers.normalizeEgnyteDomain(domain) : null
                 options.egnyteDomainURL = normalizedDomain
                 core.domain = normalizedDomain
             },
             API:{
                 manual: tools.requestEngine
-            }
+            },
             domain: null,
             _:{
                 mkReqFunction: mkReqFunctionFactory(tools)
