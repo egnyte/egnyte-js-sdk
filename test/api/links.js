@@ -1,19 +1,12 @@
-    var stream = require('stream')
-    var concat = require('concat-stream')
-    // Egnyte = require("../../src/slim");
-    // require("../conf/apiaccess");
+var stream = require("stream")
+var concat = require("concat-stream")
 
-    // TODO: rewrite all assertions to shouldjs or to chai.expect
-    //   both have syntax different from the expect in jasmine unfortunately.
-    // var expect = require('chai').expect
+// TODO: consider introducing nicer test configurataion loading
 
-    // TODO: rewrite test cases to return promises to mocha
-    // TODO: consider introducing nicer test configurataion loading
+// DON'T try to fix the logic and cross-dependency of tests for now
+// DON'T introduce assertions library yet
 
-    // DON'T try to fix the logic and cross-dependency of tests for now
-    // DON'T introduce assertions library yet
-
-    process.setMaxListeners(0);
+process.setMaxListeners(0);
 
 describe("Link API facade integration", () => {
 
