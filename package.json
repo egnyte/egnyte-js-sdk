@@ -16,7 +16,7 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "scripts": {
-    "test": "mocha --recursive test/* --reporter spec --require should",
+    "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.js",
     "test-old": "grunt test-node"
   },
   "dependencies": {
@@ -34,7 +34,9 @@
   },
   "devDependencies": {
     "bundle-collapser": "^1.1.0",
+    "chai": "^4.1.1",
     "concat-stream": "^1.5.0",
+    "dirty-chai": "^2.0.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
     "grunt-connect-proxy": "^0.2.0",

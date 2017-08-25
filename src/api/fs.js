@@ -104,7 +104,6 @@ module.exports = {
                                 "entry_id": versionEntryId
                             };
                         }
-
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })
                     .then(result => result.response.statusCode); //backwards commpatibility
