@@ -42,7 +42,8 @@ describe("User API", () => {
                 expect(res.id).toBeDefined();
                 userId = res.id;
                 done();
-            }).catch(function(err) {
+            })
+            .catch(function(err) {
                 expect(this).toAutoFail(err);
                 done();
             });
@@ -58,7 +59,8 @@ describe("User API", () => {
             .then(function (res) {
                 expect(this).toAutoFail("did not throw");
                 done();
-            }).catch(err => {
+            })
+            .catch(err => {
                 expect(err.message).toEqual("User not found");
                 done();
             });
@@ -74,7 +76,8 @@ describe("User API", () => {
             .then(res => {
                 expect(res.id).toBeDefined();
                 done();
-            }).catch(function (err) {
+            })
+            .catch(function (err) {
                 expect(this).toAutoFail(err);
                 done();
             });
@@ -89,7 +92,8 @@ describe("User API", () => {
             .then(function (res) {
                 expect(this).toAutoFail("did not throw");
                 done();
-            }).catch(err => {
+            })
+            .catch(err => {
                 expect(err.statusCode).toEqual(404);
                 done();
             });
