@@ -36,12 +36,14 @@ describe("User API", function () {
 
     it("Can get user details by name", function (done) {
         //would be nice to create the user first...
-        eg.API.user.getByName(APIUsername)
+        eg.API.user.getByName({
+            name: APIUsername
+        })
             .then(function (res) {
                 expect(res.id).toBeDefined();
                 userId = res.id;
                 done();
-            }).fail(function (e) {
+            }).catch(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -51,12 +53,14 @@ describe("User API", function () {
 
     it("Throws when user doesn't exist", function (done) {
         //would be nice to create the user first...
-        eg.API.user.getByName("stotysiecykalafiorow")
+        eg.API.user.getByName({
+            name: "stotysiecykalafiorow"
+        })
             .then(function (res) {
                 expect(this).toAutoFail("did not throw");
                 done();
-            }).fail(function (e) {
-                expect(e.statusCode).toEqual(404)
+            }).catch(function (e) {
+                expect(e.message).toEqual("User not found")
                 done();
             });
     });
@@ -65,11 +69,13 @@ describe("User API", function () {
 
     it("Can get user details by id", function (done) {
         //would be nice to create the user first...
-        eg.API.user.getById(userId)
+        eg.API.user.getById({
+            id: userId
+        })
             .then(function (res) {
                 expect(res.id).toBeDefined();
                 done();
-            }).fail(function (e) {
+            }).catch(function (e) {
                 expect(this).toAutoFail(e);
                 done();
             });
@@ -78,11 +84,13 @@ describe("User API", function () {
 
     it("Throws when user doesn't exist", function (done) {
         //would be nice to create the user first...
-        eg.API.user.getById(12345678987654321345678)
+        eg.API.user.getById({
+            id: 12345678987654321345678
+        })
             .then(function (res) {
                 expect(this).toAutoFail("did not throw");
                 done();
-            }).fail(function (e) {
+            }).catch(function (e) {
                 expect(e.statusCode).toEqual(404)
                 done();
             });
