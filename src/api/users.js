@@ -15,7 +15,6 @@ module.exports = {
                             url: tools.requestEngine.getEndpoint(ENDPOINTS.users + input.id),
                         };
 
-
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })
                     .then(result => result.body);
@@ -33,7 +32,6 @@ module.exports = {
                                 filter: "userName eq \"" + input.name + "\""
                             }
                         };
-
 
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })
