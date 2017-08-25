@@ -10,7 +10,7 @@ module.exports = {
             }, (tools, decorate, input) => {
                 return Promise.resolve()
                     .then(() => {
-                        var opts = {
+                        let opts = {
                             method: "GET",
                             url: tools.requestEngine.getEndpoint(ENDPOINTS.users + input.id),
                         };
@@ -26,7 +26,7 @@ module.exports = {
             }, (tools, decorate, input) => {
                 return Promise.resolve()
                     .then(() => {
-                        var opts = {
+                        let opts = {
                             method: "GET",
                             url: tools.requestEngine.getEndpoint(ENDPOINTS.users),
                             params: {
@@ -37,7 +37,7 @@ module.exports = {
 
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })
-                    .then(function (result) {
+                    .then(result => {
                         if(result.body.resources && result.body.resources[0]){
                             return result.body.resources[0];
                         } else {
@@ -52,4 +52,4 @@ module.exports = {
         core.API.user = usersAPI;
         return usersAPI
     }
-}
+};
