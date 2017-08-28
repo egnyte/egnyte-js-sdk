@@ -1,4 +1,4 @@
-var ImInBrowser = (typeof window !== "undefined");
+const ImInBrowser = (typeof window !== "undefined");
 let stream;
 
 if (!ImInBrowser) {
