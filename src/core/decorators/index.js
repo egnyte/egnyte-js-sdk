@@ -11,7 +11,7 @@ const activeDecorators = [
 module.exports = {
     configure(input) {
         return (opts) => {
-            opts = activeDecorators.reduce(optsModified, decorator => {
+            opts = activeDecorators.reduce((optsModified, decorator) => {
                 if (decorator.name in input) {
                     const updatedOpts = decorator.execute(optsModified, input)
                     if (!updatedOpts) {
