@@ -30,8 +30,6 @@ describe("Link API facade integration", () => {
         throw new Error("test/conf/apiaccess.js is missing");
     }
 
-    this.timeout = 20000  //QA API can be laggy
-
     it('should accept an existing token', () => {
         //token was passed in beforeEach
         expect(eg.API.auth.isAuthorized()).to.be.true();
