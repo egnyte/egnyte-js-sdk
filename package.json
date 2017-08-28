@@ -17,6 +17,8 @@
   "license": "Apache2",
   "scripts": {
     "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.js",
+    "test-browser": "open test/browser.html",
+    "build": "webpack",
     "test-old": "grunt test-node"
   },
   "dependencies": {
@@ -33,6 +35,9 @@
     "./src/lib/api.js": "./src/lib/api-browser.js"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
     "bundle-collapser": "^1.1.0",
     "chai": "^4.1.1",
     "concat-stream": "^1.5.0",
@@ -54,6 +59,7 @@
     "node-lessify": "0.0.10",
     "readable-stream": "^2.0.2",
     "should": "^11.2.1",
-    "through2": "^2.0.0"
+    "through2": "^2.0.0",
+    "webpack": "https://registry.npmjs.org/webpack/-/webpack-3.5.5.tgz"
   }
 }

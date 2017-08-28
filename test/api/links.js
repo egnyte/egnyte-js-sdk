@@ -1,32 +1,37 @@
-var stream = require("stream")
-var concat = require("concat-stream")
+var ImInBrowser = (typeof window !== "undefined");
+let stream;
 
-// TODO: consider introducing nicer test configurataion loading
-
-// DON'T try to fix the logic and cross-dependency of tests for now
-// DON'T introduce assertions library yet
-
-process.setMaxListeners(0);
+if (!ImInBrowser) {
+    stream = require("stream");
+}
 
 describe("Link API facade integration", () => {
 
-    //our main testsubject
-    const eg = Egnyte.init(settings.egnyteDomain, {
-        token: settings.APIToken,
+    const eg = Egnyte.init(egnyteDomain, {
+        token: APIToken,
         QPS: 2
     });
 
-
-
     function getTestBlob(txt) {
-        const content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
-        const s = new stream.Readable();
-        s.push(content);
-        s.push(null);
-        return s;
+        var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
+        if (ImInBrowser) {
+            try {
+                var blob = new Blob([content], {
+                    type: "text/xml"
+                });
+            } catch (e) {
+                var blob = content;
+            }
+            return blob;
+        } else {
+            var s = new stream.Readable();
+            s.push(content);
+            s.push(null);
+            return s;
+        }
     }
 
-    if (!settings.egnyteDomain || !settings.APIToken) {
+    if (!egnyteDomain || !APIToken) {
         throw new Error("test/conf/apiaccess.js is missing");
     }
 
@@ -35,11 +40,11 @@ describe("Link API facade integration", () => {
         expect(eg.API.auth.isAuthorized()).to.be.true();
     });
 
-    var testpath;
+    let testpath;
 
     describe("Link methods", () => {
-        var recentFile;
-        var recentLink;
+        let recentFile;
+        let recentLink;
 
         it("Needs a file to link to", () => {
             return eg.API.storage.get({

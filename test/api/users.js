@@ -1,7 +1,7 @@
 describe("User API", () => {
 
-    const eg = Egnyte.init(settings.egnyteDomain, {
-        token: settings.APIToken,
+    const eg = Egnyte.init(egnyteDomain, {
+        token: APIToken,
         QPS: 2
     });
 
@@ -10,14 +10,11 @@ describe("User API", () => {
     it("Can get user details by name", () => {
 
         return eg.API.user.getByName({
-                name: settings.APIUsername
+                name: APIUsername
             })
             .then(res => {
                 expect(res.id).to.exist();
                 userId = res.id;
-            })
-            .catch(() => {
-                expect.fail();
             });
 
     });
@@ -43,9 +40,6 @@ describe("User API", () => {
             })
             .then(res => {
                 expect(res.id).to.exist();
-            })
-            .catch(() => {
-                expect.fail();
             });
     });
 
