@@ -4,4 +4,5 @@ core.plug(require("./api/fs"));
 core.plug(require("./api/fs-browser"));
 core.plug(require("./api/links"));
 core.plug(require("./api/users"));
-window.Egnyte = require("./index");
+core.plug(require("./frontend/index"))
+module.exports = require("./index");
