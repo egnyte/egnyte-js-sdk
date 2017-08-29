@@ -16,7 +16,9 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "scripts": {
-    "test": "mocha --recursive test/* --reporter spec --require should",
+    "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.server.js",
+    "test-browser": "karma start",
+    "build": "webpack",
     "test-old": "grunt test-node"
   },
   "dependencies": {
@@ -33,8 +35,13 @@
     "./src/lib/api.js": "./src/lib/api-browser.js"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
     "bundle-collapser": "^1.1.0",
+    "chai": "^4.1.1",
     "concat-stream": "^1.5.0",
+    "dirty-chai": "^2.0.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
     "grunt-connect-proxy": "^0.2.0",
@@ -48,10 +55,15 @@
     "grunt-dependo": "^0.1.2",
     "grunt-jasmine-nodejs": "^1.4.3",
     "grunt-markdown": "^0.7.0",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.4",
     "mocha": "^3.5.0",
     "node-lessify": "0.0.10",
     "readable-stream": "^2.0.2",
     "should": "^11.2.1",
-    "through2": "^2.0.0"
+    "through2": "^2.0.0",
+    "webpack": "https://registry.npmjs.org/webpack/-/webpack-3.5.5.tgz"
   }
 }

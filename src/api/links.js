@@ -24,8 +24,7 @@ module.exports = {
                         return tools.requestEngine.promiseRequest(decorate({
                             method: "POST",
                             url: tools.requestEngine.getEndpoint() + ENDPOINTS_links,
-                            body: setup,
-                            json: true
+                            json: setup
                         }));
                     }).then(function (result) { //result.response result.body
                         return result.body;
