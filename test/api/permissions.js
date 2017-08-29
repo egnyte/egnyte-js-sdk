@@ -44,7 +44,7 @@ describe("Permissions API facade integration", () => {
 
     let testpath;
 
-    describe.only("Permissions methods", () => {
+    describe("Permissions methods", () => {
 
         it("Needs a folder to set permissions to", () => {
             return eg.API.storage.get({
@@ -77,27 +77,6 @@ describe("Permissions API facade integration", () => {
                     console.log(response);
                     const userPerms = response.userPerms;
                     expect(userPerms[OtherUsername]).to.be.equal("Editor")
-                });
-
-        });
-
-        it("Can get user permissions", () => {
-            return eg.API.perms.getPerms({
-                    user: OtherUsername,
-                    path: testpath
-                })
-                .then(response => {
-                    expect(response.permission).to.be.equal("Editor");
-                    return eg.API.perms.getPerms({
-                        user: "wrongNotExistingUser",
-                        path: testpath
-                    })
-                })
-                .then(() => {
-                    expect.fail();
-                })
-                .catch(err => {
-                    expect(err.statusCode).to.be.equal(400);
                 });
 
         });

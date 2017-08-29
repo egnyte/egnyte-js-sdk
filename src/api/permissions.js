@@ -21,22 +21,14 @@ module.exports = {
                     .then(result => result.response.statusCode);
             }),
             getPerms: mkReqFunction({
-                fsIdentification: true,
-                optional: ["user"]
+                fsIdentification: true
             }, (tools, decorate, input) => {
                 return Promise.resolve()
                     .then(() => {
                         const opts = {
-                            method: "GET"
+                            method: "GET",
+                            url: tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot)
                         };
-                        if (input.user) {
-                            opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + "/user/" + input.user);
-                            opts.qs = {
-                                folder: input.pathFromRoot
-                            }
-                        } else {
-                            opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot);
-                        }
 
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })

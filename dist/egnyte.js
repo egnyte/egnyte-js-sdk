@@ -197,7 +197,8 @@ core.plug(__webpack_require__(14));
 core.plug(__webpack_require__(15));
 core.plug(__webpack_require__(16));
 core.plug(__webpack_require__(17));
-window.Egnyte = __webpack_require__(18);
+core.plug(__webpack_require__(18));
+window.Egnyte = __webpack_require__(19);
 
 /***/ }),
 /* 5 */
@@ -1131,21 +1132,13 @@ module.exports = {
                 }).then(result => result.response.statusCode);
             }),
             getPerms: mkReqFunction({
-                fsIdentification: true,
-                optional: ["user"]
+                fsIdentification: true
             }, (tools, decorate, input) => {
                 return Promise.resolve().then(() => {
                     const opts = {
-                        method: "GET"
+                        method: "GET",
+                        url: tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot)
                     };
-                    if (input.user) {
-                        opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + "/user/" + input.user);
-                        opts.qs = {
-                            folder: input.pathFromRoot
-                        };
-                    } else {
-                        opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot);
-                    }
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
                 }).then(result => result.body);
@@ -1161,20 +1154,54 @@ module.exports = {
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const ENDPOINTS = __webpack_require__(0);
+
+module.exports = {
+    init(core) {
+        const mkReqFunction = core._.mkReqFunction;
+        userPermissionsApi = {
+            get: mkReqFunction({
+                fsIdentification: true,
+                optional: ["username"]
+            }, (tools, decorate, input) => {
+                return Promise.resolve().then(() => {
+                    var opts = {
+                        method: "GET",
+                        url: tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + +"/user" + (input.username ? "/" + user.username : "")),
+                        qs: {
+                            folder: input.pathFromRoot
+                        }
+                    };
+
+                    return tools.requestEngine.promiseRequest(decorate(opts));
+                }).then(result => result.body);
+            })
+
+        };
+
+        core.API.userPerms = userPermissionsApi;
+        return userPermissionsApi;
+    }
+};
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
 const core = __webpack_require__(3);
-const defaults = __webpack_require__(19);
+const defaults = __webpack_require__(20);
 
 module.exports = {
     init(egnyteDomainURL, opts) {
         //TODO: plug in httpRequest depending on env
-        const instance = core.instance(Object.assign({ httpRequest: __webpack_require__(20) }, defaults, opts));
+        const instance = core.instance(Object.assign({ httpRequest: __webpack_require__(21) }, defaults, opts));
         instance.setDomain(egnyteDomainURL);
         return instance;
     }
 };
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = {
@@ -1183,14 +1210,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var window = __webpack_require__(21)
-var once = __webpack_require__(23)
-var parseHeaders = __webpack_require__(24)
+var window = __webpack_require__(22)
+var once = __webpack_require__(24)
+var parseHeaders = __webpack_require__(25)
 
 
 
@@ -1379,7 +1406,7 @@ function noop() {}
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {if (typeof window !== "undefined") {
@@ -1392,10 +1419,10 @@ function noop() {}
     module.exports = {};
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1422,7 +1449,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = once
@@ -1447,11 +1474,11 @@ function once (fn) {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var trim = __webpack_require__(25)
-  , forEach = __webpack_require__(26)
+var trim = __webpack_require__(26)
+  , forEach = __webpack_require__(27)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -1483,7 +1510,7 @@ module.exports = function (headers) {
 }
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports) {
 
 
@@ -1503,10 +1530,10 @@ exports.right = function(str){
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(27)
+var isFunction = __webpack_require__(28)
 
 module.exports = forEach
 
@@ -1555,7 +1582,7 @@ function forEachObject(object, iterator, context) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = isFunction
