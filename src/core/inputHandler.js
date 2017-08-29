@@ -29,7 +29,17 @@ module.exports = {
                     hint: `Identify a file or folder. One of the fields must be specified: fileId folderId path`
                 })
             } else {
-                input = handleIdentification(input)
+                input = handleFsIdentification(input)
+            }
+        }
+        if (guarantees.permScopeIdentification) {
+            if (!(input.userPerms || input.groupPerms)) {
+                throw mkerr({
+                    message: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`,
+                    hint: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`
+                })
+            } else {
+                input = handlePermScopeIdentification(input)
             }
         }
         return input
@@ -46,7 +56,7 @@ function detectIncorrectId(key, id){
     }
 }
 
-function handleIdentification(input){
+function handleFsIdentification(input){
     if(input.fileId){
         detectIncorrectId("fileId", input.fileId)
         input.pathFromRoot = "/ids/file/"+input.fileId
@@ -61,4 +71,27 @@ function handleIdentification(input){
         input.pathFromRoot = helpers.encodePathComponents(input.path)
         return input
     }
+}
+
+function detectIncorrectPermScope (key, value) {
+    if (!value || typeof value !== "object" || Object.keys(value).length === 0) {
+        throw mkerr({
+            message: `Invalid permission scope identification, ${key} field should be an non empty object`,
+            hint: `Invalid permission scope identification, ${key} field should be an non empty object`
+        })
+    }
+}
+
+function handlePermScopeIdentification (input) {
+    input.permScope = {};
+    if(input.userPerms){
+        detectIncorrectPermScope("userPerms", input.userPerms);
+        input.permScope.userPerms = input.userPerms
+
+    }
+    if(input.groupPerms){
+        detectIncorrectPermScope("groupPerms", input.groupPerms);
+        input.permScope.groupPerms = input.groupPerms
+    }
+    return input;
 }

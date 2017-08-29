@@ -50,7 +50,7 @@ describe("Link API facade integration", () => {
                     path:"/Private"
                 })
                 .then(response => {
-                    const folders = response["folders"];
+                    const folders = response.folders;
                     expect(folders).to.exist();
 
                     //this test suite has unicorns and bacon, it can't get any better/

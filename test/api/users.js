@@ -16,7 +16,6 @@ describe("User API", () => {
                 expect(res.id).to.exist();
                 userId = res.id;
             });
-
     });
 
 
