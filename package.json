@@ -16,7 +16,7 @@
   "author": "ztenerowicz@egnyte.com",
   "license": "Apache2",
   "scripts": {
-    "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.js",
+    "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.server.js",
     "test-browser": "karma start",
     "build": "webpack",
     "test-old": "grunt test-node"

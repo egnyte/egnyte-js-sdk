@@ -1,4 +1,3 @@
-const ImInBrowser = (typeof window !== "undefined");
 let stream;
 
 if (!ImInBrowser) {

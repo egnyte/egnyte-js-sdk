@@ -5,3 +5,4 @@ chai.use(dirtyChai);
 global.expect = expect;
 global.Egnyte = require("../src/slim");
 require("../spec/conf/apiaccess");
+global.ImInBrowser = false;
