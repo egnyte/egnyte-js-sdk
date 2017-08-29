@@ -4,6 +4,7 @@ const mkerr = require("../errors/mkerr")
 //   so it doesn't get overwritten
 const activeDecorators = [
     // put more here, not below
+    require("./impersonate"),
     require("./customize"),
     require("./beforeSend")
 ]

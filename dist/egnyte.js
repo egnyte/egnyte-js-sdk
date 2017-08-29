@@ -73,7 +73,8 @@ module.exports = {
     "fschunked": "/v1/fs-content-chunked",
     "notes": "/v1/notes",
     "links": "/v1/links",
-    "perms": "/v1/perms",
+    "permsV1": "/v1/perms",
+    "perms": "/v2/perms",
     "userinfo": "/v1/userinfo",
     "users": "/v2/users/",
     "events": "/v1/events",
@@ -142,7 +143,7 @@ module.exports = helpers;
 const requestEngineFactory = __webpack_require__(5);
 const helpers = __webpack_require__(2);
 const decorators = __webpack_require__(7);
-const inputHandler = __webpack_require__(8);
+const inputHandler = __webpack_require__(11);
 const mkerr = __webpack_require__(1);
 
 const plugins = new Set();
@@ -190,12 +191,13 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 const core = __webpack_require__(3);
-core.plug(__webpack_require__(9));
-core.plug(__webpack_require__(10));
-core.plug(__webpack_require__(11));
 core.plug(__webpack_require__(12));
 core.plug(__webpack_require__(13));
-window.Egnyte = __webpack_require__(14);
+core.plug(__webpack_require__(14));
+core.plug(__webpack_require__(15));
+core.plug(__webpack_require__(16));
+core.plug(__webpack_require__(17));
+window.Egnyte = __webpack_require__(18);
 
 /***/ }),
 /* 5 */
@@ -534,14 +536,32 @@ module.exports = function (result) {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+const mkerr = __webpack_require__(1);
+
+// IMPORTANT: order matters. Make sure customize is at the end and beforeSend is last
+//   so it doesn't get overwritten
+const activeDecorators = [
+// put more here, not below
+__webpack_require__(8), __webpack_require__(9), __webpack_require__(10)];
 
 module.exports = {
     configure(input) {
         return opts => {
-            // Modify XHR opts using context from the inputs
-
+            opts = activeDecorators.reduce((optsModified, decorator) => {
+                if (decorator.name in input) {
+                    const updatedOpts = decorator.execute(optsModified, input);
+                    if (!updatedOpts) {
+                        throw mkerr({
+                            message: `Decorator from ${decorator.name} didn't return the options object`
+                        });
+                    }
+                    return updatedOpts;
+                } else {
+                    return optsModified;
+                }
+            }, opts);
             return opts;
         };
     }
@@ -549,6 +569,49 @@ module.exports = {
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    name: "impersonate",
+    execute(opts, input) {
+        if (!opts.headers) {
+            opts.headers = {};
+        }
+        const data = input.impersonate;
+        if (data.username) {
+            opts.headers["X-Egnyte-Act-As"] = data.username;
+        }
+        if (data.email) {
+            opts.headers["X-Egnyte-Act-As-Email"] = data.email;
+        }
+        return opts;
+    }
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    name: "customizeRequest",
+    execute(opts, input) {
+        return Object.assign(opts, input.customizeRequest);
+    }
+};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    name: "beforeSend",
+    execute(opts, input) {
+        return input.beforeSend(opts, input);
+    }
+};
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const mkerr = __webpack_require__(1);
@@ -581,7 +644,17 @@ module.exports = {
                     hint: `Identify a file or folder. One of the fields must be specified: fileId folderId path`
                 });
             } else {
-                input = handleIdentification(input);
+                input = handleFsIdentification(input);
+            }
+        }
+        if (guarantees.permScopeIdentification) {
+            if (!(input.userPerms || input.groupPerms)) {
+                throw mkerr({
+                    message: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`,
+                    hint: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`
+                });
+            } else {
+                input = handlePermScopeIdentification(input);
             }
         }
         return input;
@@ -598,7 +671,7 @@ function detectIncorrectId(key, id) {
     }
 }
 
-function handleIdentification(input) {
+function handleFsIdentification(input) {
     if (input.fileId) {
         detectIncorrectId("fileId", input.fileId);
         input.pathFromRoot = "/ids/file/" + input.fileId;
@@ -615,8 +688,30 @@ function handleIdentification(input) {
     }
 }
 
+function detectIncorrectPermScope(key, value) {
+    if (!value || typeof value !== "object" || Object.keys(value).length === 0) {
+        throw mkerr({
+            message: `Invalid permission scope identification, ${key} field should be an non empty object`,
+            hint: `Invalid permission scope identification, ${key} field should be an non empty object`
+        });
+    }
+}
+
+function handlePermScopeIdentification(input) {
+    input.permScope = {};
+    if (input.userPerms) {
+        detectIncorrectPermScope("userPerms", input.userPerms);
+        input.permScope.userPerms = input.userPerms;
+    }
+    if (input.groupPerms) {
+        detectIncorrectPermScope("groupPerms", input.groupPerms);
+        input.permScope.groupPerms = input.groupPerms;
+    }
+    return input;
+}
+
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const ENDPOINTS = __webpack_require__(0);
@@ -644,7 +739,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const ENDPOINTS = __webpack_require__(0);
@@ -775,7 +870,7 @@ function transfer(action, tools, decorate, input) {
 }
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const ENDPOINTS = __webpack_require__(0);
@@ -863,7 +958,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const ENDPOINTS_links = __webpack_require__(0).links;
@@ -958,7 +1053,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const ENDPOINTS = __webpack_require__(0);
@@ -1012,23 +1107,74 @@ module.exports = {
 };
 
 /***/ }),
-/* 14 */
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const ENDPOINTS = __webpack_require__(0);
+
+module.exports = {
+    init(core) {
+        const mkReqFunction = core._.mkReqFunction;
+        permissionsApi = {
+            allow: mkReqFunction({
+                fsIdentification: true,
+                permScopeIdentification: true
+            }, (tools, decorate, input) => {
+                return Promise.resolve().then(() => {
+                    const opts = {
+                        method: "POST",
+                        json: input.permScope,
+                        url: tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot)
+                    };
+
+                    return tools.requestEngine.promiseRequest(decorate(opts));
+                }).then(result => result.response.statusCode);
+            }),
+            getPerms: mkReqFunction({
+                fsIdentification: true,
+                optional: ["user"]
+            }, (tools, decorate, input) => {
+                return Promise.resolve().then(() => {
+                    const opts = {
+                        method: "GET"
+                    };
+                    if (input.user) {
+                        opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + "/user/" + input.user);
+                        opts.qs = {
+                            folder: input.pathFromRoot
+                        };
+                    } else {
+                        opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot);
+                    }
+
+                    return tools.requestEngine.promiseRequest(decorate(opts));
+                }).then(result => result.body);
+            })
+        };
+
+        core.API.perms = permissionsApi;
+        return permissionsApi;
+    }
+};
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const core = __webpack_require__(3);
-const defaults = __webpack_require__(15);
+const defaults = __webpack_require__(19);
 
 module.exports = {
     init(egnyteDomainURL, opts) {
         //TODO: plug in httpRequest depending on env
-        const instance = core.instance(Object.assign({ httpRequest: __webpack_require__(16) }, defaults, opts));
+        const instance = core.instance(Object.assign({ httpRequest: __webpack_require__(20) }, defaults, opts));
         instance.setDomain(egnyteDomainURL);
         return instance;
     }
 };
 
 /***/ }),
-/* 15 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = {
@@ -1037,14 +1183,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 16 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var window = __webpack_require__(17)
-var once = __webpack_require__(19)
-var parseHeaders = __webpack_require__(20)
+var window = __webpack_require__(21)
+var once = __webpack_require__(23)
+var parseHeaders = __webpack_require__(24)
 
 
 
@@ -1233,7 +1379,7 @@ function noop() {}
 
 
 /***/ }),
-/* 17 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {if (typeof window !== "undefined") {
@@ -1246,10 +1392,10 @@ function noop() {}
     module.exports = {};
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22)))
 
 /***/ }),
-/* 18 */
+/* 22 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1276,7 +1422,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 19 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = once
@@ -1301,11 +1447,11 @@ function once (fn) {
 
 
 /***/ }),
-/* 20 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var trim = __webpack_require__(21)
-  , forEach = __webpack_require__(22)
+var trim = __webpack_require__(25)
+  , forEach = __webpack_require__(26)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -1337,7 +1483,7 @@ module.exports = function (headers) {
 }
 
 /***/ }),
-/* 21 */
+/* 25 */
 /***/ (function(module, exports) {
 
 
@@ -1357,10 +1503,10 @@ exports.right = function(str){
 
 
 /***/ }),
-/* 22 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(23)
+var isFunction = __webpack_require__(27)
 
 module.exports = forEach
 
@@ -1409,7 +1555,7 @@ function forEachObject(object, iterator, context) {
 
 
 /***/ }),
-/* 23 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = isFunction

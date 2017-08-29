@@ -1,10 +1,11 @@
-let stream;
 
-if (!ImInBrowser) {
-    stream = require("stream");
-}
 
 describe("Link API facade integration", () => {
+    let stream;
+
+    if (!ImInBrowser) {
+        stream = require("stream");
+    }
 
     const eg = Egnyte.init(egnyteDomain, {
         token: APIToken,

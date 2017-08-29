@@ -18,18 +18,25 @@ module.exports = {
 
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })
-                    .then(result => result.body);
+                    .then(result => result.response.statusCode);
             }),
             getPerms: mkReqFunction({
-                fsIdentification: true
+                fsIdentification: true,
+                optional: ["user"]
             }, (tools, decorate, input) => {
                 return Promise.resolve()
                     .then(() => {
                         const opts = {
-                            method: "GET",
-                            url: tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot),
+                            method: "GET"
                         };
-
+                        if (input.user) {
+                            opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + "/user/" + input.user);
+                            opts.qs = {
+                                folder: input.pathFromRoot
+                            }
+                        } else {
+                            opts.url = tools.requestEngine.getEndpoint(ENDPOINTS.perms + input.pathFromRoot);
+                        }
 
                         return tools.requestEngine.promiseRequest(decorate(opts));
                     })

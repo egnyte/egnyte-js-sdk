@@ -1,37 +1,40 @@
-let stream;
 
-if (!ImInBrowser) {
-    stream = require("stream");
-}
 
 
 describe("Permissions API facade integration", () => {
 
-    const eg = Egnyte.init(settings.egnyteDomain, {
-        token: settings.APIToken,
+    let stream;
+
+    if (!ImInBrowser) {
+        stream = require("stream");
+    }
+
+    const eg = Egnyte.init(egnyteDomain, {
+        token: APIToken,
         QPS: 2
     });
 
     function getTestBlob(txt) {
-        var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
+        const content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
         if (ImInBrowser) {
+            let blob;
             try {
-                var blob = new Blob([content], {
+                blob = new Blob([content], {
                     type: "text/xml"
                 });
             } catch (e) {
-                var blob = content;
+                blob = content;
             }
             return blob;
         } else {
-            var s = new stream.Readable();
+            const s = new stream.Readable();
             s.push(content);
             s.push(null);
             return s;
         }
     }
 
-    if (!settings.egnyteDomain || !settings.APIToken) {
+    if (!egnyteDomain || !APIToken) {
         throw new Error("test/conf/apiaccess.js is missing");
     }
 
@@ -41,7 +44,7 @@ describe("Permissions API facade integration", () => {
 
     let testpath;
 
-    describe("Permissions methods", () => {
+    describe.only("Permissions methods", () => {
 
         it("Needs a folder to set permissions to", () => {
             return eg.API.storage.get({
@@ -61,39 +64,43 @@ describe("Permissions API facade integration", () => {
         it("Can set basic permissions", () => {
             return eg.API.perms.allow({
                     userPerms: {
-                        OtherUsername: "Editor"
+                        [OtherUsername]: "Editor"
                     },
                     path: testpath
                 })
                 .then(response => {
-                    expect(response.statusCode).to.be.equal(204);
+                    expect(response).to.be.equal(204);
                     return eg.API.perms.getPerms({
                         path: testpath
                     });
                 }).then(response => {
+                    console.log(response);
                     const userPerms = response.userPerms;
                     expect(userPerms[OtherUsername]).to.be.equal("Editor")
                 });
 
         });
 
-        // it("Can filter permissions", () => {
-        //     return eg.API.perms.getPerms({
-        //             users: ["JohnnyIHardlyKnewYa"],
-        //             path: testpath
-        //         })
-        //         .then(response => {
-        //             const users = response.users;
-        //             expect(users.length).to.be.equal(0);
-        //             return eg.API.perms.getPerms({
-        //                 path: testpath
-        //             });
-        //         }).then(response => {
-        //             const users = response.users;
-        //             expect(users.length).to.be.above(0);
-        //         });
-        //
-        // });
+        it("Can get user permissions", () => {
+            return eg.API.perms.getPerms({
+                    user: OtherUsername,
+                    path: testpath
+                })
+                .then(response => {
+                    expect(response.permission).to.be.equal("Editor");
+                    return eg.API.perms.getPerms({
+                        user: "wrongNotExistingUser",
+                        path: testpath
+                    })
+                })
+                .then(() => {
+                    expect.fail();
+                })
+                .catch(err => {
+                    expect(err.statusCode).to.be.equal(400);
+                });
+
+        });
 
         // describe("Impersonated locking", () => {
         //     let token;
