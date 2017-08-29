@@ -17,7 +17,7 @@
   "license": "Apache2",
   "scripts": {
     "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.js",
-    "test-browser": "open test/browser.html",
+    "test-browser": "karma start",
     "build": "webpack",
     "test-old": "grunt test-node"
   },
@@ -55,6 +55,10 @@
     "grunt-dependo": "^0.1.2",
     "grunt-jasmine-nodejs": "^1.4.3",
     "grunt-markdown": "^0.7.0",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-mocha-reporter": "^2.2.4",
     "mocha": "^3.5.0",
     "node-lessify": "0.0.10",
     "readable-stream": "^2.0.2",
