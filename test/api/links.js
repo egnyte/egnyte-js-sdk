@@ -12,18 +12,19 @@ describe("Link API facade integration", () => {
     });
 
     function getTestBlob(txt) {
-        var content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
+        const content = '<a id="a"><b id="b">' + txt + '</b></a>'; // the body of the new file...
         if (ImInBrowser) {
+            let blob;
             try {
-                var blob = new Blob([content], {
+                blob = new Blob([content], {
                     type: "text/xml"
                 });
             } catch (e) {
-                var blob = content;
+                blob = content;
             }
             return blob;
         } else {
-            var s = new stream.Readable();
+            const s = new stream.Readable();
             s.push(content);
             s.push(null);
             return s;
