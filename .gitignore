@@ -1,7 +1,9 @@
 karma*
+!karma.conf.js
 node_modules
 npm-debug.log
 spec/conf/apiaccess.js
+test/conf/apiaccess.js
 .grunt
 _SpecRunner.html
 TEST*.xml

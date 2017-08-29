@@ -2,7 +2,7 @@
 module.exports = {
     devtool: "source-map",
     entry: {
-        egnyte: ""
+        egnyte: "./src/egnyte.js",
     },
     output: {
         path: __dirname + "/dist/",
@@ -10,13 +10,13 @@ module.exports = {
     },
     resolve: {
         modules: ["node_modules"],
-        extensions: [".js", ".jsx"],
+        extensions: [".js"],
     },
     module: {
         loaders: [{
             test: /\.jsx|\.js$/,
             exclude: /node_modules/,
-            loader: "babel"
+            loader: "babel-loader"
         }, {
             test: /\.css$/,
             loader: "css-loader"
