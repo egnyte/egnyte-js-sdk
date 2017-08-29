@@ -1165,12 +1165,12 @@ module.exports = {
                 optional: ["username"]
             }, (tools, decorate, input) => {
                 return Promise.resolve().then(() => {
-                    var opts = {
+                    const opts = {
                         method: "GET",
-                        url: tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + +"/user" + (input.username ? "/" + user.username : "")),
-                        qs: {
-                            folder: input.pathFromRoot
-                        }
+                        url: tools.requestEngine.getEndpoint(ENDPOINTS.permsV1 + "/user" + (input.username ? "/" + input.username : ""))
+                    };
+                    opts.params = opts.qs = {
+                        folder: input.pathFromRoot
                     };
 
                     return tools.requestEngine.promiseRequest(decorate(opts));

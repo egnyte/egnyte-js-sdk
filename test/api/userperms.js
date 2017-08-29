@@ -1,4 +1,4 @@
-describe.only("User Effective Permissions API", function () {
+describe("User Effective Permissions API", function () {
 
     var eg = Egnyte.init(egnyteDomain, {
         token: APIToken,
