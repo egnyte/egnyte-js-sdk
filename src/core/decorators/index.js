@@ -5,6 +5,7 @@ const mkerr = require("../errors/mkerr")
 const activeDecorators = [
     // put more here, not below
     require("./customize"),
+    require("./query"),
     require("./beforeSend")
 ]
 

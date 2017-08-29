@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["Egnyte"] = factory();
+	else
+		root["Egnyte"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -65,7 +75,10 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = {
     "fsmeta": "/v1/fs",
@@ -86,7 +99,10 @@ module.exports = {
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const helpers = __webpack_require__(2);
+"use strict";
+
+
+var helpers = __webpack_require__(2);
 module.exports = function mkerr(fields, error) {
     error = error || Error(fields.message);
     fields.statusCode = fields.statusCode || 0;
@@ -96,12 +112,15 @@ module.exports = function mkerr(fields, error) {
 
 /***/ }),
 /* 2 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 var disallowedChars = /[":<>|?*\\]/;
 
-const helpers = {
-    encodeNameSafe(name) {
+var helpers = {
+    encodeNameSafe: function encodeNameSafe(name) {
         if (!name) {
             throw new Error("No name given");
         }
@@ -113,18 +132,18 @@ const helpers = {
 
         return name;
     },
-    encodePathComponents(path) {
+    encodePathComponents: function encodePathComponents(path) {
         path = helpers.encodeNameSafe(path);
         return path.split("/").map(encodeURIComponent).join("/").replace(/#/g, "%23");
         //TODO: handle special chars not covered by this.
     },
-    normalizeEgnyteDomain(domain) {
+    normalizeEgnyteDomain: function normalizeEgnyteDomain(domain) {
         return "https://" + helpers.normalizeURL(domain).replace(/^https?:\/\//, "");
     },
-    normalizeURL(url) {
+    normalizeURL: function normalizeURL(url) {
         return url.replace(/\/*$/, "");
     },
-    hintDeveloper(hint, err) {
+    hintDeveloper: function hintDeveloper(hint, err) {
         //TODO: make this optinal, by configuration or dev build
         console && console.warn(hint, err);
     }
@@ -139,30 +158,37 @@ module.exports = helpers;
 "use strict";
 
 
-const requestEngineFactory = __webpack_require__(5);
-const helpers = __webpack_require__(2);
-const decorators = __webpack_require__(7);
-const inputHandler = __webpack_require__(8);
-const mkerr = __webpack_require__(1);
+var requestEngineFactory = __webpack_require__(5);
+var helpers = __webpack_require__(2);
+var decorators = __webpack_require__(7);
+var inputHandler = __webpack_require__(11);
+var mkerr = __webpack_require__(1);
 
-const plugins = new Set();
+var plugins = new Set();
 
-const mkReqFunctionFactory = tools => (guarantees, apiFacadeMethod) => input => apiFacadeMethod(tools, decorators.configure(input), inputHandler.process(input, guarantees));
+var mkReqFunctionFactory = function mkReqFunctionFactory(tools) {
+    return function (guarantees, apiFacadeMethod) {
+        return function (input) {
+            return apiFacadeMethod(tools, decorators.configure(input), inputHandler.process(input, guarantees));
+        };
+    };
+};
 
 module.exports = {
-    instance(options) {
-        const tools = {
+    instance: function instance(options) {
+        var tools = {
             requestEngine: requestEngineFactory(options),
             helpers: helpers,
-            mkerr,
-            inputHandler
+            mkerr: mkerr,
+            inputHandler: inputHandler
         };
-        const core = {
-            setDomain(domain) {
-                const normalizedDomain = domain ? helpers.normalizeEgnyteDomain(domain) : null;
+        var core = {
+            setDomain: function setDomain(domain) {
+                var normalizedDomain = domain ? helpers.normalizeEgnyteDomain(domain) : null;
                 options.egnyteDomainURL = normalizedDomain;
                 core.domain = normalizedDomain;
             },
+
             API: {
                 manual: tools.requestEngine
             },
@@ -171,17 +197,20 @@ module.exports = {
                 mkReqFunction: mkReqFunctionFactory(tools)
             }
         };
-        plugins.forEach(p => p.init(core));
+        plugins.forEach(function (p) {
+            return p.init(core);
+        });
         return core;
     },
-    plug(plugin) {
+    plug: function plug(plugin) {
         // Set automatically deduplicates if a plugin was added twice
         plugins.add(plugin);
     },
+
     _: {
-        helpers,
-        plugins,
-        requestEngineFactory
+        helpers: helpers,
+        plugins: plugins,
+        requestEngineFactory: requestEngineFactory
     }
 };
 
@@ -189,17 +218,24 @@ module.exports = {
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const core = __webpack_require__(3);
-core.plug(__webpack_require__(9));
-core.plug(__webpack_require__(10));
-core.plug(__webpack_require__(11));
+"use strict";
+
+
+var core = __webpack_require__(3);
 core.plug(__webpack_require__(12));
 core.plug(__webpack_require__(13));
-window.Egnyte = __webpack_require__(14);
+core.plug(__webpack_require__(14));
+core.plug(__webpack_require__(15));
+core.plug(__webpack_require__(16));
+core.plug(__webpack_require__(17));
+module.exports = __webpack_require__(23);
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 var errorify = __webpack_require__(6);
 
@@ -288,7 +324,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
             return self.requestHandler(opts);
         } else {
             var timer;
-            var retry = function () {
+            var retry = function retry() {
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer));
             };
             if (self.timerStart) {
@@ -358,7 +394,7 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
 enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
     var self = this;
     return new Promise(function (resolve, reject) {
-        var requestFunction = function () {
+        var requestFunction = function requestFunction() {
 
             try {
                 var req = self.sendRequest(opts);
@@ -386,7 +422,7 @@ enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
 enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoAuth) {
     var self = this;
     return new Promise(function (resolve, reject) {
-        var requestFunction = function () {
+        var requestFunction = function requestFunction() {
             try {
                 var req = self.sendRequest(opts, function (error, response, body) {
                     if (error) {
@@ -466,7 +502,12 @@ function _quotaWaitTime(quota, QPS) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const mkerr = __webpack_require__(1);
+"use strict";
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var mkerr = __webpack_require__(1);
 
 //making sense of all the different error message bodies
 var isMsg = {
@@ -483,7 +524,7 @@ function findMessage(obj) {
         if (isMsg[i]) {
             return obj[i];
         }
-        if (typeof obj[i] === "object") {
+        if (_typeof(obj[i]) === "object") {
             result = findMessage(obj[i]);
             if (result) {
                 return result;
@@ -534,14 +575,35 @@ module.exports = function (result) {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
+var mkerr = __webpack_require__(1);
+
+// IMPORTANT: order matters. Make sure customize is at the end and beforeSend is last
+//   so it doesn't get overwritten
+var activeDecorators = [
+// put more here, not below
+__webpack_require__(8), __webpack_require__(9), __webpack_require__(10)];
 
 module.exports = {
-    configure(input) {
-        return opts => {
-            // Modify XHR opts using context from the inputs
-
+    configure: function configure(input) {
+        return function (opts) {
+            opts = activeDecorators.reduce(function (optsModified, decorator) {
+                if (decorator.name in input) {
+                    var updatedOpts = decorator.execute(optsModified, input);
+                    if (!updatedOpts) {
+                        throw mkerr({
+                            message: "Decorator from " + decorator.name + " didn't return the options object"
+                        });
+                    }
+                    return updatedOpts;
+                } else {
+                    return optsModified;
+                }
+            }, opts);
             return opts;
         };
     }
@@ -551,34 +613,80 @@ module.exports = {
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const mkerr = __webpack_require__(1);
-const helpers = __webpack_require__(2);
+"use strict";
+
 
 module.exports = {
-    process(originalInput, guarantees) {
-        let input = Object.assign({}, originalInput);
+    name: "customizeRequest",
+    execute: function execute(opts, input) {
+        return Object.assign(opts, input.customizeRequest);
+    }
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    name: "queryParams",
+    execute: function execute(opts, input) {
+        Object.assign(opts.params, input.queryParams);
+        return opts;
+    }
+};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    name: "beforeSend",
+    execute: function execute(opts, input) {
+        return input.beforeSend(opts, input);
+    }
+};
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var mkerr = __webpack_require__(1);
+var helpers = __webpack_require__(2);
+
+module.exports = {
+    process: function process(originalInput, guarantees) {
+        var input = Object.assign({}, originalInput);
         if (guarantees.requires) {
-            guarantees.requires.forEach(key => {
+            guarantees.requires.forEach(function (key) {
                 if (input[key] === undefined) {
                     throw mkerr({
-                        message: `Invalid input, ${key} field required`,
-                        hint: `${key} field required`
+                        message: "Invalid input, " + key + " field required",
+                        hint: key + " field required"
                     });
                 }
             });
         }
         if (guarantees.optional) {
-            guarantees.optional.forEach(key => {
+            guarantees.optional.forEach(function (key) {
                 if (key in input && input[key] === undefined) {
-                    helpers.hintDeveloper(`${key} field was explicitly passed an undefined value. It's likely an accident. Avoid specifying the property at all if it's undefined.`);
+                    helpers.hintDeveloper(key + " field was explicitly passed an undefined value. It's likely an accident. Avoid specifying the property at all if it's undefined.");
                 }
             });
         }
         if (guarantees.fsIdentification) {
             if (!(input.fileId || input.folderId || input.path)) {
                 throw mkerr({
-                    message: `Identify a file or folder. One of the fields must be specified: fileId folderId path`,
-                    hint: `Identify a file or folder. One of the fields must be specified: fileId folderId path`
+                    message: "Identify a file or folder. One of the fields must be specified: fileId folderId path",
+                    hint: "Identify a file or folder. One of the fields must be specified: fileId folderId path"
                 });
             } else {
                 input = handleIdentification(input);
@@ -588,12 +696,12 @@ module.exports = {
     }
 };
 
-const goodId = /^[0-9a-z\-]+$/i;
+var goodId = /^[0-9a-z\-]+$/i;
 function detectIncorrectId(key, id) {
     if (!goodId.test(id)) {
         throw mkerr({
-            message: `Invalid file or folder identification, ${key} field seems to contain something else than an ID`,
-            hint: `${key} field expected to match ${goodId.toString()}`
+            message: "Invalid file or folder identification, " + key + " field seems to contain something else than an ID",
+            hint: key + " field expected to match " + goodId.toString()
         });
     }
 }
@@ -616,25 +724,32 @@ function handleIdentification(input) {
 }
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const ENDPOINTS = __webpack_require__(0);
+"use strict";
+
+
+var ENDPOINTS = __webpack_require__(0);
 
 module.exports = {
-    init(core) {
-        const mkReqFunction = core._.mkReqFunction;
+    init: function init(core) {
+        var mkReqFunction = core._.mkReqFunction;
         authAPI = {
-            getUserInfo: mkReqFunction({}, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
+            getUserInfo: mkReqFunction({}, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
                     var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.userinfo)
                     };
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.body);
+                }).then(function (result) {
+                    return result.body;
+                });
             }),
-            isAuthorized: mkReqFunction({}, tools => tools.requestEngine.isAuthorized())
+            isAuthorized: mkReqFunction({}, function (tools) {
+                return tools.requestEngine.isAuthorized();
+            })
 
         };
 
@@ -644,21 +759,24 @@ module.exports = {
 };
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const ENDPOINTS = __webpack_require__(0);
+"use strict";
+
+
+var ENDPOINTS = __webpack_require__(0);
 
 module.exports = {
-    init(core) {
-        const mkReqFunction = core._.mkReqFunction;
-        const fsAPI = {
+    init: function init(core) {
+        var mkReqFunction = core._.mkReqFunction;
+        var fsAPI = {
             get: mkReqFunction({
                 fsIdentification: true,
                 optional: ["versionEntryId"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot)
                     };
@@ -670,20 +788,24 @@ module.exports = {
                     }
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.body);
+                }).then(function (result) {
+                    return result.body;
+                });
             }),
             exists: mkReqFunction({
                 fsIdentification: true
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot)
                     };
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.response.statusCode == 200, //breaking change
-                result => {
+                }).then(function (result) {
+                    return result.response.statusCode == 200;
+                }, //breaking change
+                function (result) {
                     //result.error result.response, result.body
                     if (result.response && result.response.statusCode == 404) {
                         return false;
@@ -694,21 +816,23 @@ module.exports = {
             }),
             parents: mkReqFunction({
                 fsIdentification: true
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot + "/parents")
                     };
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.body);
+                }).then(function (result) {
+                    return result.body;
+                });
             }),
             createFolder: mkReqFunction({
                 fsIdentification: true
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "POST",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot),
                         json: {
@@ -716,7 +840,9 @@ module.exports = {
                         }
                     };
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.body); //breaking change
+                }).then(function (result) {
+                    return result.body;
+                }); //breaking change
             }),
             //breaking change - no more rename, can be implemented properly later
             move: mkReqFunction({
@@ -730,9 +856,9 @@ module.exports = {
             remove: mkReqFunction({
                 fsIdentification: true,
                 optional: ["versionEntryId"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "DELETE",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot)
                     };
@@ -742,7 +868,9 @@ module.exports = {
                         };
                     }
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.response.statusCode); //backwards commpatibility
+                }).then(function (result) {
+                    return result.response.statusCode;
+                }); //backwards commpatibility
             })
         };
 
@@ -752,9 +880,9 @@ module.exports = {
 };
 
 function transfer(action, tools, decorate, input) {
-    return Promise.resolve().then(() => {
-        const newPath = tools.helpers.encodeNameSafe(input.destination);
-        const opts = {
+    return Promise.resolve().then(function () {
+        var newPath = tools.helpers.encodeNameSafe(input.destination);
+        var opts = {
             method: "POST",
             url: tools.requestEngine.getEndpoint(ENDPOINTS.fsmeta + input.pathFromRoot),
             json: {
@@ -763,7 +891,9 @@ function transfer(action, tools, decorate, input) {
             }
         };
         return tools.requestEngine.promiseRequest(decorate(opts));
-    }).then(result => result.body); //breaking change
+    }).then(function (result) {
+        return result.body;
+    }); //breaking change
     // .then(function (result) { //result.response result.body
     //     if (result.response.statusCode == 200) {
     //         return {
@@ -775,21 +905,24 @@ function transfer(action, tools, decorate, input) {
 }
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const ENDPOINTS = __webpack_require__(0);
+"use strict";
+
+
+var ENDPOINTS = __webpack_require__(0);
 
 module.exports = {
-    init(core) {
-        const mkReqFunction = core._.mkReqFunction;
-        const fsBrowserAPI = {
+    init: function init(core) {
+        var mkReqFunction = core._.mkReqFunction;
+        var fsBrowserAPI = {
             download: mkReqFunction({
                 fsIdentification: true,
                 optional: ["versionEntryId", "isBinary"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    const opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fscontent + input.pathFromRoot)
                     };
@@ -804,16 +937,18 @@ module.exports = {
                     }
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.response);
+                }).then(function (result) {
+                    return result.response;
+                });
             }),
             storeFile: mkReqFunction({
                 fsIdentification: true,
                 requires: ["file"],
                 optional: ["mimeType"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
 
-                    const opts = {
+                    var opts = {
                         method: "POST",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.fscontent + input.pathFromRoot),
                         body: input.file
@@ -825,7 +960,7 @@ module.exports = {
                     }
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => {
+                }).then(function (result) {
                     result.body.id = result.response.headers["etag"]; //for backward compatibility
                     return result.body;
                 });
@@ -834,8 +969,8 @@ module.exports = {
             storeFileMultipart: mkReqFunction({
                 fsIdentification: true,
                 requires: ["file"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
                     if (!window.FormData) {
                         throw new Error("Unsupported browser");
                     }
@@ -849,7 +984,7 @@ module.exports = {
                         body: formData
                     };
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => {
+                }).then(function (result) {
                     result.body.id = result.response.headers["etag"]; //for backward compatibility
                     return result.body;
                 });
@@ -863,27 +998,30 @@ module.exports = {
 };
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const ENDPOINTS_links = __webpack_require__(0).links;
+"use strict";
+
+
+var ENDPOINTS_links = __webpack_require__(0).links;
 
 module.exports = {
-    init(core) {
-        const mkReqFunction = core._.mkReqFunction;
-        const linksAPI = {
+    init: function init(core) {
+        var mkReqFunction = core._.mkReqFunction;
+        var linksAPI = {
             createLink: mkReqFunction({
                 requires: ["path", "linkSetup"],
                 fsIdentification: true
-            }, (tools, decorate, input) => {
-                const linkSetup = input.linkSetup;
-                const defaults = {
+            }, function (tools, decorate, input) {
+                var linkSetup = input.linkSetup;
+                var defaults = {
                     path: null,
                     type: "file",
                     accessibility: "domain"
                 };
-                return Promise.resolve().then(() => {
-                    const setup = Object.assign(defaults, linkSetup, {
+                return Promise.resolve().then(function () {
+                    var setup = Object.assign(defaults, linkSetup, {
                         path: input.pathFromRoot
                     });
                     // setup.path = tools.encodeNameSafe(setup.path);
@@ -900,7 +1038,7 @@ module.exports = {
             }),
             removeLink: mkReqFunction({
                 requires: ["id"]
-            }, (tools, decorate, input) => {
+            }, function (tools, decorate, input) {
                 return tools.requestEngine.promiseRequest(decorate({
                     method: "DELETE",
                     url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
@@ -911,7 +1049,7 @@ module.exports = {
             }),
             listLink: mkReqFunction({
                 requires: ["id"]
-            }, (tools, decorate, input) => {
+            }, function (tools, decorate, input) {
                 return tools.requestEngine.promiseRequest(decorate({
                     method: "GET",
                     url: tools.requestEngine.getEndpoint() + ENDPOINTS_links + "/" + input.id
@@ -922,8 +1060,8 @@ module.exports = {
             }),
             listLinks: mkReqFunction({
                 requires: ["filters"]
-            }, (tools, decorate, input) => {
-                const filters = input.filters;
+            }, function (tools, decorate, input) {
+                var filters = input.filters;
                 return Promise.resolve().then(function () {
                     filters.path = filters.path && tools.helpers.encodeNameSafe(filters.path);
 
@@ -939,7 +1077,7 @@ module.exports = {
             }),
             findOne: mkReqFunction({
                 requires: ["filters"]
-            }, (tools, decorate, input) => {
+            }, function (tools, decorate, input) {
                 return linksAPI.listLinks(input).then(function (list) {
                     if (list.ids && list.ids.length > 0) {
                         return linksAPI.listLink({
@@ -958,34 +1096,39 @@ module.exports = {
 };
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const ENDPOINTS = __webpack_require__(0);
+"use strict";
+
+
+var ENDPOINTS = __webpack_require__(0);
 
 module.exports = {
-    init(core) {
-        const mkReqFunction = core._.mkReqFunction;
+    init: function init(core) {
+        var mkReqFunction = core._.mkReqFunction;
         usersAPI = {
             getById: mkReqFunction({
                 fsIdentification: false,
                 requires: ["id"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    let opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.users + input.id)
                     };
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => result.body);
+                }).then(function (result) {
+                    return result.body;
+                });
             }),
             getByName: mkReqFunction({
                 fsIdentification: false,
                 requires: ["name"]
-            }, (tools, decorate, input) => {
-                return Promise.resolve().then(() => {
-                    let opts = {
+            }, function (tools, decorate, input) {
+                return Promise.resolve().then(function () {
+                    var opts = {
                         method: "GET",
                         url: tools.requestEngine.getEndpoint(ENDPOINTS.users),
                         params: {
@@ -994,12 +1137,12 @@ module.exports = {
                     };
 
                     return tools.requestEngine.promiseRequest(decorate(opts));
-                }).then(result => {
+                }).then(function (result) {
                     if (result.body.resources && result.body.resources[0]) {
                         return result.body.resources[0];
                     } else {
                         throw tools.mkerr({
-                            message: `User not found`
+                            message: "User not found"
                         });
                     }
                 });
@@ -1012,24 +1155,472 @@ module.exports = {
 };
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const core = __webpack_require__(3);
-const defaults = __webpack_require__(15);
+"use strict";
+
+
+var filePickerInit = __webpack_require__(18).init;
 
 module.exports = {
-    init(egnyteDomainURL, opts) {
+    init: function init(core) {
+        filePickerInit(core);
+    }
+};
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = init;
+
+var _app = __webpack_require__(19);
+
+var _app2 = _interopRequireDefault(_app);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function init(core) {
+    core.filePicker = function (containerNode, options) {
+        // TODO: options validation and authentication mechanisms to be added here
+        (0, _app2.default)(containerNode, options, core);
+    };
+} // accept input and pass to the app
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = undefined;
+
+var _hyperapp = __webpack_require__(20);
+
+function init(targetNode, options, core) {
+    options.perPage = options.perPage || 100; //TODO: move up to index
+
+    (0, _hyperapp.app)({
+        root: targetNode,
+        state: {
+            path: options.path || "/",
+            listing: [],
+            page: 1,
+            pagesTotal: 0
+        },
+        actions: {
+            listFolder: function listFolder(state, actions, folderPath) {
+                var path = folderPath || state.path;
+                return function (update) {
+                    update(Object.assign(state, { path: path }));
+                    core.API.storage.get({
+                        path: state.path,
+                        count: options.perPage,
+                        offset: state.page - 1
+                    }).then(function (folder) {
+                        update(Object.assign(state, {
+                            pagesTotal: Math.ceil(folder.total_count / options.perPage),
+                            listing: [].concat(folder.folders, folder.files)
+                        }));
+                    });
+                };
+            },
+
+            callbacks: {
+                selection: function selection() {
+                    options.selection(state.listing.filter(function (i) {
+                        return i.isSelected;
+                    }));
+                },
+                cancel: function cancel() {
+                    options.cancel();
+                },
+                error: function error(state, actions, _error) {
+                    options.error(_error);
+                }
+            }
+        },
+        events: {
+            load: function load(state, actions) {
+                actions.listFolder();
+            }
+        },
+        view: function view(state, actions) {
+            return (0, _hyperapp.h)(
+                "div",
+                { "class": "eg-filepicker" },
+                state.listing.map(function (item) {
+                    return item.is_folder ? (0, _hyperapp.h)(Folder, { item: item, actions: actions }) : (0, _hyperapp.h)(File, { item: item, actions: actions });
+                })
+            );
+        }
+    });
+}
+exports.default = init;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__h__ = __webpack_require__(21);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_0__h__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app__ = __webpack_require__(22);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "app", function() { return __WEBPACK_IMPORTED_MODULE_1__app__["a"]; });
+
+
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = h;
+var i
+var stack = []
+
+function h(tag, data) {
+  var node
+  var children = []
+
+  for (i = arguments.length; i-- > 2; ) {
+    stack.push(arguments[i])
+  }
+
+  while (stack.length) {
+    if (Array.isArray((node = stack.pop()))) {
+      for (i = node.length; i--; ) {
+        stack.push(node[i])
+      }
+    } else if (node != null && node !== true && node !== false) {
+      if (typeof node === "number") {
+        node = node + ""
+      }
+      children.push(node)
+    }
+  }
+
+  return typeof tag === "string"
+    ? {
+        tag: tag,
+        data: data || {},
+        children: children
+      }
+    : tag(data, children)
+}
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = app;
+var globalInvokeLaterStack = []
+
+function app(props) {
+  var appState
+  var appView = props.view
+  var appActions = {}
+  var appEvents = {}
+  var appMixins = props.mixins || []
+  var appRoot = props.root || document.body
+  var element = appRoot.children[0]
+  var oldNode
+  var willRender
+
+  for (var i = 0; i <= appMixins.length; i++) {
+    var mixin = appMixins[i] ? appMixins[i](emit) : props
+
+    Object.keys(mixin.events || []).map(function(key) {
+      appEvents[key] = (appEvents[key] || []).concat(mixin.events[key])
+    })
+
+    initialize(appActions, mixin.actions)
+    appState = merge(appState, mixin.state)
+  }
+
+  requestRender(
+    (oldNode = emit("load", element)) === element && (oldNode = element = null)
+  )
+
+  return emit
+
+  function initialize(actions, withActions, lastName) {
+    Object.keys(withActions || []).map(function(key) {
+      var action = withActions[key]
+      var name = lastName ? lastName + "." + key : key
+
+      if (typeof action === "function") {
+        actions[key] = function(data) {
+          emit("action", { name: name, data: data })
+
+          var result = emit("resolve", action(appState, appActions, data))
+
+          return typeof result === "function" ? result(update) : update(result)
+        }
+      } else {
+        initialize(actions[key] || (actions[key] = {}), action, name)
+      }
+    })
+  }
+
+  function render(cb) {
+    element = patch(
+      appRoot,
+      element,
+      oldNode,
+      (oldNode = emit("render", appView)(appState, appActions)),
+      (willRender = !willRender)
+    )
+    while ((cb = globalInvokeLaterStack.pop())) cb()
+  }
+
+  function requestRender() {
+    if (appView && !willRender) {
+      requestAnimationFrame(render, (willRender = !willRender))
+    }
+  }
+
+  function update(withState) {
+    if (withState && (withState = emit("update", merge(appState, withState)))) {
+      requestRender((appState = withState))
+    }
+    return appState
+  }
+
+  function emit(name, data) {
+    return (appEvents[name] || []).map(function(cb) {
+      var result = cb(appState, appActions, data)
+      if (result != null) {
+        data = result
+      }
+    }), data
+  }
+
+  function merge(a, b) {
+    var obj = {}
+
+    for (var i in a) {
+      obj[i] = a[i]
+    }
+
+    for (var i in b) {
+      obj[i] = b[i]
+    }
+
+    return obj
+  }
+
+  function getKey(node) {
+    if (node && (node = node.data)) {
+      return node.key
+    }
+  }
+
+  function createElement(node, isSVG) {
+    if (typeof node === "string") {
+      var element = document.createTextNode(node)
+    } else {
+      var element = (isSVG = isSVG || node.tag === "svg")
+        ? document.createElementNS("http://www.w3.org/2000/svg", node.tag)
+        : document.createElement(node.tag)
+
+      if (node.data && node.data.oncreate) {
+        globalInvokeLaterStack.push(function() {
+          node.data.oncreate(element)
+        })
+      }
+
+      for (var i in node.data) {
+        setData(element, i, node.data[i])
+      }
+
+      for (var i = 0; i < node.children.length; ) {
+        element.appendChild(createElement(node.children[i++], isSVG))
+      }
+    }
+
+    return element
+  }
+
+  function setData(element, name, value, oldValue) {
+    if (name === "key") {
+    } else if (name === "style") {
+      for (var i in merge(oldValue, (value = value || {}))) {
+        element.style[i] = value[i] || ""
+      }
+    } else {
+      try {
+        element[name] = value
+      } catch (_) {}
+
+      if (typeof value !== "function") {
+        if (value) {
+          element.setAttribute(name, value)
+        } else {
+          element.removeAttribute(name)
+        }
+      }
+    }
+  }
+
+  function updateElement(element, oldData, data) {
+    for (var i in merge(oldData, data)) {
+      var value = data[i]
+      var oldValue = i === "value" || i === "checked" ? element[i] : oldData[i]
+
+      if (value !== oldValue) {
+        setData(element, i, value, oldValue)
+      }
+    }
+
+    if (data && data.onupdate) {
+      globalInvokeLaterStack.push(function() {
+        data.onupdate(element, oldData)
+      })
+    }
+  }
+
+  function removeElement(parent, element, data) {
+    if (data && data.onremove) {
+      data.onremove(element)
+    } else {
+      parent.removeChild(element)
+    }
+  }
+
+  function patch(parent, element, oldNode, node, isSVG, nextSibling) {
+    if (oldNode == null) {
+      element = parent.insertBefore(createElement(node, isSVG), element)
+    } else if (node.tag != null && node.tag === oldNode.tag) {
+      updateElement(element, oldNode.data, node.data)
+
+      isSVG = isSVG || node.tag === "svg"
+
+      var len = node.children.length
+      var oldLen = oldNode.children.length
+      var oldKeyed = {}
+      var oldElements = []
+      var keyed = {}
+
+      for (var i = 0; i < oldLen; i++) {
+        var oldElement = (oldElements[i] = element.childNodes[i])
+        var oldChild = oldNode.children[i]
+        var oldKey = getKey(oldChild)
+
+        if (null != oldKey) {
+          oldKeyed[oldKey] = [oldElement, oldChild]
+        }
+      }
+
+      var i = 0
+      var j = 0
+
+      while (j < len) {
+        var oldElement = oldElements[i]
+        var oldChild = oldNode.children[i]
+        var newChild = node.children[j]
+
+        var oldKey = getKey(oldChild)
+        if (keyed[oldKey]) {
+          i++
+          continue
+        }
+
+        var newKey = getKey(newChild)
+
+        var keyedNode = oldKeyed[newKey] || []
+
+        if (null == newKey) {
+          if (null == oldKey) {
+            patch(element, oldElement, oldChild, newChild, isSVG)
+            j++
+          }
+          i++
+        } else {
+          if (oldKey === newKey) {
+            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG)
+            i++
+          } else if (keyedNode[0]) {
+            element.insertBefore(keyedNode[0], oldElement)
+            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG)
+          } else {
+            patch(element, oldElement, null, newChild, isSVG)
+          }
+
+          j++
+          keyed[newKey] = newChild
+        }
+      }
+
+      while (i < oldLen) {
+        var oldChild = oldNode.children[i]
+        var oldKey = getKey(oldChild)
+        if (null == oldKey) {
+          removeElement(element, oldElements[i], oldChild.data)
+        }
+        i++
+      }
+
+      for (var i in oldKeyed) {
+        var keyedNode = oldKeyed[i]
+        var reusableNode = keyedNode[1]
+        if (!keyed[reusableNode.data.key]) {
+          removeElement(element, keyedNode[0], reusableNode.data)
+        }
+      }
+    } else if (element && node !== element.nodeValue) {
+      element = parent.insertBefore(
+        createElement(node, isSVG),
+        (nextSibling = element)
+      )
+      removeElement(parent, nextSibling, oldNode.data)
+    }
+
+    return element
+  }
+}
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var core = __webpack_require__(3);
+var defaults = __webpack_require__(24);
+
+module.exports = {
+    init: function init(egnyteDomainURL, opts) {
         //TODO: plug in httpRequest depending on env
-        const instance = core.instance(Object.assign({ httpRequest: __webpack_require__(16) }, defaults, opts));
+        var instance = core.instance(Object.assign({ httpRequest: __webpack_require__(25) }, defaults, opts));
         instance.setDomain(egnyteDomainURL);
         return instance;
     }
 };
 
 /***/ }),
-/* 15 */
-/***/ (function(module, exports) {
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = {
     handleQuota: true,
@@ -1037,14 +1628,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 16 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var window = __webpack_require__(17)
-var once = __webpack_require__(19)
-var parseHeaders = __webpack_require__(20)
+var window = __webpack_require__(26)
+var once = __webpack_require__(28)
+var parseHeaders = __webpack_require__(29)
 
 
 
@@ -1233,7 +1824,7 @@ function noop() {}
 
 
 /***/ }),
-/* 17 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {if (typeof window !== "undefined") {
@@ -1246,10 +1837,10 @@ function noop() {}
     module.exports = {};
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
 
 /***/ }),
-/* 18 */
+/* 27 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1276,7 +1867,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 19 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = once
@@ -1301,11 +1892,11 @@ function once (fn) {
 
 
 /***/ }),
-/* 20 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var trim = __webpack_require__(21)
-  , forEach = __webpack_require__(22)
+var trim = __webpack_require__(30)
+  , forEach = __webpack_require__(31)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -1337,7 +1928,7 @@ module.exports = function (headers) {
 }
 
 /***/ }),
-/* 21 */
+/* 30 */
 /***/ (function(module, exports) {
 
 
@@ -1357,10 +1948,10 @@ exports.right = function(str){
 
 
 /***/ }),
-/* 22 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(23)
+var isFunction = __webpack_require__(32)
 
 module.exports = forEach
 
@@ -1409,7 +2000,7 @@ function forEachObject(object, iterator, context) {
 
 
 /***/ }),
-/* 23 */
+/* 32 */
 /***/ (function(module, exports) {
 
 module.exports = isFunction
@@ -1431,4 +2022,5 @@ function isFunction (fn) {
 
 /***/ })
 /******/ ]);
+});
 //# sourceMappingURL=egnyte.js.map

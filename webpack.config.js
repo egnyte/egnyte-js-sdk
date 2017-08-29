@@ -1,25 +1,39 @@
-
 module.exports = {
     devtool: "source-map",
     entry: {
-        egnyte: "./src/egnyte.js",
+        egnyte: "./src/egnyte.browser.js"
     },
     output: {
         path: __dirname + "/dist/",
-        filename: "[name].js"
+        filename: "[name].js",
+        library: "Egnyte",
+        libraryTarget: "umd"
     },
     resolve: {
         modules: ["node_modules"],
         extensions: [".js"],
     },
     module: {
-        loaders: [{
+        rules: [{
             test: /\.jsx|\.js$/,
             exclude: /node_modules/,
-            loader: "babel-loader"
+            use: {
+                loader: "babel-loader",
+                options: {
+                    "presets": ["es2015"],
+                    "plugins": [
+                        [
+                            "transform-react-jsx",
+                            {
+                                "pragma": "h"
+                            }
+                        ]
+                    ]
+                }
+            }
         }, {
             test: /\.css$/,
-            loader: "css-loader"
+            use: "css-loader"
         }]
     },
 };

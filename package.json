@@ -22,23 +22,15 @@
     "test-old": "grunt test-node"
   },
   "dependencies": {
-    "chunking-streams": "0.0.8",
-    "pinkyswear": "^2.2.3",
-    "q": "^1.4.1",
     "request": "^2.81.0",
-    "vkey": "1.0.0",
     "xhr": "2.1.0"
-  },
-  "browser": {
-    "q": "./src/lib/promises-browser.js",
-    "request": "xhr",
-    "./src/lib/api.js": "./src/lib/api-browser.js"
   },
   "devDependencies": {
     "babel": "^6.23.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
-    "bundle-collapser": "^1.1.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
     "chai": "^4.1.1",
     "concat-stream": "^1.5.0",
     "dirty-chai": "^2.0.1",
@@ -60,10 +52,9 @@
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.4",
     "mocha": "^3.5.0",
-    "node-lessify": "0.0.10",
     "readable-stream": "^2.0.2",
     "should": "^11.2.1",
     "through2": "^2.0.0",
-    "webpack": "https://registry.npmjs.org/webpack/-/webpack-3.5.5.tgz"
+    "webpack": "^3.5.5"
   }
 }
