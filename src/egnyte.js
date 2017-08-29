@@ -6,4 +6,4 @@ core.plug(require("./api/links"));
 core.plug(require("./api/users"));
 core.plug(require("./api/permissions"))
 core.plug(require("./api/userperms"))
-window.Egnyte = require("./index");
+module.exports = require("./index")
