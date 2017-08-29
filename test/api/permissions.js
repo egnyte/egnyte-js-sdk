@@ -81,49 +81,49 @@ describe("Permissions API facade integration", () => {
 
         });
 
-        // describe("Impersonated locking", () => {
-        //     let token;
-        //
-        //     it("Needs a file to lock", () => {
-        //         const blob = getTestBlob("hey!");
-        //
-        //         return eg.API.storage.storeFile({
-        //             path: testpath + "/aaa",
-        //             file: blob
-        //         });
-        //
-        //     });
-        //
-        //     it("Can lock a file as other user", () => {
-        //         return eg.API.storage.impersonate({
-        //                 username: OtherUsername
-        //             })
-        //             .lock({
-        //                 path: testpath + "/aaa",
-        //                 timeout: 1800
-        //             })
-        //             .then(result => {
-        //                 token = result.lock_token;
-        //                 expect(result.lock_token).to.be.ok();
-        //                 expect(result.timeout).to.be.ok();
-        //             });
-        //     });
-        //
-        //     it("Can unlock a file as other user", () => {
-        //         return eg.API.storage.impersonate({
-        //                 username: OtherUsername
-        //             })
-        //             .unlock({
-        //                 path: testpath + "/aaa",
-        //                 lockToken: token
-        //             })
-        //             .then(function (result) {
-        //                 expect(result).to.exist();
-        //             });
-        //
-        //     });
-        //
-        // });
+        xdescribe("Impersonated locking", () => {
+            let token;
+
+            it("Needs a file to lock", () => {
+                const blob = getTestBlob("hey!");
+
+                return eg.API.storage.storeFile({
+                    path: testpath + "/aaa",
+                    file: blob
+                });
+
+            });
+
+            it("Can lock a file as other user", () => {
+                return eg.API.storage.impersonate({
+                        username: OtherUsername
+                    })
+                    .lock({
+                        path: testpath + "/aaa",
+                        timeout: 1800
+                    })
+                    .then(result => {
+                        token = result.lock_token;
+                        expect(result.lock_token).to.be.ok();
+                        expect(result.timeout).to.be.ok();
+                    });
+            });
+
+            it("Can unlock a file as other user", () => {
+                return eg.API.storage.impersonate({
+                        username: OtherUsername
+                    })
+                    .unlock({
+                        path: testpath + "/aaa",
+                        lockToken: token
+                    })
+                    .then(function (result) {
+                        expect(result).to.exist();
+                    });
+
+            });
+
+        });
 
         it("Needs to clean up the folder", () => {
             return eg.API.storage.remove({
