@@ -19,11 +19,12 @@
     "test": "mocha --recursive test/api/* --timeout 10000 --reporter spec --require test/init.server.js",
     "test-browser": "karma start",
     "build": "webpack",
+    "watch": "webpack -w",
     "test-old": "grunt test-node"
   },
   "dependencies": {
     "request": "^2.81.0",
-    "xhr": "2.1.0"
+    "xhr": "^2.4.0"
   },
   "devDependencies": {
     "babel": "^6.23.0",

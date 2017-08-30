@@ -1,7 +1,7 @@
 import {h, app} from "hyperapp"
+import {Folder, File} from "./components.jsx"
 
 export default function init(targetNode, options, core) {
-    options.perPage = options.perPage || 100 //TODO: move up to index
 
     app({
         root: targetNode,
@@ -27,6 +27,9 @@ export default function init(targetNode, options, core) {
                         }))
                     })
                 }
+            },
+            select(state, actions, item){
+
             },
             callbacks: {
                 selection: () => {

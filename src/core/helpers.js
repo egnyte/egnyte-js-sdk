@@ -1,4 +1,5 @@
-var disallowedChars = /[":<>|?*\\]/;
+const disallowedChars = /[":<>|?*\\]/;
+const isHTTP = /^https?:\/\//;
 
 const helpers = {
     encodeNameSafe (name) {
@@ -19,7 +20,11 @@ const helpers = {
         //TODO: handle special chars not covered by this.
     },
     normalizeEgnyteDomain (domain) {
-        return "https://" + (helpers.normalizeURL(domain).replace(/^https?:\/\//, ""));
+        domain = helpers.normalizeURL(domain)
+        if(!isHTTP.test(domain)) {
+            domain = "https://" + domain
+        }
+        return domain;
     },
     normalizeURL(url) {
         return (url).replace(/\/*$/, "");
