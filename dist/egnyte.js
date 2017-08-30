@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -118,6 +118,7 @@ module.exports = function mkerr(fields, error) {
 
 
 var disallowedChars = /[":<>|?*\\]/;
+var isHTTP = /^https?:\/\//;
 
 var helpers = {
     encodeNameSafe: function encodeNameSafe(name) {
@@ -138,7 +139,11 @@ var helpers = {
         //TODO: handle special chars not covered by this.
     },
     normalizeEgnyteDomain: function normalizeEgnyteDomain(domain) {
-        return "https://" + helpers.normalizeURL(domain).replace(/^https?:\/\//, "");
+        domain = helpers.normalizeURL(domain);
+        if (!isHTTP.test(domain)) {
+            domain = "https://" + domain;
+        }
+        return domain;
     },
     normalizeURL: function normalizeURL(url) {
         return url.replace(/\/*$/, "");
@@ -158,10 +163,10 @@ module.exports = helpers;
 "use strict";
 
 
-var requestEngineFactory = __webpack_require__(5);
+var requestEngineFactory = __webpack_require__(8);
 var helpers = __webpack_require__(2);
-var decorators = __webpack_require__(7);
-var inputHandler = __webpack_require__(11);
+var decorators = __webpack_require__(10);
+var inputHandler = __webpack_require__(14);
 var mkerr = __webpack_require__(1);
 
 var plugins = new Set();
@@ -221,23 +226,85 @@ module.exports = {
 "use strict";
 
 
-var core = __webpack_require__(3);
-core.plug(__webpack_require__(12));
-core.plug(__webpack_require__(13));
-core.plug(__webpack_require__(14));
-core.plug(__webpack_require__(15));
-core.plug(__webpack_require__(16));
-core.plug(__webpack_require__(17));
-module.exports = __webpack_require__(23);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.init = init;
+
+var _app = __webpack_require__(21);
+
+var _app2 = _interopRequireDefault(_app);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function init(core) {
+    core.filePicker = function (containerNode, options) {
+        options.perPage = options.perPage || 100;
+
+        // TODO: options validation and authentication mechanisms to be added here
+        (0, _app2.default)(containerNode, options, core);
+    };
+} // accept input and pass to the app
 
 /***/ }),
 /* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__h__ = __webpack_require__(22);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_0__h__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app__ = __webpack_require__(23);
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "app", function() { return __WEBPACK_IMPORTED_MODULE_1__app__["a"]; });
+
+
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var errorify = __webpack_require__(6);
+var core = __webpack_require__(3);
+core.plug(__webpack_require__(15));
+core.plug(__webpack_require__(16));
+core.plug(__webpack_require__(17));
+core.plug(__webpack_require__(18));
+core.plug(__webpack_require__(19));
+core.plug(__webpack_require__(20));
+module.exports = __webpack_require__(25);
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var errorify = __webpack_require__(9);
 
 var enginePrototypeMethods = {};
 
@@ -499,7 +566,7 @@ function _quotaWaitTime(quota, QPS) {
 }
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -574,7 +641,7 @@ module.exports = function (result) {
 };
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -586,7 +653,7 @@ var mkerr = __webpack_require__(1);
 //   so it doesn't get overwritten
 var activeDecorators = [
 // put more here, not below
-__webpack_require__(8), __webpack_require__(9), __webpack_require__(10)];
+__webpack_require__(11), __webpack_require__(12), __webpack_require__(13)];
 
 module.exports = {
     configure: function configure(input) {
@@ -610,7 +677,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -624,7 +691,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -639,7 +706,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -653,7 +720,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -724,7 +791,7 @@ function handleIdentification(input) {
 }
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -735,7 +802,7 @@ var ENDPOINTS = __webpack_require__(0);
 module.exports = {
     init: function init(core) {
         var mkReqFunction = core._.mkReqFunction;
-        authAPI = {
+        var authAPI = {
             getUserInfo: mkReqFunction({}, function (tools, decorate, input) {
                 return Promise.resolve().then(function () {
                     var opts = {
@@ -759,7 +826,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -905,7 +972,7 @@ function transfer(action, tools, decorate, input) {
 }
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -998,7 +1065,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1096,7 +1163,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1107,7 +1174,7 @@ var ENDPOINTS = __webpack_require__(0);
 module.exports = {
     init: function init(core) {
         var mkReqFunction = core._.mkReqFunction;
-        usersAPI = {
+        var usersAPI = {
             getById: mkReqFunction({
                 fsIdentification: false,
                 requires: ["id"]
@@ -1155,14 +1222,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var filePickerInit = __webpack_require__(18).init;
-
+var filePickerInit = __webpack_require__(4).init;
+console.log(__webpack_require__(4));
 module.exports = {
     init: function init(core) {
         filePickerInit(core);
@@ -1170,32 +1237,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.default = init;
-
-var _app = __webpack_require__(19);
-
-var _app2 = _interopRequireDefault(_app);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function init(core) {
-    core.filePicker = function (containerNode, options) {
-        // TODO: options validation and authentication mechanisms to be added here
-        (0, _app2.default)(containerNode, options, core);
-    };
-} // accept input and pass to the app
-
-/***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1206,10 +1248,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = undefined;
 
-var _hyperapp = __webpack_require__(20);
+var _hyperapp = __webpack_require__(5);
+
+var _components = __webpack_require__(24);
 
 function init(targetNode, options, core) {
-    options.perPage = options.perPage || 100; //TODO: move up to index
 
     (0, _hyperapp.app)({
         root: targetNode,
@@ -1236,6 +1279,7 @@ function init(targetNode, options, core) {
                     });
                 };
             },
+            select: function select(state, actions, item) {},
 
             callbacks: {
                 selection: function selection() {
@@ -1261,7 +1305,7 @@ function init(targetNode, options, core) {
                 "div",
                 { "class": "eg-filepicker" },
                 state.listing.map(function (item) {
-                    return item.is_folder ? (0, _hyperapp.h)(Folder, { item: item, actions: actions }) : (0, _hyperapp.h)(File, { item: item, actions: actions });
+                    return item.is_folder ? (0, _hyperapp.h)(_components.Folder, { item: item, actions: actions }) : (0, _hyperapp.h)(_components.File, { item: item, actions: actions });
                 })
             );
         }
@@ -1270,21 +1314,7 @@ function init(targetNode, options, core) {
 exports.default = init;
 
 /***/ }),
-/* 20 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__h__ = __webpack_require__(21);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return __WEBPACK_IMPORTED_MODULE_0__h__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app__ = __webpack_require__(22);
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "app", function() { return __WEBPACK_IMPORTED_MODULE_1__app__["a"]; });
-
-
-
-
-/***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1324,7 +1354,7 @@ function h(tag, data) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1597,26 +1627,63 @@ function app(props) {
 
 
 /***/ }),
-/* 23 */
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.File = exports.Folder = undefined;
+
+var _hyperapp = __webpack_require__(5);
+
+var Folder = exports.Folder = function Folder(_ref) {
+    var item = _ref.item,
+        actions = _ref.actions;
+    return (0, _hyperapp.h)(
+        "span",
+        { onclick: function onclick(_) {
+                return actions.listFolder(item.path);
+            } },
+        item.name
+    );
+};
+var File = exports.File = function File(_ref2) {
+    var item = _ref2.item,
+        actions = _ref2.actions;
+    return (0, _hyperapp.h)(
+        "span",
+        { onclick: function onclick(_) {
+                return actions.select(item.id);
+            } },
+        item.name
+    );
+};
+
+/***/ }),
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var core = __webpack_require__(3);
-var defaults = __webpack_require__(24);
+var defaults = __webpack_require__(26);
 
 module.exports = {
     init: function init(egnyteDomainURL, opts) {
         //TODO: plug in httpRequest depending on env
-        var instance = core.instance(Object.assign({ httpRequest: __webpack_require__(25) }, defaults, opts));
+        var instance = core.instance(Object.assign({ httpRequest: __webpack_require__(27) }, defaults, opts));
         instance.setDomain(egnyteDomainURL);
         return instance;
     }
 };
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1628,21 +1695,33 @@ module.exports = {
 };
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var window = __webpack_require__(26)
-var once = __webpack_require__(28)
-var parseHeaders = __webpack_require__(29)
-
-
+var window = __webpack_require__(28)
+var isFunction = __webpack_require__(6)
+var parseHeaders = __webpack_require__(30)
+var xtend = __webpack_require__(33)
 
 module.exports = createXHR
 createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
 createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
 
+forEachArray(["get", "put", "post", "patch", "head", "delete"], function(method) {
+    createXHR[method === "delete" ? "del" : method] = function(uri, options, callback) {
+        options = initParams(uri, options, callback)
+        options.method = method.toUpperCase()
+        return _createXHR(options)
+    }
+})
+
+function forEachArray(array, iterator) {
+    for (var i = 0; i < array.length; i++) {
+        iterator(array[i])
+    }
+}
 
 function isEmpty(obj){
     for(var i in obj){
@@ -1651,10 +1730,43 @@ function isEmpty(obj){
     return true
 }
 
-function createXHR(options, callback) {
+function initParams(uri, options, callback) {
+    var params = uri
+
+    if (isFunction(options)) {
+        callback = options
+        if (typeof uri === "string") {
+            params = {uri:uri}
+        }
+    } else {
+        params = xtend(options, {uri: uri})
+    }
+
+    params.callback = callback
+    return params
+}
+
+function createXHR(uri, options, callback) {
+    options = initParams(uri, options, callback)
+    return _createXHR(options)
+}
+
+function _createXHR(options) {
+    if(typeof options.callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
+
+    var called = false
+    var callback = function cbOnce(err, response, body){
+        if(!called){
+            called = true
+            options.callback(err, response, body)
+        }
+    }
+
     function readystatechange() {
         if (xhr.readyState === 4) {
-            loadFunc()
+            setTimeout(loadFunc, 0)
         }
     }
 
@@ -1664,8 +1776,8 @@ function createXHR(options, callback) {
 
         if (xhr.response) {
             body = xhr.response
-        } else if (xhr.responseType === "text" || !xhr.responseType) {
-            body = xhr.responseText || xhr.responseXML
+        } else {
+            body = xhr.responseText || getXml(xhr)
         }
 
         if (isJson) {
@@ -1677,22 +1789,13 @@ function createXHR(options, callback) {
         return body
     }
 
-    var failureResponse = {
-                body: undefined,
-                headers: {},
-                statusCode: 0,
-                method: method,
-                url: uri,
-                rawRequest: xhr
-            }
-
     function errorFunc(evt) {
         clearTimeout(timeoutTimer)
         if(!(evt instanceof Error)){
             evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
         }
         evt.statusCode = 0
-        callback(evt, failureResponse)
+        return callback(evt, failureResponse)
     }
 
     // will load the data & process the response in a special response object
@@ -1724,19 +1827,8 @@ function createXHR(options, callback) {
         } else {
             err = new Error("Internal XMLHttpRequest Error")
         }
-        callback(err, response, response.body)
-
+        return callback(err, response, response.body)
     }
-
-    if (typeof options === "string") {
-        options = { uri: options }
-    }
-
-    options = options || {}
-    if(typeof callback === "undefined"){
-        throw new Error("callback argument missing")
-    }
-    callback = once(callback)
 
     var xhr = options.xhr || null
 
@@ -1757,13 +1849,21 @@ function createXHR(options, callback) {
     var sync = !!options.sync
     var isJson = false
     var timeoutTimer
+    var failureResponse = {
+        body: undefined,
+        headers: {},
+        statusCode: 0,
+        method: method,
+        url: uri,
+        rawRequest: xhr
+    }
 
-    if ("json" in options) {
+    if ("json" in options && options.json !== false) {
         isJson = true
         headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
         if (method !== "GET" && method !== "HEAD") {
             headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
-            body = JSON.stringify(options.json)
+            body = JSON.stringify(options.json === true ? body : options.json)
         }
     }
 
@@ -1773,6 +1873,9 @@ function createXHR(options, callback) {
     // IE9 must have onprogress be set to a unique function.
     xhr.onprogress = function () {
         // IE must die
+    }
+    xhr.onabort = function(){
+        aborted = true;
     }
     xhr.ontimeout = errorFunc
     xhr.open(method, uri, !sync, options.username, options.password)
@@ -1785,7 +1888,8 @@ function createXHR(options, callback) {
     // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
     if (!sync && options.timeout > 0 ) {
         timeoutTimer = setTimeout(function(){
-            aborted=true//IE9 may still call readystatechange
+            if (aborted) return
+            aborted = true//IE9 may still call readystatechange
             xhr.abort("timeout")
             var e = new Error("XMLHttpRequest timeout")
             e.code = "ETIMEDOUT"
@@ -1813,34 +1917,53 @@ function createXHR(options, callback) {
         options.beforeSend(xhr)
     }
 
-    xhr.send(body)
+    // Microsoft Edge browser sends "undefined" when send is called with undefined value.
+    // XMLHttpRequest spec says to pass null as body to indicate no body
+    // See https://github.com/naugtur/xhr/issues/100.
+    xhr.send(body || null)
 
     return xhr
 
 
 }
 
+function getXml(xhr) {
+    if (xhr.responseType === "document") {
+        return xhr.responseXML
+    }
+    var firefoxBugTakenEffect = xhr.responseXML && xhr.responseXML.documentElement.nodeName === "parsererror"
+    if (xhr.responseType === "" && !firefoxBugTakenEffect) {
+        return xhr.responseXML
+    }
+
+    return null
+}
+
 function noop() {}
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {if (typeof window !== "undefined") {
-    module.exports = window;
+/* WEBPACK VAR INJECTION */(function(global) {var win;
+
+if (typeof window !== "undefined") {
+    win = window;
 } else if (typeof global !== "undefined") {
-    module.exports = global;
+    win = global;
 } else if (typeof self !== "undefined"){
-    module.exports = self;
+    win = self;
 } else {
-    module.exports = {};
+    win = {};
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
+module.exports = win;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)))
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1867,36 +1990,11 @@ module.exports = g;
 
 
 /***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-module.exports = once
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var called = false
-  return function () {
-    if (called) return
-    called = true
-    return fn.apply(this, arguments)
-  }
-}
-
-
-/***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var trim = __webpack_require__(30)
-  , forEach = __webpack_require__(31)
+var trim = __webpack_require__(31)
+  , forEach = __webpack_require__(32)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -1928,7 +2026,7 @@ module.exports = function (headers) {
 }
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports) {
 
 
@@ -1948,10 +2046,10 @@ exports.right = function(str){
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isFunction = __webpack_require__(32)
+var isFunction = __webpack_require__(6)
 
 module.exports = forEach
 
@@ -2000,24 +2098,28 @@ function forEachObject(object, iterator, context) {
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports) {
 
-module.exports = isFunction
+module.exports = extend
 
-var toString = Object.prototype.toString
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
 
 
 /***/ })
