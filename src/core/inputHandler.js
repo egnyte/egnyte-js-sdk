@@ -34,9 +34,10 @@ module.exports = {
         }
         if (guarantees.permScopeIdentification) {
             if (!(input.userPerms || input.groupPerms)) {
+                const message = `Identify a user and group. One or more of the fields must be specified: userPerms, groupPerms`;
                 throw mkerr({
-                    message: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`,
-                    hint: `Identify a user and group. One or more of the fields must be specified: userPerms groupPerms`
+                    message: message,
+                    hint: message
                 })
             } else {
                 input = handlePermScopeIdentification(input)
@@ -75,9 +76,10 @@ function handleFsIdentification(input){
 
 function detectIncorrectPermScope (key, value) {
     if (!value || typeof value !== "object" || Object.keys(value).length === 0) {
+        const message = `Invalid permission scope identification, ${key} field should be an non empty object`;
         throw mkerr({
-            message: `Invalid permission scope identification, ${key} field should be an non empty object`,
-            hint: `Invalid permission scope identification, ${key} field should be an non empty object`
+            message: message,
+            hint: message
         })
     }
 }
