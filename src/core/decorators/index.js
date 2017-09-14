@@ -6,6 +6,7 @@ const activeDecorators = [
     // put more here, not below
     require("./impersonate"),
     require("./customize"),
+    require("./query"),
     require("./beforeSend")
 ]
 

@@ -3,7 +3,7 @@ const ENDPOINTS = require("./ENDPOINTS");
 module.exports = {
     init(core) {
         const mkReqFunction = core._.mkReqFunction
-        authAPI = {
+        const authAPI = {
             getUserInfo: mkReqFunction({}, (tools, decorate, input) => {
                 return Promise.resolve()
                     .then(() => {

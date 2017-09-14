@@ -3,7 +3,7 @@ const ENDPOINTS = require("./ENDPOINTS");
 module.exports = {
     init(core) {
         const mkReqFunction = core._.mkReqFunction;
-        permissionsApi = {
+        const permissionsApi = {
             allow: mkReqFunction({
                 fsIdentification: true,
                 permScopeIdentification: true

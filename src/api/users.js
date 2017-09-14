@@ -3,7 +3,7 @@ const ENDPOINTS = require("./ENDPOINTS");
 module.exports = {
     init(core) {
         const mkReqFunction = core._.mkReqFunction;
-        usersAPI = {
+        const usersAPI = {
             getById: mkReqFunction({
                 fsIdentification: false,
                 requires: ["id"]
