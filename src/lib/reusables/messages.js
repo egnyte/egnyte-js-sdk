@@ -6,7 +6,7 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
-            if (message.substr(0, marker.length) === marker) {
+            if (typeof message === 'string' && message.substr(0, marker.length) === marker) {
                 try {
                     message = JSON.parse(message.substring(marker.length));
 
