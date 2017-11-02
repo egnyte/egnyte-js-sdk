@@ -1,3 +1,8 @@
+### 2.7.1
+- update request
+- merge fix for postmessage handler
+- remove npm-shrinkwrap
+
 ### 2.7.0
 - update dependencies to remove security warnings (coming from test dependencies, no threats found in directly used code)
 - add getCurrentFolder to filepicker
