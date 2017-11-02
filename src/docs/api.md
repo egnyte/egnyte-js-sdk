@@ -260,8 +260,9 @@ API.storage.*identify(...)*.unlock |`token` | Unlocks a file if the token is the
 
 ### Identification
 
+
 Method | Argument
---- | --- | ---
+--- | --- 
 API.*.path | full path to file, starting with /
 API.*.fileId | group_id of the file
 API.*.folderId | folder_id of the folder
