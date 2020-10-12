@@ -475,6 +475,12 @@ To ease the handling of this situation you can pass <code>onInvalidToken</code> 
 <td></td>
 </tr>
 <tr>
+<td>API.storage.<em>identify(...)</em>.lock</td>
+<td><code>lock body</code></td>
+<td>Different syntax for locking - allows setting body fields directly <code>lock_token, lock_timeout, collaboration</code></td>
+<td></td>
+</tr>
+<tr>
 <td>API.storage.<em>identify(...)</em>.unlock</td>
 <td><code>token</code></td>
 <td>Unlocks a file if the token is the one with which the lock was claimed</td>
@@ -511,6 +517,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
     .then(function(filemeta){
         //
     })
+
 </code></pre>
 <p>If the API responds with an error that you cannot store an empty file, it means you have to provide the <code>size</code> argument.</p>
 <h3 id="storing-a-file-in-the-browser">Storing a file - in the browser</h3>
@@ -528,6 +535,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
         });
     return false;
 });
+
 </code></pre>
 <p>The <code>storeFile</code> method uses <code>FormData</code> constructor; documentation and detailed browser support can be found here: <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">https://developer.mozilla.org/en-US/docs/Web/API/FormData</a></p>
 <h3 id="downloading-a-file">Downloading a file</h3>
@@ -538,6 +546,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
     });
+
 </code></pre>
 <h2 id="file-notes-api-helpers">File notes API helpers</h2>
 <p>All API helpers return promises.</p>
@@ -724,6 +733,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
     &quot;send_mail&quot;: false,
     &quot;copy_me&quot;: false
 }
+
 </code></pre>
 <h3 id="listing-links">Listing links</h3>
 <p><code>API.link.listLinks</code> and <code>API.link.findOne</code> methods accept filters definition. All filters are optional.</p>
@@ -858,13 +868,16 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
 <h3 id="setting-permissions-for-users-and-groups">Setting permissions for users and groups</h3>
 <p>Scoping to users and groups can be merged</p>
 <pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).groups([&quot;All Power Users&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()
+
 </code></pre>
 <p>Scoping again will override the previous setting, so the example below will only set permissions for &quot;andy&quot;.</p>
 <pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;,&quot;margaret&quot;]).users([&quot;andy&quot;]).path(&quot;/Shared/marketing/events&quot;).allowEdit()
+
 </code></pre>
 <h3 id="getting-permissions-for-users-and-groups">Getting permissions for users and groups</h3>
 <p>All permissions for folder:</p>
 <pre><code class="lang-javascript">egnyte.API.perms.path(&quot;/Shared/marketing/events&quot;).getPerms()
+
 </code></pre>
 <p>Returns</p>
 <pre><code>{
@@ -883,8 +896,10 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
             &quot;permission&quot;: &quot;Editor&quot;
         }]
 }
+
 </code></pre><p>Filtered permissions information:</p>
 <pre><code class="lang-javascript">egnyte.API.perms.users([&quot;tommy&quot;]).path(&quot;/Shared/marketing/events&quot;).getPerms()
+
 </code></pre>
 <p>Returns</p>
 <pre><code>{
@@ -894,6 +909,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
         }],
     &quot;groups&quot;: []
 }
+
 </code></pre><h2 id="user-permissions">User Permissions</h2>
 <p>All API helpers return promises.</p>
 <table>
@@ -933,11 +949,13 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
 </table>
 <h3 id="getting-effective-user-permissions">Getting effective user permissions</h3>
 <pre><code class="lang-javascript">egnyte.API.userPerms.path(&quot;/Shared/Documents&quot;).get()
+
 </code></pre>
 <p>Returns</p>
 <pre><code>{
   &quot;permission&quot;: &quot;Full&quot;
 }
+
 </code></pre><h2 id="users">Users</h2>
 <p>All API helpers return promises.</p>
 <table>
@@ -1154,6 +1172,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
 }).then(function(polling){
     //call polling.stop() to turn the listener off
 })
+
 </code></pre>
 <h2 id="error-handling">Error handling</h2>
 <p>All errors are returned in common format of a JavaScript error enhanced with additional fields</p>

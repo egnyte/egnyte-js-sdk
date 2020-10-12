@@ -3,7 +3,7 @@ var helpers = require('../reusables/helpers');
 
 var ENDPOINTS_fsmeta = require("../enum/endpoints").fsmeta;
 
-exports.lock = function (pathFromRoot, lockToken, timeout) {
+exports.lock = function (pathFromRoot, lockTokenOrBody, timeout) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -11,11 +11,16 @@ exports.lock = function (pathFromRoot, lockToken, timeout) {
         var body = {
             "action": "lock"
         }
-        if (lockToken) {
-            body.lock_token = lockToken;
-        }
-        if (timeout) {
-            body.lock_timeout = timeout;
+        // Old style JS function signature override
+        if (typeof lockTokenOrBody === "object" && lockTokenOrBody != null){
+            body = Object.assign(body,lockTokenOrBody)
+        } else {
+            if (lockTokenOrBody) {
+                body.lock_token = lockTokenOrBody;
+            }
+            if (timeout) {
+                body.lock_timeout = timeout;
+            }
         }
         var opts = {
             method: "POST",

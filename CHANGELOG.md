@@ -1,3 +1,7 @@
+### 2.8.0
+- update request
+- add new .lock() method signature
+
 ### 2.7.1
 - update request
 - merge fix for postmessage handler

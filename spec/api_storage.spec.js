@@ -354,6 +354,37 @@ describe("Storage API facade integration", function () {
 
             });
 
+            it("Can lock a file - the other function signature", function (done) {
+                eg.API.storage.path(testpath).lock({
+                    lock_token: "1234567890",
+                    lock_timeout: 1800
+                })
+                    .then(function (result) {
+                        token = result.lock_token;
+                        expect(result.lock_token).toEqual("1234567890");
+                        expect(result.timeout).toBeTruthy();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+            it("Can unlock a file again", function (done) {
+                eg.API.storage.path(testpath).unlock()
+                    .then(function (result) {
+                        //just getting here is ok.
+                        expect(result).toBeDefined();
+                        done();
+                    }).fail(function (e) {
+                        expect(this).toAutoFail(e);
+                        done();
+                    });
+
+            });
+
+
         });
 
         it("Can remove a stored file", function (done) {

@@ -67,6 +67,7 @@ egnyte.API.storage.path(pathFromRoot).storeFile(fileStream, &quot;text/plain&quo
     .then(function(filemeta){
         //
     })
+
 </code></pre>
 <p><code>API.storage.streamToChunks</code> splits a stream in chunks and uses chunked upload to send it to Egnyte. Accepts path, stream, optional mime type and optional chunk size. Chunk size defaults to 10KB but it can be as much as 100MB if you know the file&#39;s big.
 Resolves to the same signature as <code>storeFile</code> and fails if any chunk failed to upload.</p>
@@ -75,6 +76,7 @@ egnyte.API.storage.path(pathFromRoot).streamToChunks(fileStream, &quot;text/plai
     .then(function(filemeta){
         //
     })
+
 </code></pre><p><code>API.storage.getFileStream</code> a method that gets a response that can be used with streams. Use it instead of <code>API.storage.download</code>
 This method resolves its promise to the response object of the API, with a paused data stream. This method also handles queueing and QPS limits transparently.</p>
 <pre><code class="lang-javascript">egnyte.API.storage.path(pathFromRoot).getFileStream()
@@ -82,6 +84,7 @@ This method resolves its promise to the response object of the API, with a pause
         pausedResponse.pipe(whereverYouWant);
         pausedResponse.resume(); //Be sure to resume the paused stream
     });
+
 </code></pre>
 <p>The streams are handled by the <code>request</code> npm module. The functionality of pausing and resuming streams was introduced in nodejsv0.10 and will not work in older versions.</p>
 
