@@ -1,4 +1,116 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Egnyte = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var isFunction = require(3)
+
+module.exports = forEach
+
+var toString = Object.prototype.toString
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
+function forEach(list, iterator, context) {
+    if (!isFunction(iterator)) {
+        throw new TypeError('iterator must be a function')
+    }
+
+    if (arguments.length < 3) {
+        context = this
+    }
+    
+    if (toString.call(list) === '[object Array]')
+        forEachArray(list, iterator, context)
+    else if (typeof list === 'string')
+        forEachString(list, iterator, context)
+    else
+        forEachObject(list, iterator, context)
+}
+
+function forEachArray(array, iterator, context) {
+    for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+            iterator.call(context, array[i], i, array)
+        }
+    }
+}
+
+function forEachString(string, iterator, context) {
+    for (var i = 0, len = string.length; i < len; i++) {
+        // no such thing as a sparse string.
+        iterator.call(context, string.charAt(i), i, string)
+    }
+}
+
+function forEachObject(object, iterator, context) {
+    for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+            iterator.call(context, object[k], k, object)
+        }
+    }
+}
+
+},{"3":3}],2:[function(require,module,exports){
+var win;
+
+if (typeof window !== "undefined") {
+    win = window;
+} else if (typeof global !== "undefined") {
+    win = global;
+} else if (typeof self !== "undefined"){
+    win = self;
+} else {
+    win = {};
+}
+
+module.exports = win;
+
+},{}],3:[function(require,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
+},{}],4:[function(require,module,exports){
+var trim = require(6)
+  , forEach = require(1)
+  , isArray = function(arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    }
+
+module.exports = function (headers) {
+  if (!headers)
+    return {}
+
+  var result = {}
+
+  forEach(
+      trim(headers).split('\n')
+    , function (row) {
+        var index = row.indexOf(':')
+          , key = trim(row.slice(0, index)).toLowerCase()
+          , value = trim(row.slice(index + 1))
+
+        if (typeof(result[key]) === 'undefined') {
+          result[key] = value
+        } else if (isArray(result[key])) {
+          result[key].push(value)
+        } else {
+          result[key] = [ result[key], value ]
+        }
+      }
+  )
+
+  return result
+}
+},{"1":1,"6":6}],5:[function(require,module,exports){
 /*
  * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -34,7 +146,15 @@
  * 
  * https://github.com/timjansen/PinkySwear.js
  */
-(function(target) {
+(function (root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		define([], factory);
+	} else if (typeof module === 'object' && module.exports) {
+		module.exports = factory();
+	} else {
+		root.pinkySwear = factory();
+	}
+}(this, function() {
 	var undef;
 
 	function isFunction(f) {
@@ -52,7 +172,7 @@
 			setTimeout(callback, 0);
 	}
 
-	target[0][target[1]] = function pinkySwear(extend) {
+	return function pinkySwear(extend) {
 		var state;           // undefined/null = pending, true = fulfilled, false = rejected
 		var values = [];     // an array of values as arguments for the then() handlers
 		var deferred = [];   // functions to call when set() is invoked
@@ -114,10 +234,26 @@
         }
 		return set;
 	};
-})(typeof module == 'undefined' ? [window, 'pinkySwear'] : [module, 'exports']);
+}));
 
 
-},{}],2:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+
+exports = module.exports = trim;
+
+function trim(str){
+  return str.replace(/^\s*|\s*$/g, '');
+}
+
+exports.left = function(str){
+  return str.replace(/^\s*/, '');
+};
+
+exports.right = function(str){
+  return str.replace(/\s*$/, '');
+};
+
+},{}],7:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
   , isOpera = /Opera/.test(ua)
@@ -255,11 +391,11 @@ for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
 
-},{}],3:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
-var window = require(4)
-var once = require(5)
-var parseHeaders = require(9)
+var window = require(2)
+var once = require(9)
+var parseHeaders = require(4)
 
 
 
@@ -446,18 +582,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"4":4,"5":5,"9":9}],4:[function(require,module,exports){
-if (typeof window !== "undefined") {
-    module.exports = window;
-} else if (typeof global !== "undefined") {
-    module.exports = global;
-} else if (typeof self !== "undefined"){
-    module.exports = self;
-} else {
-    module.exports = {};
-}
-
-},{}],5:[function(require,module,exports){
+},{"2":2,"4":4,"9":9}],9:[function(require,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -478,120 +603,7 @@ function once (fn) {
   }
 }
 
-},{}],6:[function(require,module,exports){
-var isFunction = require(7)
-
-module.exports = forEach
-
-var toString = Object.prototype.toString
-var hasOwnProperty = Object.prototype.hasOwnProperty
-
-function forEach(list, iterator, context) {
-    if (!isFunction(iterator)) {
-        throw new TypeError('iterator must be a function')
-    }
-
-    if (arguments.length < 3) {
-        context = this
-    }
-    
-    if (toString.call(list) === '[object Array]')
-        forEachArray(list, iterator, context)
-    else if (typeof list === 'string')
-        forEachString(list, iterator, context)
-    else
-        forEachObject(list, iterator, context)
-}
-
-function forEachArray(array, iterator, context) {
-    for (var i = 0, len = array.length; i < len; i++) {
-        if (hasOwnProperty.call(array, i)) {
-            iterator.call(context, array[i], i, array)
-        }
-    }
-}
-
-function forEachString(string, iterator, context) {
-    for (var i = 0, len = string.length; i < len; i++) {
-        // no such thing as a sparse string.
-        iterator.call(context, string.charAt(i), i, string)
-    }
-}
-
-function forEachObject(object, iterator, context) {
-    for (var k in object) {
-        if (hasOwnProperty.call(object, k)) {
-            iterator.call(context, object[k], k, object)
-        }
-    }
-}
-
-},{"7":7}],7:[function(require,module,exports){
-module.exports = isFunction
-
-var toString = Object.prototype.toString
-
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
-
-},{}],8:[function(require,module,exports){
-
-exports = module.exports = trim;
-
-function trim(str){
-  return str.replace(/^\s*|\s*$/g, '');
-}
-
-exports.left = function(str){
-  return str.replace(/^\s*/, '');
-};
-
-exports.right = function(str){
-  return str.replace(/\s*$/, '');
-};
-
-},{}],9:[function(require,module,exports){
-var trim = require(8)
-  , forEach = require(6)
-  , isArray = function(arg) {
-      return Object.prototype.toString.call(arg) === '[object Array]';
-    }
-
-module.exports = function (headers) {
-  if (!headers)
-    return {}
-
-  var result = {}
-
-  forEach(
-      trim(headers).split('\n')
-    , function (row) {
-        var index = row.indexOf(':')
-          , key = trim(row.slice(0, index)).toLowerCase()
-          , value = trim(row.slice(index + 1))
-
-        if (typeof(result[key]) === 'undefined') {
-          result[key] = value
-        } else if (isArray(result[key])) {
-          result[key].push(value)
-        } else {
-          result[key] = [ result[key], value ]
-        }
-      }
-  )
-
-  return result
-}
-},{"6":6,"8":8}],10:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -1366,7 +1378,7 @@ var helpers = require(34);
 
 var ENDPOINTS_fsmeta = require(29).fsmeta;
 
-exports.lock = function (pathFromRoot, lockToken, timeout) {
+exports.lock = function (pathFromRoot, lockTokenOrBody, timeout) {
     var requestEngine = this.requestEngine;
     var decorate = this.getDecorator();
     return promises(true).then(function () {
@@ -1374,11 +1386,16 @@ exports.lock = function (pathFromRoot, lockToken, timeout) {
         var body = {
             "action": "lock"
         }
-        if (lockToken) {
-            body.lock_token = lockToken;
-        }
-        if (timeout) {
-            body.lock_timeout = timeout;
+        // Old style JS function signature override
+        if (typeof lockTokenOrBody === "object" && lockTokenOrBody != null){
+            body = Object.assign(body,lockTokenOrBody)
+        } else {
+            if (lockTokenOrBody) {
+                body.lock_token = lockTokenOrBody;
+            }
+            if (timeout) {
+                body.lock_timeout = timeout;
+            }
         }
         var opts = {
             method: "POST",
@@ -1612,7 +1629,7 @@ var helpers = require(34);
 var dom = require(32);
 var messages = require(35);
 var errorify = require(15);
-var request = require(3);
+var request = require(8);
 
 
 
@@ -1883,7 +1900,7 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"15":15,"3":3,"31":31,"32":32,"34":34,"35":35}],22:[function(require,module,exports){
+},{"15":15,"31":31,"32":32,"34":34,"35":35,"8":8}],22:[function(require,module,exports){
 var helpers = require(34);
 
 function makeId(isFolder, theId) {
@@ -2605,7 +2622,7 @@ module.exports = {
 };
 },{"14":14,"29":29,"31":31,"32":32,"34":34,"35":35}],31:[function(require,module,exports){
 //wrapper for any promises library
-var pinkySwear = require(1);
+var pinkySwear = require(5);
 var helpers = require(34);
 
 //for pinkyswear starting versions above 2.10
@@ -2690,8 +2707,8 @@ Promises.allSettled = function (array) {
 
 module.exports = Promises;
 
-},{"1":1,"34":34}],32:[function(require,module,exports){
-var vkey = require(2);
+},{"34":34,"5":5}],32:[function(require,module,exports){
+var vkey = require(7);
 
 
 function addListener(elem, type, callback) {
@@ -2767,7 +2784,7 @@ module.exports = {
 
 }
 
-},{"2":2}],33:[function(require,module,exports){
+},{"7":7}],33:[function(require,module,exports){
 var promises = require(31);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
@@ -2910,7 +2927,7 @@ function createMessageHandler(sourceOrigin, marker, callback) {
     return function (event) {
         if (!sourceOrigin || helpers.normalizeURL(event.origin) === helpers.normalizeURL(sourceOrigin)) {
             var message = event.data;
-            if (message.substr(0, marker.length) === marker) {
+            if (typeof message === 'string' && message.substr(0, marker.length) === marker) {
                 try {
                     message = JSON.parse(message.substring(marker.length));
 
@@ -2955,6 +2972,7 @@ module.exports = {
     sendMessage: sendMessage,
     createMessageHandler: createMessageHandler
 }
+
 },{"34":34}],36:[function(require,module,exports){
 var helpers = require(34);
 var plugins = require(30);

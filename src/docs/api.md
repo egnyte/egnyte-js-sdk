@@ -255,6 +255,7 @@ API.storage.*identify(...)*.rename |  `new path` | alias for move|
 API.storage.*identify(...)*.remove |`entryID(optional)` | Deletes a file or folder. `entryID` is the identifier of the version of the file if the operation should be performed on a version|
 API.storage.*identify(...)*.removeFileVersion | `version_ID` | Deletes a version of a file, throws if version not provided (can't delete the whole file accidentally) |
 API.storage.*identify(...)*.lock | `previous token`, `timeout` | Locks a file, resolves to `{path: "...", timeout:seconds,lock_token:"..."}`, timeout defaults to 3600, previous token has to be provided if file is already locked and the lock is supposed to be renewed or overriden |
+API.storage.*identify(...)*.lock | `lock body` | Different syntax for locking - allows setting body fields directly `lock_token, lock_timeout, collaboration` |
 API.storage.*identify(...)*.unlock |`token` | Unlocks a file if the token is the one with which the lock was claimed |
 
 
