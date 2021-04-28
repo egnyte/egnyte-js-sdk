@@ -331,10 +331,10 @@ All API helpers return promises.
 
 Method | Arguments | Description | Restrictions
 --- | --- | --- | ---
-API.storage.path(`path to file`).addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
-API.storage.path(`path to file`).listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
-API.storage.getNote | `note_id` | Resolves to a note object. |
-API.storage.removeNote | `note_id` | Removes the note. |
+API.notes.path(`path to file`).addNote | `note_text` | Adds a note on file, resolves to `{id:"note-id"}` |
+API.notes.path(`path to file`).listNotes | `query_params` | Resolves to an object with pagination options and `notes` field containing a list. You can pass query params to set offset, limit etc. (refer to public API docs)|
+API.notes.getNote | `note_id` | Resolves to a note object. |
+API.notes.removeNote | `note_id` | Removes the note. |
 
 In current Egnyte Public API version notes can be added only to files identified by path.
 
