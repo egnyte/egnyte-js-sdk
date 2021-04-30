@@ -33,7 +33,10 @@ function storeFile(pathFromRoot, stream, mimeType /* optional */ , size /*option
                 try {
                     stream.resume();
                 } catch (e) {};
-            })
+            },
+            null, // forceNoAuth
+            true  // forceNoRetry
+            )
             .then(function (result) { //result.response result.body
                 return ({
                     id: result.response.headers["etag"],

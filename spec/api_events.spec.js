@@ -6,6 +6,7 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    require("./helpers/node-helpers/commonNode");
 
     process.setMaxListeners(0);
 }
@@ -95,7 +96,10 @@ describe("Events API facade", function () {
                 }
             }).then(function (sch) {
                 scheduler = sch;
-                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                return egnyteDelay(eg, null, 1000)
+                    .then(function (e) {
+                        return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                    })
                     .then(function (e) {
                         //give it time to get the events
                         setTimeout(function () {
@@ -132,7 +136,11 @@ describe("Events API facade", function () {
             }).then(function (sch) {
                 scheduler = sch;
                 scheduler.stop();
-                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+
+                return egnyteDelay(eg, null, 1000)
+                    .then(function () {
+                        return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                    })
                     .then(function (e) {
                         //give it time to get the events it shouldn't get
                         setTimeout(function () {
@@ -151,7 +159,10 @@ describe("Events API facade", function () {
             var filePath = testpath + "/candy.txt";
 
             eg.API.events.getCursor().then(function (latestId) {
-                return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                return egnyteDelay(eg, null, 1000)
+                    .then(function () {
+                        return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                    })
                     .then(function () {
                         return eg.API.events.notMy().filter({
                             folder: testpath
@@ -180,7 +191,11 @@ describe("Events API facade", function () {
         it("Should not get app's own file copy events", function (done) {
             var filePath = testpath + "/candy.txt";
             var filePath2 = testpath + "/stick.txt";
-            eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+            
+            egnyteDelay(eg, null, 1000)
+                .then(function () {
+                    return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                })
                 .then(function (e) {
                     return eg.API.events.notMy().filter({
                         folder: testpath
@@ -278,12 +293,17 @@ describe("Events API facade", function () {
                 });
 
                 filteredEventsSource.getCursor().then(function (startEventId) {
-                    return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                    return egnyteDelay(eg, null, 1000)
+                        .then(function () {
+                            return eg.API.storage.path(filePath).storeFile(getFileContent("sour"))
+                        })
                         .then(function (e) {
-
-                            return eg.API.storage.impersonate({
-                                username: OtherUsername
-                            }).path(otherFilePath).storeFile(getFileContent("sour as ...much as possible"));
+                            return egnyteDelay(eg, e, 1000)
+                                .then(function () {
+                                    return eg.API.storage.impersonate({
+                                        username: OtherUsername
+                                    }).path(otherFilePath).storeFile(getFileContent("sour as ...much as possible"));
+                                })
                         })
                         .then(function (e) {
                             return filteredEventsSource.listen({

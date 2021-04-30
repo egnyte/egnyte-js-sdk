@@ -60,7 +60,7 @@ enginePrototypeMethods.promise = function (value) {
     return promises(value);
 }
 
-enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
+enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth, forceNoRetry) {
     var self = this;
     opts = helpers.extend({}, self.options.requestDefaults, opts); //merging in the defaults
     var originalOpts = helpers.extend({}, opts); //just copying the object
@@ -78,13 +78,13 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
         } else {
             var timer;
             var retry = function () {
-                self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer));
+                self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer, forceNoRetry));
             };
             if (self.timerStart) {
                 timer = self.timerStart();
             }
             
-            return self.requestHandler(opts, self.retryHandler(callback, retry, timer));
+            return self.requestHandler(opts, self.retryHandler(callback, retry, timer, forceNoRetry));
         }
     } else {
         callback.call(this, new Error("Not authorized"), {
@@ -94,7 +94,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth) {
 
 }
 
-enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
+enginePrototypeMethods.retryHandler = function (callback, retry, timer, forceNoRetry) {
     var self = this;
     return function (error, response, body) {
         //build an error object for http errors
@@ -118,7 +118,8 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer) {
             response &&
             self.options.handleQuota &&
             response.statusCode === 403 &&
-            retryAfter
+            retryAfter &&
+            !forceNoRetry
         ) {
             if (masheryCode === "ERR_403_DEVELOPER_OVER_QPS") {
                 //retry
@@ -190,7 +191,7 @@ enginePrototypeMethods.retrieveStreamFromRequest = function (opts) {
     return defer.promise;
 }
 
-enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoAuth) {
+enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoAuth, forceNoRetry) {
     var defer = promises.defer();
     var self = this;
     var requestFunction = function () {
@@ -208,7 +209,7 @@ enginePrototypeMethods.promiseRequest = function (opts, requestHandler, forceNoA
                         body: body
                     });
                 }
-            }, forceNoAuth);
+            }, forceNoAuth, forceNoRetry);
             requestHandler && requestHandler(req);
         } catch (error) {
             defer.reject(errorify({
