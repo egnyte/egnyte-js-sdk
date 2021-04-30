@@ -6,6 +6,7 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    require("./helpers/node-helpers/commonNode");
 
     process.setMaxListeners(0);
 }
@@ -68,12 +69,16 @@ describe("Storage API facade integration", function () {
 
 
         it("Prepares a file", function (done) {
-            eg.API.storage.path(testpath).storeFile(getTestBlob("whatever content")).then(function () {
-                done();
-            }).fail(function (e) {
-                expect(this).toAutoFail(e);
-                done();
-            });
+            egnyteDelay(eg, null, 1000)
+                .then(function () {
+                    return eg.API.storage.path(testpath).storeFile(getTestBlob("whatever content"))
+                })
+                .then(function () {
+                    done();
+                }).fail(function (e) {
+                    expect(this).toAutoFail(e);
+                    done();
+                });
         });
 
 

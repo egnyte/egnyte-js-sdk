@@ -6,6 +6,7 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    require("./helpers/node-helpers/commonNode");
 
     process.setMaxListeners(0);
 }
@@ -71,6 +72,9 @@ describe("Link API facade integration", function () {
 
         it("Needs a file to link to", function (done) {
             eg.API.storage.path("/Private").get()
+                .then(function (e) {
+                    return egnyteDelay(eg, e, 1000)
+                })
                 .then(function (e) {
                     expect(e["folders"]).toBeDefined();
                     //this test suite has unicorns and bacon, it can't get any better/

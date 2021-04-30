@@ -6,6 +6,7 @@ if (!ImInBrowser) {
     Egnyte = require("../src/slim");
     require("./conf/apiaccess");
     require("./helpers/matchers");
+    require("./helpers/node-helpers/commonNode");
 
     process.setMaxListeners(0);
 }
@@ -123,7 +124,10 @@ describe("Permissions API facade integration", function () {
             it("Needs a file to lock", function (done) {
                 var blob = getTestBlob("hey!");
 
-                eg.API.storage.path(testpath + "/aaa").storeFile(blob)
+                egnyteDelay(eg, null, 1000)
+                    .then(function () {
+                        return eg.API.storage.path(testpath + "/aaa").storeFile(blob)
+                    })
                     .then(function (e) {
                         done();
                     }).fail(function (e) {
