@@ -37,7 +37,7 @@
   "devDependencies": {
     "bundle-collapser": "^1.1.0",
     "concat-stream": "^1.6.2",
-    "grunt": "^0.4.5",
+    "grunt": "^1.3.0",
     "grunt-browserify": "^4.0.1",
     "grunt-connect-proxy": "^0.2.0",
     "grunt-contrib-clean": "^0.6.0",
