@@ -1,3 +1,10 @@
+### 2.10.0
+- add feature to set header "X-Egnyte-Request-Id"
+  
+### 2.9.0
+- update documentation
+- prevent upload retry when quota exceeded
+
 ### 2.8.0
 - update request
 - add new .lock() method signature
