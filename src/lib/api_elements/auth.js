@@ -155,8 +155,8 @@ authPrototypeMethods.requestTokenByPassword = function (username, password) {
         body: [
             "client_id=" + this.options.key,
             "grant_type=password",
-            "username=" + username,
-            "password=" + password
+            "username=" + encodeURIComponent(username),
+            "password=" + encodeURIComponent(password)
         ].join("&")
     }, null, !!"forceNoAuth").then(function (result) { //result.response result.body
         self.token = result.body.access_token
