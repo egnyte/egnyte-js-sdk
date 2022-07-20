@@ -272,7 +272,10 @@ describe("Storage API facade integration", function () {
         it("Can store another version of a file", function (done) {
             var blob = getTestBlob("hey again!");
 
-            eg.API.storage.path(testpath).storeFile(blob)
+            egnyteDelay(eg, null, 1000)
+                .then(function () {
+                    return eg.API.storage.path(testpath).storeFile(blob)
+                })
                 .then(function (e) {
                     expect(e.id).toBeTruthy();
                     expect(e.group_id).toEqual(recentFileObject.group_id);
