@@ -81,7 +81,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth, forc
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer, forceNoRetry));
             };
             if (self.timerStart) {
-                timer = self.timerStart();
+                timer = self.timerStart(originalOpts.method, originalOpts.url || originalOpts.uri);
             }
             
             return self.requestHandler(opts, self.retryHandler(callback, retry, timer, forceNoRetry));
@@ -156,7 +156,7 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer, forceNoR
                 self.options.onInvalidToken();
             }
             if (self.timerEnd) {
-                self.timerEnd(timer);
+                self.timerEnd(timer, response.statusCode);
             }
             callback.call(this, error, response, body);
         }
