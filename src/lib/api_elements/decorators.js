@@ -1,7 +1,6 @@
 var helpers = require("../reusables/helpers");
 
 var defaultDecorators = {
-
     "impersonate": function (opts, data) {
         if (!opts.headers) {
             opts.headers = {}
@@ -16,8 +15,16 @@ var defaultDecorators = {
     },
     "customizeRequest": function (opts, transformation) {
         return transformation(opts);
+    },
+    "requestId": function (opts, requestId) {
+        if (!opts.headers) {
+            opts.headers = {}
+        }
+        if (requestId) {
+            opts.headers["X-Egnyte-Request-Id"] = requestId;
+        }
+        return opts;
     }
-
 }
 
 
