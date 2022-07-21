@@ -145,7 +145,11 @@ describe("Item names / ", function () {
 
             it("should store a file called " + fname, function (done) {
                 var blob = getTestBlob("foo");
-                eg.API.storage.path(basePath + "/" + fname).storeFile(blob)
+
+                egnyteDelay(eg, null, 1000)
+                    .then(function () {
+                        return eg.API.storage.path(basePath + "/" + fname).storeFile(blob)
+                    })
                     .then(function (e) {
                         expect(e.path).toEqual(basePath + "/" + fname);
                         return eg.API.storage.path(e.path).get();

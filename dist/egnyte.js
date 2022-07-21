@@ -1,52 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Egnyte = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var isFunction = require(3)
-
-module.exports = forEach
-
-var toString = Object.prototype.toString
-var hasOwnProperty = Object.prototype.hasOwnProperty
-
-function forEach(list, iterator, context) {
-    if (!isFunction(iterator)) {
-        throw new TypeError('iterator must be a function')
-    }
-
-    if (arguments.length < 3) {
-        context = this
-    }
-    
-    if (toString.call(list) === '[object Array]')
-        forEachArray(list, iterator, context)
-    else if (typeof list === 'string')
-        forEachString(list, iterator, context)
-    else
-        forEachObject(list, iterator, context)
-}
-
-function forEachArray(array, iterator, context) {
-    for (var i = 0, len = array.length; i < len; i++) {
-        if (hasOwnProperty.call(array, i)) {
-            iterator.call(context, array[i], i, array)
-        }
-    }
-}
-
-function forEachString(string, iterator, context) {
-    for (var i = 0, len = string.length; i < len; i++) {
-        // no such thing as a sparse string.
-        iterator.call(context, string.charAt(i), i, string)
-    }
-}
-
-function forEachObject(object, iterator, context) {
-    for (var k in object) {
-        if (hasOwnProperty.call(object, k)) {
-            iterator.call(context, object[k], k, object)
-        }
-    }
-}
-
-},{"3":3}],2:[function(require,module,exports){
 var win;
 
 if (typeof window !== "undefined") {
@@ -61,26 +13,31 @@ if (typeof window !== "undefined") {
 
 module.exports = win;
 
+},{}],2:[function(require,module,exports){
+module.exports = once
+
+once.proto = once(function () {
+  Object.defineProperty(Function.prototype, 'once', {
+    value: function () {
+      return once(this)
+    },
+    configurable: true
+  })
+})
+
+function once (fn) {
+  var called = false
+  return function () {
+    if (called) return
+    called = true
+    return fn.apply(this, arguments)
+  }
+}
+
 },{}],3:[function(require,module,exports){
-module.exports = isFunction
-
-var toString = Object.prototype.toString
-
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
-
-},{}],4:[function(require,module,exports){
-var trim = require(6)
-  , forEach = require(1)
+var trim = function(string) {
+  return string.replace(/^\s+|\s+$/g, '');
+}
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -91,26 +48,27 @@ module.exports = function (headers) {
 
   var result = {}
 
-  forEach(
-      trim(headers).split('\n')
-    , function (row) {
-        var index = row.indexOf(':')
-          , key = trim(row.slice(0, index)).toLowerCase()
-          , value = trim(row.slice(index + 1))
+  var headersArr = trim(headers).split('\n')
 
-        if (typeof(result[key]) === 'undefined') {
-          result[key] = value
-        } else if (isArray(result[key])) {
-          result[key].push(value)
-        } else {
-          result[key] = [ result[key], value ]
-        }
-      }
-  )
+  for (var i = 0; i < headersArr.length; i++) {
+    var row = headersArr[i]
+    var index = row.indexOf(':')
+    , key = trim(row.slice(0, index)).toLowerCase()
+    , value = trim(row.slice(index + 1))
+
+    if (typeof(result[key]) === 'undefined') {
+      result[key] = value
+    } else if (isArray(result[key])) {
+      result[key].push(value)
+    } else {
+      result[key] = [ result[key], value ]
+    }
+  }
 
   return result
 }
-},{"1":1,"6":6}],5:[function(require,module,exports){
+
+},{}],4:[function(require,module,exports){
 /*
  * PinkySwear.js 2.2.2 - Minimalistic implementation of the Promises/A+ spec
  * 
@@ -237,23 +195,7 @@ module.exports = function (headers) {
 }));
 
 
-},{}],6:[function(require,module,exports){
-
-exports = module.exports = trim;
-
-function trim(str){
-  return str.replace(/^\s*|\s*$/g, '');
-}
-
-exports.left = function(str){
-  return str.replace(/^\s*/, '');
-};
-
-exports.right = function(str){
-  return str.replace(/\s*$/, '');
-};
-
-},{}],7:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
   , isOSX = /OS X/.test(ua)
   , isOpera = /Opera/.test(ua)
@@ -391,11 +333,11 @@ for(i = 112; i < 136; ++i) {
   output[i] = 'F'+(i-111)
 }
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
-var window = require(2)
-var once = require(9)
-var parseHeaders = require(4)
+var window = require(1)
+var once = require(2)
+var parseHeaders = require(3)
 
 
 
@@ -582,28 +524,7 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"2":2,"4":4,"9":9}],9:[function(require,module,exports){
-module.exports = once
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var called = false
-  return function () {
-    if (called) return
-    called = true
-    return fn.apply(this, arguments)
-  }
-}
-
-},{}],10:[function(require,module,exports){
+},{"1":1,"2":2,"3":3}],7:[function(require,module,exports){
 module.exports = {
     handleQuota: true,
     QPS: 2,
@@ -613,11 +534,11 @@ module.exports = {
     oldIEForwarder: false
     
 }
-},{}],11:[function(require,module,exports){
-var slim = require(51);
-var filepicker = require(36)
-var prompt = require(44)
-var authPrompt = require(14)
+},{}],8:[function(require,module,exports){
+var slim = require(48);
+var filepicker = require(33)
+var prompt = require(41)
+var authPrompt = require(11)
 
 slim.plugin("filePicker", function (root, resources) {
     root.filePicker = filepicker(resources.API);
@@ -628,17 +549,17 @@ slim.plugin("prompt", function (root, resources) {
 });
 
 module.exports = slim;
-},{"14":14,"36":36,"44":44,"51":51}],12:[function(require,module,exports){
-var RequestEngine = require(23);
-var AuthEngine = require(13);
-var StorageFacade = require(26);
-var Notes = require(21);
-var LinkFacade = require(19);
-var PermFacade = require(22);
-var UserPerms = require(28);
-var User = require(27);
-var Events = require(18);
-var Search = require(25);
+},{"11":11,"33":33,"41":41,"48":48}],9:[function(require,module,exports){
+var RequestEngine = require(20);
+var AuthEngine = require(10);
+var StorageFacade = require(23);
+var Notes = require(18);
+var LinkFacade = require(16);
+var PermFacade = require(19);
+var UserPerms = require(25);
+var User = require(24);
+var Events = require(15);
+var Search = require(22);
 
 
 module.exports = function (options) {
@@ -670,12 +591,12 @@ module.exports = function (options) {
     if (!("withCredentials" in (new window.XMLHttpRequest()))) {
         if (options.acceptForwarding) {
             //will handle incoming forwards
-            var responder = require(29);
+            var responder = require(26);
             responder(options, api);
         } else {
             //IE 8 and 9 forwarding
             if (options.oldIEForwarder) {
-                var forwarder = require(30);
+                var forwarder = require(27);
                 forwarder(options, api);
             }
         }
@@ -686,18 +607,18 @@ module.exports = function (options) {
     return api;
 };
 
-},{"13":13,"18":18,"19":19,"21":21,"22":22,"23":23,"25":25,"26":26,"27":27,"28":28,"29":29,"30":30}],13:[function(require,module,exports){
+},{"10":10,"15":15,"16":16,"18":18,"19":19,"20":20,"22":22,"23":23,"24":24,"25":25,"26":26,"27":27}],10:[function(require,module,exports){
 var oauthRegex = /access_token=([^&]+)/;
 var oauthDeniedRegex = /error=access_denied/;
 
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var errorify = require(17);
+var promises = require(40);
+var helpers = require(44);
+var dom = require(42);
+var messages = require(45);
+var errorify = require(14);
 
-var ENDPOINTS_userinfo = require(31).userinfo;
-var ENDPOINTS_tokenauth = require(31).tokenauth;
+var ENDPOINTS_userinfo = require(28).userinfo;
+var ENDPOINTS_tokenauth = require(28).tokenauth;
 
 
 function Auth(options) {
@@ -911,9 +832,9 @@ authPrototypeMethods.getUserInfo = function () {
 Auth.prototype = authPrototypeMethods;
 
 module.exports = Auth;
-},{"17":17,"31":31,"43":43,"45":45,"47":47,"48":48}],14:[function(require,module,exports){
-var prompt = require(44)
-var helpers = require(47)
+},{"14":14,"28":28,"40":40,"42":42,"44":44,"45":45}],11:[function(require,module,exports){
+var prompt = require(41)
+var helpers = require(44)
 
 function egmitifyDomain(domain) {
     if (domain.indexOf('.') === -1) {
@@ -935,10 +856,10 @@ module.exports = function (root, resources) {
         });
     }
 };
-},{"44":44,"47":47}],15:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var ENDPOINTS = require(31);
+},{"41":41,"44":44}],12:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var ENDPOINTS = require(28);
 
 
 function genericUpload(requestEngine, decorate, pathFromRoot, headers, file) {
@@ -1047,8 +968,8 @@ exports.startChunkedUpload = function (pathFromRoot, fileOrBlob, mimeType, verif
     });
 
 }
-},{"31":31,"43":43,"47":47}],16:[function(require,module,exports){
-var helpers = require(47);
+},{"28":28,"40":40,"44":44}],13:[function(require,module,exports){
+var helpers = require(44);
 
 var defaultDecorators = {
     "impersonate": function (opts, data) {
@@ -1125,7 +1046,7 @@ module.exports = {
     }
 }
 
-},{"47":47}],17:[function(require,module,exports){
+},{"44":44}],14:[function(require,module,exports){
 //making sense of all the different error message bodies
 var isMsg = {
     "msg": 1,
@@ -1187,14 +1108,14 @@ module.exports = function (result) {
     }
     return error;
 }
-},{}],18:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var every = require(46);
-var decorators = require(16);
+},{}],15:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var every = require(43);
+var decorators = require(13);
 
-var ENDPOINTS_events = require(31).events;
-var ENDPOINTS_eventscursor = require(31).eventscursor;
+var ENDPOINTS_events = require(28).events;
+var ENDPOINTS_eventscursor = require(28).eventscursor;
 
 function Events(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1321,12 +1242,12 @@ Events.prototype = {
 };
 
 module.exports = Events;
-},{"16":16,"31":31,"43":43,"46":46,"47":47}],19:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"13":13,"28":28,"40":40,"43":43,"44":44}],16:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var decorators = require(13);
 
-var ENDPOINTS_links = require(31).links;
+var ENDPOINTS_links = require(28).links;
 
 function Links(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1418,11 +1339,11 @@ Links.prototype = linksProto;
 
 module.exports = Links;
 
-},{"16":16,"31":31,"43":43,"47":47}],20:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
+},{"13":13,"28":28,"40":40,"44":44}],17:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
 
-var ENDPOINTS_fsmeta = require(31).fsmeta;
+var ENDPOINTS_fsmeta = require(28).fsmeta;
 
 exports.lock = function (pathFromRoot, lockTokenOrBody, timeout) {
     var requestEngine = this.requestEngine;
@@ -1477,12 +1398,12 @@ exports.unlock = function (pathFromRoot, lockToken) {
         };
     });
 }
-},{"31":31,"43":43,"47":47}],21:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"28":28,"40":40,"44":44}],18:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var decorators = require(13);
 
-var ENDPOINTS_notes = require(31).notes;
+var ENDPOINTS_notes = require(28).notes;
 
 
 function Notes(requestEngine) {
@@ -1572,13 +1493,13 @@ notesProto.removeNote = function (id) {
 Notes.prototype = notesProto;
 
 module.exports = Notes;
-},{"16":16,"31":31,"43":43,"47":47}],22:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
-var resourceIdentifier = require(24);
+},{"13":13,"28":28,"40":40,"44":44}],19:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var decorators = require(13);
+var resourceIdentifier = require(21);
 
-var ENDPOINTS_perms = require(31).perms;
+var ENDPOINTS_perms = require(28).perms;
 
 function Perms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -1669,13 +1590,13 @@ delete Perms.prototype.fileId;
 
 module.exports = Perms;
 
-},{"16":16,"24":24,"31":31,"43":43,"47":47}],23:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var errorify = require(17);
-var request = require(8);
+},{"13":13,"21":21,"28":28,"40":40,"44":44}],20:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var dom = require(42);
+var messages = require(45);
+var errorify = require(14);
+var request = require(6);
 
 
 
@@ -1753,7 +1674,7 @@ enginePrototypeMethods.sendRequest = function (opts, callback, forceNoAuth, forc
                 self.sendRequest(originalOpts, self.retryHandler(callback, retry, timer, forceNoRetry));
             };
             if (self.timerStart) {
-                timer = self.timerStart();
+                timer = self.timerStart(originalOpts.method, originalOpts.url || originalOpts.uri);
             }
             
             return self.requestHandler(opts, self.retryHandler(callback, retry, timer, forceNoRetry));
@@ -1828,7 +1749,7 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer, forceNoR
                 self.options.onInvalidToken();
             }
             if (self.timerEnd) {
-                self.timerEnd(timer);
+                self.timerEnd(timer, response.statusCode);
             }
             callback.call(this, error, response, body);
         }
@@ -1947,8 +1868,8 @@ function _quotaWaitTime(quota, QPS) {
 Engine.prototype = enginePrototypeMethods;
 
 module.exports = Engine;
-},{"17":17,"43":43,"45":45,"47":47,"48":48,"8":8}],24:[function(require,module,exports){
-var helpers = require(47);
+},{"14":14,"40":40,"42":42,"44":44,"45":45,"6":6}],21:[function(require,module,exports){
+var helpers = require(44);
 
 function makeId(isFolder, theId) {
     return (isFolder ? "/ids/folder/" : "/ids/file/") + theId;
@@ -1993,12 +1914,12 @@ module.exports = function (APIPrototype, opts) {
     }
 
 }
-},{"47":47}],25:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
+},{"44":44}],22:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var decorators = require(13);
 
-var ENDPOINTS_search = require(31).search;
+var ENDPOINTS_search = require(28).search;
 
 
 function Search(requestEngine) {
@@ -2057,16 +1978,16 @@ Search.prototype = searchProto;
 
 module.exports = Search;
 
-},{"16":16,"31":31,"43":43,"47":47}],26:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var decorators = require(16);
-var notes = require(21);
-var lock = require(20);
-var chunkedUpload = require(15);
-var resourceIdentifier = require(24);
+},{"13":13,"28":28,"40":40,"44":44}],23:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var decorators = require(13);
+var notes = require(18);
+var lock = require(17);
+var chunkedUpload = require(12);
+var resourceIdentifier = require(21);
 
-var ENDPOINTS = require(31);
+var ENDPOINTS = require(28);
 
 
 function Storage(requestEngine) {
@@ -2320,11 +2241,11 @@ Storage.prototype = resourceIdentifier(storageProto);
 
 module.exports = Storage;
 
-},{"15":15,"16":16,"20":20,"21":21,"24":24,"31":31,"43":43,"47":47}],27:[function(require,module,exports){
-var promises = require(43);
-var decorators = require(16);
+},{"12":12,"13":13,"17":17,"18":18,"21":21,"28":28,"40":40,"44":44}],24:[function(require,module,exports){
+var promises = require(40);
+var decorators = require(13);
 
-var ENDPOINTS_users = require(31).users;
+var ENDPOINTS_users = require(28).users;
 
 function User(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2377,11 +2298,11 @@ User.prototype = userProto;
 
 module.exports = User;
 
-},{"16":16,"31":31,"43":43}],28:[function(require,module,exports){
-var promises = require(43);
-var decorators = require(16);
+},{"13":13,"28":28,"40":40}],25:[function(require,module,exports){
+var promises = require(40);
+var decorators = require(13);
 
-var ENDPOINTS_perms = require(31).perms;
+var ENDPOINTS_perms = require(28).perms;
 
 function UserPerms(requestEngine) {
     this.requestEngine = requestEngine;
@@ -2422,10 +2343,10 @@ UserPerms.prototype = userPermsProto;
 
 module.exports = UserPerms;
 
-},{"16":16,"31":31,"43":43}],29:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
+},{"13":13,"28":28,"40":40}],26:[function(require,module,exports){
+var helpers = require(44);
+var dom = require(42);
+var messages = require(45);
 
 function serializablifyXHR(res) {
     var resClone = {};
@@ -2484,11 +2405,11 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"45":45,"47":47,"48":48}],30:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
+},{"42":42,"44":44,"45":45}],27:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var dom = require(42);
+var messages = require(45);
 
 
 
@@ -2618,7 +2539,7 @@ function init(options, api) {
 }
 
 module.exports = init;
-},{"43":43,"45":45,"47":47,"48":48}],31:[function(require,module,exports){
+},{"40":40,"42":42,"44":44,"45":45}],28:[function(require,module,exports){
 module.exports={
     "fsmeta": "/v1/fs",
     "fscontent": "/v1/fs-content",
@@ -2634,8 +2555,8 @@ module.exports={
     "tokenauth": "/puboauth/token"
 }
 
-},{}],32:[function(require,module,exports){
-var helpers = require(47);
+},{}],29:[function(require,module,exports){
+var helpers = require(44);
 
 module.exports = function (opts, model) {
     var page = 1;
@@ -2747,8 +2668,8 @@ module.exports = function (opts, model) {
 
 }
 
-},{"47":47}],33:[function(require,module,exports){
-var helpers = require(47);
+},{"44":44}],30:[function(require,module,exports){
+var helpers = require(44);
 
 module.exports = function (opts, model) {
     var currentQuery;
@@ -2828,7 +2749,7 @@ module.exports = function (opts, model) {
 
 }
 
-},{"47":47}],34:[function(require,module,exports){
+},{"44":44}],31:[function(require,module,exports){
 module.exports={
     "404": "This item doesn't exist (404)",
     "403": "Access denied (403)",
@@ -2841,8 +2762,8 @@ module.exports={
     "?": "Unknown error"
 }
 
-},{}],35:[function(require,module,exports){
-var helpers = require(47);
+},{}],32:[function(require,module,exports){
+var helpers = require(44);
 var mapping = {};
 helpers.each({
     "audio": ["mp3", "wav", "wma", "aiff", "mid", "midi", "mp2"],
@@ -2895,11 +2816,11 @@ module.exports = {
     getExt: getExt,
     getExtensionFilter: getExtensionFilter
 }
-},{"47":47}],36:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var View = require(41);
-var Model = require(37);
+},{"44":44}],33:[function(require,module,exports){
+var helpers = require(44);
+var dom = require(42);
+var View = require(38);
+var Model = require(34);
 
 function noGoog(ext, mime) {
     return mime !== "goog";
@@ -2980,12 +2901,12 @@ function init(API) {
 }
 
 module.exports = init;
-},{"37":37,"41":41,"45":45,"47":47}],37:[function(require,module,exports){
-var helpers = require(47);
-var exts = require(35);
-var Item = require(38);
-var folderFetchProvider = require(32);
-var searchProvider = require(33);
+},{"34":34,"38":38,"42":42,"44":44}],34:[function(require,module,exports){
+var helpers = require(44);
+var exts = require(32);
+var Item = require(35);
+var folderFetchProvider = require(29);
+var searchProvider = require(30);
 
 //Collection
 function Model(API, opts) {
@@ -3104,8 +3025,8 @@ Model.prototype.getCurrent = function () {
 
 module.exports = Model;
 
-},{"32":32,"33":33,"35":35,"38":38,"47":47}],38:[function(require,module,exports){
-var exts = require(35);
+},{"29":29,"30":30,"32":32,"35":35,"44":44}],35:[function(require,module,exports){
+var exts = require(32);
 
 //Item model
 function Item(data, parent) {
@@ -3143,9 +3064,9 @@ Item.prototype.toggleSelect = function() {
 
 module.exports = Item;
 
-},{"35":35}],39:[function(require,module,exports){
-var helpers = require(47);
-var jungle = require(52);
+},{"32":32}],36:[function(require,module,exports){
+var helpers = require(44);
+var jungle = require(49);
 
 function beradcrumbView(parent) {
     var self = this;
@@ -3224,10 +3145,10 @@ beradcrumbView.prototype.render = function () {
 
 module.exports = beradcrumbView;
 
-},{"47":47,"52":52}],40:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var jungle = require(52);
+},{"44":44,"49":49}],37:[function(require,module,exports){
+var helpers = require(44);
+var dom = require(42);
+var jungle = require(49);
 
 var airaExpanded = "aria-expanded";
 
@@ -3304,18 +3225,18 @@ function actionImplementation() {
 
 module.exports = searchView;
 
-},{"45":45,"47":47,"52":52}],41:[function(require,module,exports){
+},{"42":42,"44":44,"49":49}],38:[function(require,module,exports){
 "use strict";
 
 //template engine based upon JsonML
-var dom = require(45);
-var helpers = require(47);
-var texts = require(49);
-var jungle = require(52);
-var SubvBread = require(39);
-var SubvSearch = require(40);
+var dom = require(42);
+var helpers = require(44);
+var texts = require(46);
+var jungle = require(49);
+var SubvBread = require(36);
+var SubvSearch = require(37);
 
-require(50);
+require(47);
 
 var fontLoaded = false;
 
@@ -3620,7 +3541,7 @@ viewPrototypeMethods.renderLoading = function () {
 }
 
 
-var msgs = require(34);
+var msgs = require(31);
 
 viewPrototypeMethods.renderProblem = function (code, message) {
     message = msgs["" + code] || msgs[~(code / 100) + "XX"] || message || msgs["?"];
@@ -3705,13 +3626,13 @@ View.prototype = viewPrototypeMethods;
 
 module.exports = View;
 
-},{"34":34,"39":39,"40":40,"45":45,"47":47,"49":49,"50":50,"52":52}],42:[function(require,module,exports){
-var promises = require(43);
-var helpers = require(47);
-var dom = require(45);
-var messages = require(48);
-var decorators = require(16);
-var ENDPOINTS = require(31);
+},{"31":31,"36":36,"37":37,"42":42,"44":44,"46":46,"47":47,"49":49}],39:[function(require,module,exports){
+var promises = require(40);
+var helpers = require(44);
+var dom = require(42);
+var messages = require(45);
+var decorators = require(13);
+var ENDPOINTS = require(28);
 
 var plugins = {};
 module.exports = {
@@ -3738,10 +3659,10 @@ module.exports = {
         });
     }
 };
-},{"16":16,"31":31,"43":43,"45":45,"47":47,"48":48}],43:[function(require,module,exports){
+},{"13":13,"28":28,"40":40,"42":42,"44":44,"45":45}],40:[function(require,module,exports){
 //wrapper for any promises library
-var pinkySwear = require(5);
-var helpers = require(47);
+var pinkySwear = require(4);
+var helpers = require(44);
 
 //for pinkyswear starting versions above 2.10
 var createErrorAlias = function (promObj) {
@@ -3825,13 +3746,13 @@ Promises.allSettled = function (array) {
 
 module.exports = Promises;
 
-},{"47":47,"5":5}],44:[function(require,module,exports){
-var helpers = require(47);
-var dom = require(45);
-var jungle = require(53);
-var texts = require(49);
+},{"4":4,"44":44}],41:[function(require,module,exports){
+var helpers = require(44);
+var dom = require(42);
+var jungle = require(50);
+var texts = require(46);
 
-require(50);
+require(47);
 
 function openPrompt(node, setup) {
     if (!setup) {
@@ -3881,8 +3802,8 @@ function openPrompt(node, setup) {
 };
 
 module.exports = openPrompt;
-},{"45":45,"47":47,"49":49,"50":50,"53":53}],45:[function(require,module,exports){
-var vkey = require(7);
+},{"42":42,"44":44,"46":46,"47":47,"50":50}],42:[function(require,module,exports){
+var vkey = require(5);
 
 
 function addListener(elem, type, callback) {
@@ -3958,8 +3879,8 @@ module.exports = {
 
 }
 
-},{"7":7}],46:[function(require,module,exports){
-var promises = require(43);
+},{"5":5}],43:[function(require,module,exports){
+var promises = require(40);
 module.exports = function (interval, func, errorHandler) {
     var pointer, stopped = false,
         repeat = function () {
@@ -3998,7 +3919,7 @@ module.exports = function (interval, func, errorHandler) {
         }
     };
 };
-},{"43":43}],47:[function(require,module,exports){
+},{"40":40}],44:[function(require,module,exports){
 function each(collection, fun) {
     if (collection) {
         if (collection.length === +collection.length) {
@@ -4092,8 +4013,8 @@ module.exports = {
     }
 };
 
-},{}],48:[function(require,module,exports){
-var helpers = require(47);
+},{}],45:[function(require,module,exports){
+var helpers = require(44);
 
 
 //returns postMessage specific handler
@@ -4147,7 +4068,7 @@ module.exports = {
     createMessageHandler: createMessageHandler
 }
 
-},{"47":47}],49:[function(require,module,exports){
+},{"44":44}],46:[function(require,module,exports){
 module.exports = function (overrides) {
     return function (txt) {
         if (overrides) {
@@ -4161,12 +4082,12 @@ module.exports = function (overrides) {
     };
 };
 
-},{}],50:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); style.type = 'text/css';var css = ".eg-picker-back{padding:4px 10px;position:relative;color:#777}.eg-picker-back:hover{color:#4e4e4f}.eg-picker-back:before{content:\"\";display:block;left:4px;border-style:solid;border-width:0 0 3px 3px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);width:7px;height:7px;padding:0;position:absolute;bottom:10px}.eg-btn.eg-search-x{margin:1px;text-decoration:none !important;position:absolute;color:#777;font-size:36px;line-height:16px;transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-webkit-transform:rotate(45deg);border-style:solid}.eg-btn.eg-search-x:hover{color:#4e4e4f}.eg-search-ico:before{display:block;content:\"\";width:7.2px;height:7.2px;border-width:3px;border-style:solid;background:transparent;-webkit-border-radius:50%;-moz-border-radius:50%;border-radius:50%}.eg-search-ico:after{content:\"\";position:absolute;top:14.4px;left:14.4px;border-left-width:3px;border-left-style:solid;height:5.76px;margin:0;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-ms-transform:rotate(-45deg);-o-transform:rotate(-45deg);transform:rotate(-45deg)}@-webkit-keyframes egspin{to{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}@keyframes egspin{to{transform:rotate(360deg)}}.eg-placeholder{position:absolute;width:100%;top:50%;bottom:50%;margin-top:-34px;text-align:center;color:#777}.eg-placeholder>div{margin:0 auto 5px}.eg-placeholder>.eg-spinner{content:\"\";-webkit-animation:egspin 1s infinite linear;animation:egspin 1s infinite linear;width:30px;height:30px;border:solid 7px;border-radius:50%;border-color:transparent transparent #dbdbdb}.eg-picker-error:before{content:\"?!\";font-size:32px;border:2px solid #5e5f60;padding:0 10px}.eg-ico{margin-right:10px;position:relative;top:-2px}.eg-mime-audio{background:#94cbff}.eg-mime-video{background:#8f6bd1}.eg-mime-pdf{background:#e64e40}.eg-mime-word_processing{background:#4ca0e6}.eg-mime-spreadsheet{background:#6bd17f}.eg-mime-presentation{background:#fa8639}.eg-mime-cad{background:#f2d725}.eg-mime-text{background:#9e9e9e}.eg-mime-image{background:#d16bd0}.eg-mime-code{background:#a5d16b}.eg-mime-archive{background:#d19b6b}.eg-mime-goog{background:#0266c8}.eg-mime-unknown{background:#dbdbdb}.eg-file .eg-ico{width:40px;height:40px;text-align:right}.eg-file .eg-ico>span{text-align:center;font-size:13.33333333px;line-height:18px;font-weight:300;margin:10px 0;height:20px;width:32px;background:rgba(0,0,0,0.15);color:#fff}.eg-folder .eg-ico{background:#fee999;border-top:4.8px #f1dc8e solid;margin-top:8.8px;height:24.6px;overflow:visible;border-radius:2px;width:38px}.eg-folder .eg-ico:before{display:block;position:absolute;top:-7.2px;border-radius:3px;background:#f1dc8e;content:\" \";width:16px;height:6px}.eg-folder .eg-ico>span{display:none}.eg-btn{display:inline-block;line-height:20px;height:20px;text-align:center;cursor:pointer;margin:0 8px}span.eg-btn{padding:4px 15px;background:#fafafa;border:1px solid #ccc;border-radius:2px}span.eg-btn:hover{-webkit-box-shadow:inset 0 -20px 50px -60px #000;box-shadow:inset 0 -20px 50px -60px #000}span.eg-btn:active{-webkit-box-shadow:inset 0 1px 5px -4px #000;box-shadow:inset 0 1px 5px -4px #000}span.eg-btn[disabled]{opacity:.3}a.eg-btn{font-weight:600;padding:4px;border:1px solid transparent;text-decoration:underline}.eg-btn.eg-btn-prim{background:#3191f2;border-color:#2b82d9;color:#fff}.eg-box,.eg-widget,.eg-bar{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;position:relative;overflow:hidden}.eg-in *{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;vertical-align:middle}.eg-widget{background:#fff;border:1px solid #dbdbdb;padding:0;color:#5e5f60;font-size:12px;font-family:'Open Sans',sans-serif}.eg-widget input{padding:0}.eg-widget a{cursor:pointer}.eg-widget a:hover{text-decoration:underline}.eg-widget .eg-brand{background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgBAMAAACBVGfHAAAAD1BMVEVLmJRkpqN9trS51tP6/fqnSbSVAAAAfklEQVQoka2OwRGAIAwEiTYQZyiABwX4oAHw+q9JEsgojr7kPnA7Se6cmyfiB/D5H6CjgWSHI7IAj9L8AiAQ62MTqEsJNqH/7JV2rVDtt1DxQ5N0X+hJYWwKDLYIiJePEHDVWGtABd5ySQLkRgJ3wA1QB44thb5jX8C2uXk6AXu0F4Px6fa6AAAAAElFTkSuQmCC') no-repeat center;width:50px;height:32px;margin:0;float:left}.eg-bar{z-index:1;height:50px;padding:10px 10px 0;background:#f1f1f1;border:0 solid #dbdbdb;border-width:1px 0 0 0}.eg-bar.eg-top{box-shadow:0 1px 3px 0 #f1f1f1;border-width:0 0 1px 0;padding-left:0;background:#fff}.eg-bar>*{display:block;float:left}.eg-bar-right>*{float:right}.eg-ctlgrp{padding:20px}.eg-ctlgrp>*{width:99%;margin:10px 0}.eg-not{visibility:hidden}.eg-prompt{padding-top:20px}.eg-picker{height:100%;min-height:300px}.eg-picker input[type=checkbox]{margin:10px 20px}.eg-picker a.eg-file:hover{text-decoration:none}.eg-picker ul{padding:0;margin:0;min-height:200px;overflow-y:scroll}.eg-picker-pager{float:right}.eg-bar-right>.eg-picker-pager{float:left}.eg-picker-path{min-width:60%;width:calc( 100% - 110px );line-height:30px;color:#777;font-size:14px}.eg-picker-path>a{margin:0 2px;white-space:nowrap;display:inline-block;overflow:hidden;text-overflow:ellipsis}.eg-picker-path>a:last-child{color:#5e5f60}.eg-picker-item{line-height:40px;list-style:none;padding:4px 0;border-bottom:1px solid #f2f3f3}.eg-picker-item.eg-selected{background:#eef5fd;outline:1px solid #dbdbdb}.eg-picker-item[aria-selected=\"true\"]{background:#d4e7fe}.eg-picker-item *{display:inline-block}.eg-picker-item>a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;max-width:calc(100% - 88px)}.eg-picker-item [disabled]~a,.eg-picker-item.eg-disabled>a{opacity:.6}.eg-picker-item.eg-disabled>a.eg-file{cursor:default}.eg-picker-name{margin-left:4px}.eg-search{background:#fff;width:50px;position:absolute;top:-1px;right:0;z-index:3;transition:width .5s ease;-webkit-transition:width .5s ease;-moz-transition:width .5s ease}.eg-search *{visibility:hidden}.eg-search[aria-expanded]{width:100%}.eg-search[aria-expanded] *{visibility:visible}.eg-search-inpt{width:calc(100% - 55px);padding-left:40px}.eg-search-inpt input{font-family:'Open Sans',sans-serif;width:100%;padding:5px;border-radius:5px;border:1px solid #2b82d9;outline:none}.eg-btn.eg-search-ico{visibility:visible;position:absolute;right:10px}.eg-btn.eg-search-ico:hover{color:#4e4e4f}.eg-search-no{padding:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],51:[function(require,module,exports){
-var helpers = require(47);
-var plugins = require(42);
-var defaults = require(10);
+},{}],48:[function(require,module,exports){
+var helpers = require(44);
+var plugins = require(39);
+var defaults = require(7);
 
 module.exports = {
     init: function init(egnyteDomainURL, opts) {
@@ -4178,7 +4099,7 @@ module.exports = {
             setDomain: function (d) {
                 this.domain = options.egnyteDomainURL = helpers.normalizeURL(d);
             },
-            API: require(12)(options)
+            API: require(9)(options)
         }
         plugins.install(exporting);
 
@@ -4189,8 +4110,8 @@ module.exports = {
 
 }
 
-},{"10":10,"12":12,"42":42,"47":47}],52:[function(require,module,exports){
-var jungle = require(53);
+},{"39":39,"44":44,"7":7,"9":9}],49:[function(require,module,exports){
+var jungle = require(50);
 module.exports = {
     tree: jungle,
     node: function (i) {
@@ -4198,7 +4119,7 @@ module.exports = {
     }
 }
 
-},{"53":53}],53:[function(require,module,exports){
+},{"50":50}],50:[function(require,module,exports){
 /**
  * zenjungle - HTML via JSON with elements of Zen Coding
  *
@@ -4318,5 +4239,5 @@ var zenjungle = (function () {
 if (typeof module !== "undefined") {
     module.exports = zenjungle;
 }
-},{}]},{},[11])(11)
+},{}]},{},[8])(8)
 });
