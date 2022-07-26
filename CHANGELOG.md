@@ -1,3 +1,6 @@
+### 2.10.1
+- fix crash on timer end non-existing response.
+
 ### 2.10.0
 - add feature to set header "X-Egnyte-Request-Id"
   

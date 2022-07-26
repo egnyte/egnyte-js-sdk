@@ -1749,7 +1749,8 @@ enginePrototypeMethods.retryHandler = function (callback, retry, timer, forceNoR
                 self.options.onInvalidToken();
             }
             if (self.timerEnd) {
-                self.timerEnd(timer, response.statusCode);
+                var statusCode = response && response.statusCode || 0;
+                self.timerEnd(timer, statusCode);
             }
             callback.call(this, error, response, body);
         }
