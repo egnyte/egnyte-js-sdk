@@ -154,6 +154,7 @@ authPrototypeMethods.requestTokenByPassword = function (username, password) {
         },
         body: [
             "client_id=" + this.options.key,
+            "client_secret=" + this.options.client_secret,
             "grant_type=password",
             "username=" + encodeURIComponent(username),
             "password=" + encodeURIComponent(password)
