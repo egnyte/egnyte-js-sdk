@@ -50,7 +50,7 @@
     "grunt-dependo": "^0.1.2",
     "grunt-jasmine-nodejs": "^1.4.3",
     "grunt-markdown": "^0.7.0",
-    "node-lessify": "0.0.10",
+    "node-lessify": "0.2.0",
     "readable-stream": "^2.0.2",
     "through2": "^2.0.0"
   }
