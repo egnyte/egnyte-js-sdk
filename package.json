@@ -51,7 +51,7 @@
     "grunt-jasmine-nodejs": "^1.4.3",
     "grunt-markdown": "^0.7.0",
     "node-lessify": "0.0.10",
-    "readable-stream": "^2.0.2",
+    "readable-stream": "^2.3.8",
     "through2": "^2.0.0"
   }
 }
