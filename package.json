@@ -27,7 +27,7 @@
     "q": "^1.4.1",
     "request": "^2.88.2",
     "vkey": "1.0.0",
-    "xhr": "2.1.0"
+    "xhr": "2.6.0"
   },
   "browser": {
     "q": "./src/lib/promises-browser.js",
