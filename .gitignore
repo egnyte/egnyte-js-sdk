@@ -6,3 +6,14 @@ spec/conf/apiaccess.js
 _SpecRunner.html
 TEST*.xml
 /nbproject/*
+
+# Test logs and temporary files
+*.log
+setup-test-folders.js
+
+# Temporary documentation files
+API_*.md
+CONTRACT*.md
+TEST_*.md
+FINAL_*.md
+QUICK_*.md
