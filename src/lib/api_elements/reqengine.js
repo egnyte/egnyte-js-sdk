@@ -8,7 +8,13 @@ var PassThrough = require("stream").PassThrough;
 
 // Configuration for stream endpoint detection
 // These URL patterns indicate streaming endpoints
-var STREAM_ENDPOINT_PATTERNS = ["/v1/fs-content", "/v1/fs-content-chunked"];
+// Support both old (/v1/) and new (/pubapi/v1/) URL formats
+var STREAM_ENDPOINT_PATTERNS = [
+  "/v1/fs-content",
+  "/v1/fs-content-chunked",
+  "/pubapi/v1/fs-content",
+  "/pubapi/v1/fs-content-chunked",
+];
 
 // Helper function to check if a URL is a stream endpoint
 function isStreamEndpoint(url) {
@@ -72,6 +78,17 @@ function axiosWrapper(options, callback) {
   var url = options.url || options.uri;
   var baseURL = options.baseURL;
 
+  // Rewrite /v1/ to /pubapi/v1/ for backward compatibility
+  // This maintains compatibility with code that uses the old API endpoint pattern
+  // The request library accepted both, but axios is more strict
+  if (typeof url === "string") {
+    // Only rewrite if /v1/ is present but /pubapi/v1/ is not
+    // Use global regex to replace all occurrences (though typically there's only one)
+    if (url.indexOf("/v1/") !== -1 && url.indexOf("/pubapi/v1/") === -1) {
+      url = url.replace(/\/v1\//g, "/pubapi/v1/");
+    }
+  }
+
   // Axios requires absolute URLs in Node.js
   // If URL starts with /, it's relative - extract baseURL from it if it looks like a full path
   if (typeof url === "string" && url.charAt(0) === "/" && !baseURL) {
@@ -82,13 +99,27 @@ function axiosWrapper(options, callback) {
     }
   }
 
+  // Handle the 'json' option correctly
+  // In request library: json: true means "parse response as JSON"
+  // In request library: json: {object} means "send this object as JSON body"
+  var requestData;
+  if (options.body) {
+    requestData = options.body;
+  } else if (options.form) {
+    requestData = options.form;
+  } else if (options.json && typeof options.json === "object") {
+    // json is an object - use it as request body
+    requestData = options.json;
+  }
+  // If json is true (boolean), it's just a flag for response parsing, not request data
+
   var axiosConfig = {
     url: url,
     baseURL: baseURL,
     method: (options.method || "GET").toUpperCase(),
     headers: options.headers || {},
     params: options.qs,
-    data: options.body || options.form || options.json,
+    data: requestData,
     timeout: options.timeout || 0,
     maxRedirects: options.maxRedirects !== undefined ? options.maxRedirects : 5,
     validateStatus: function () {
@@ -115,8 +146,12 @@ function axiosWrapper(options, callback) {
     ],
   };
 
-  // Set content-type for JSON
-  if (options.json && !axiosConfig.headers["Content-Type"]) {
+  // Set content-type for JSON only if we're actually sending JSON data
+  if (
+    options.json &&
+    typeof options.json === "object" &&
+    !axiosConfig.headers["Content-Type"]
+  ) {
     axiosConfig.headers["Content-Type"] = "application/json";
   }
 
@@ -398,17 +433,18 @@ enginePrototypeMethods.retryHandler = function (
   return function (error, response, body) {
     //build an error object for http errors
     if (!error && response.statusCode >= 400 && response.statusCode < 600) {
-      var errorMessage = "HTTP " + response.statusCode + " error"; // Default error message
+      // Create error with proper message handling for string, object, null, and undefined bodies
+      var errorMessage = "HTTP " + response.statusCode + " error";
       if (body !== null && body !== undefined) {
-        if (typeof body === "object") {
+        if (typeof body === "string") {
+          errorMessage = body;
+        } else {
+          // Try to stringify object bodies, but handle circular references gracefully
           try {
             errorMessage = JSON.stringify(body);
           } catch (e) {
-            // Handle circular references or non-serializable objects
-            errorMessage = "HTTP " + response.statusCode + " error";
+            // Keep default error message if stringify fails (e.g., circular references)
           }
-        } else {
-          errorMessage = String(body);
         }
       }
       error = new Error(errorMessage);
