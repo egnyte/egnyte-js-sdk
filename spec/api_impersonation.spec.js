@@ -2,7 +2,6 @@ var ImInBrowser = (typeof window !== "undefined");
 
 if (!ImInBrowser) {
     Egnyte = require("../src/slim");
-    require("./conf/apiaccess");
     require("./helpers/matchers");
 
     process.setMaxListeners(0);
