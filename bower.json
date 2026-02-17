@@ -1,32 +1,22 @@
 {
-    "name": "egnyte-js-sdk",
-    "version": "2.10.1",
-    "description": "An SDK for Egnyte integrations",
-    "main": "dist/egnyte.min.js",
-    "moduleType": [
-        "globals"
-    ],
-    "keywords": [
-        "egnyte",
-        "cloud",
-        "storage",
-        "api",
-        "filepicker"
-    ],
-    "authors": [
-        "ztenerowicz@egnyte.com"
-    ],
-    "license": "Apache2",
-    "homepage": "developers.egnyte.com",
-    "ignore": [
-        "src",
-        "spec",
-        "examples",
-        "mock",
-        "node_modules",
-        "_SpecRunner.html",
-        "Gruntfile.js",
-        "README.md",
-        "package.json"
-    ]
+  "name": "egnyte-js-sdk",
+  "version": "3.0.0",
+  "description": "An SDK for Egnyte integrations",
+  "main": "dist/egnyte.min.js",
+  "moduleType": ["globals"],
+  "keywords": ["egnyte", "cloud", "storage", "api", "filepicker"],
+  "authors": ["ztenerowicz@egnyte.com"],
+  "license": "Apache2",
+  "homepage": "developers.egnyte.com",
+  "ignore": [
+    "src",
+    "spec",
+    "examples",
+    "mock",
+    "node_modules",
+    "_SpecRunner.html",
+    "Gruntfile.js",
+    "README.md",
+    "package.json"
+  ]
 }
