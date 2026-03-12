@@ -11956,6 +11956,12 @@ function axiosWrapper(options, callback) {
       // Callback-style usage with stream upload support
       // Create a PassThrough stream to accept piped data
       var streamProxy = new PassThrough();
+      var callbackInvoked = false;
+      var safeCallback = function safeCallback(error, response, body) {
+        if (callbackInvoked) return;
+        callbackInvoked = true;
+        callback(error, response, body);
+      };
       axiosConfig.data = streamProxy; // Pass the stream directly to axios as the request body.
       if (!axiosConfig.headers["Content-Type"]) {
         axiosConfig.headers["Content-Type"] = "application/octet-stream";
@@ -11967,12 +11973,12 @@ function axiosWrapper(options, callback) {
         return data;
       }];
       axios(axiosConfig).then(function (response) {
-        handleAxiosSuccess(response, callback);
+        handleAxiosSuccess(response, safeCallback);
       })["catch"](function (error) {
-        handleAxiosError(error, callback);
+        handleAxiosError(error, safeCallback);
       });
       streamProxy.on("error", function (error) {
-        callback(error, {
+        safeCallback(error, {
           statusCode: 0,
           statusMessage: error.message
         }, null);
