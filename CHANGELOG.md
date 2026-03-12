@@ -1,3 +1,10 @@
+### 3.0.1
+- Fixed issue introduced in last version with upload requests where file was being loaded into memory before being sent. It's now being streamed directly.
+
+### 3.0.0
+- Major security updates
+- Major dependency upgrades
+
 ### 2.10.1
 - fix crash on timer end non-existing response.
 

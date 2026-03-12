@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
@@ -23,7 +23,7 @@
     "browserify": "browserify src/egnyte.js -s Egnyte -t node-lessify -t [ babelify --presets [ @babel/preset-env ] ] -p bundle-collapser/plugin -o dist/egnyte.js && browserify src/slim.js -s Egnyte -t node-lessify -t [ babelify --presets [ @babel/preset-env ] ] -p bundle-collapser/plugin -o dist/slim.js",
     "uglify": "uglifyjs dist/egnyte.js -o dist/egnyte.min.js -c -m && uglifyjs dist/slim.js -o dist/slim.min.js -c -m",
     "copy": "copyfiles -u 1 'src/resources/**/*' dist/",
-    "copy:forwarder": "copyfiles -u 1 'dist/slim.js' 'dist/slim.min.js' forwarder/2.10/ && copyfiles -u 3 'src/lib/api_forwarder/apiForwarder.html' forwarder/2.10/",
+    "copy:forwarder": "node scripts/copy-forwarder.js",
     "build": "npm run clean && npm run browserify && npm run uglify && npm run copy && npm run copy:forwarder",
     "test": "jasmine",
     "test:sequential": "jasmine --random=false",
@@ -34,7 +34,7 @@
     "serve:api": "npm run build && http-server . -p 8080 --proxy http://localhost:3000"
   },
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.13.6",
     "chunking-streams": "0.0.8",
     "pinkyswear": "^2.2.3",
     "vkey": "^1.0.1",

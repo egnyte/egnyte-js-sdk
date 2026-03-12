@@ -188,49 +188,37 @@ function axiosWrapper(options, callback) {
       // Callback-style usage with stream upload support
       // Create a PassThrough stream to accept piped data
       var streamProxy = new PassThrough();
-      var chunks = [];
+      var callbackInvoked = false;
 
-      streamProxy.on("data", function (chunk) {
-        chunks.push(chunk);
-      });
+      var safeCallback = function (error, response, body) {
+        if (callbackInvoked) return;
+        callbackInvoked = true;
+        callback(error, response, body);
+      };
 
-      streamProxy.on("end", function () {
-        // When stream ends, combine chunks and send with axios
-        if (chunks.length > 0) {
-          var buffer = Buffer.concat(chunks);
-          axiosConfig.data = buffer;
-          // Remove any existing Content-Length header (check all case variations)
-          Object.keys(axiosConfig.headers).forEach(function (key) {
-            if (key.toLowerCase() === "content-length") {
-              delete axiosConfig.headers[key];
-            }
-          });
-          // Explicitly set Content-Length to the buffer length
-          axiosConfig.headers["Content-Length"] = String(buffer.length);
-          // Ensure we're sending binary data if no Content-Type is set
-          if (!axiosConfig.headers["Content-Type"]) {
-            axiosConfig.headers["Content-Type"] = "application/octet-stream";
-          }
-          // Disable axios's default transformRequest to prevent data modification
-          // Using function syntax for IE11 compatibility
-          axiosConfig.transformRequest = [
-            function (data) {
-              return data;
-            },
-          ];
-        }
+      axiosConfig.data = streamProxy; // Pass the stream directly to axios as the request body.
+      if (!axiosConfig.headers["Content-Type"]) {
+        axiosConfig.headers["Content-Type"] = "application/octet-stream";
+      }
 
-        axios(axiosConfig)
-          .then(function (response) {
-            handleAxiosSuccess(response, callback);
-          })
-          .catch(function (error) {
-            handleAxiosError(error, callback);
-          });
+      // Disable axios's default transformRequest to prevent data modification
+      // Using function syntax for IE11 compatibility
+      axiosConfig.transformRequest = [
+        function (data) {
+          return data;
+        },
+      ];
+
+      axios(axiosConfig)
+        .then(function (response) {
+          handleAxiosSuccess(response, safeCallback);
+        })
+        .catch(function (error) {
+          handleAxiosError(error, safeCallback);
       });
 
       streamProxy.on("error", function (error) {
-        callback(error, { statusCode: 0, statusMessage: error.message }, null);
+        safeCallback(error, { statusCode: 0, statusMessage: error.message }, null);
       });
 
       // Return the PassThrough stream which acts like a writable stream
