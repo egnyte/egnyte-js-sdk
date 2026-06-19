@@ -1,6 +1,6 @@
 {
   "name": "egnyte-js-sdk",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "An SDK for Egnyte integrations",
   "main": "src/slim.js",
   "engines": {
@@ -34,7 +34,7 @@
     "serve:api": "npm run build && http-server . -p 8080 --proxy http://localhost:3000"
   },
   "dependencies": {
-    "axios": "^1.13.6",
+    "axios": "^1.18.0",
     "chunking-streams": "0.0.8",
     "pinkyswear": "^2.2.3",
     "vkey": "^1.0.1",
