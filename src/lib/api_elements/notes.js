@@ -46,10 +46,11 @@ notesProto.path = function (pathFromRoot) {
           url: requestEngine.getEndpoint() + ENDPOINTS_notes,
         };
 
-        //xhr and request differ here
+        //the request engine percent-encodes every query param value,
+        //so the raw path goes in here - encoding it first would double-encode it
         opts.params = helpers.extend(
           {
-            file: helpers.encodeURIPath(pathFromRoot),
+            file: pathFromRoot,
           },
           params
         );
