@@ -1,4 +1,4 @@
-# Widgets
+# Widgets [deprecated]
 
 |Sections|
 | --- |
